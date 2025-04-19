@@ -4,11 +4,15 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import {createBrowserRouter, Outlet, RouterProvider} from "react-router-dom";
 import Home from "./pages/Dashboard/Home.jsx";
+import AttendencePage from "./pages/Attendence/AttendencePage.jsx";
 
 const appRouter = createBrowserRouter([
     {
         path: '/',
         element: <Home />,
+    },{
+        path: '/attendence',
+        element: <AttendencePage/>
     }
     ]
 )

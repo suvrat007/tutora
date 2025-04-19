@@ -1,10 +1,25 @@
 import Navbar from "../Navbar/Navbar.jsx";
 import SideBar from "../Navbar/SideBar.jsx";
+import useFetchAllClasses from "../../hooks/useFetchAllClasses.jsx";
+import {useEffect, useState} from "react";
+import {all} from "axios";
+import Calendar from "react-calendar";
 
 const Home = () => {
+    const [allClasses, setAllClasses] = useState(null);
+    const [value, setValue] = useState(new Date());
+
+    useEffect(() => {
+        const fetchClasses = async () => {
+            const data = await useFetchAllClasses();
+            setAllClasses(data);
+        };
+        fetchClasses();
+    }, []);
+    // console.log(allClasses);
     return (
         <div className="flex">
-            <div className="flex flex-col w-[17.5em] border-2 h-screen py-10 px-5 rounded-xl">
+            <div className="">
                 <SideBar/>
             </div>
 
@@ -17,34 +32,35 @@ const Home = () => {
                         {/*todays classes*/}
                         <div className={'border-2 rounded-2xl mt-2 w-[70%] overflow-hidden'}>
                             <h1 className={'p-2 m-2 border-b-2'}>Today's Classes</h1>
-
                             <div className={'overflow-scroll h-[18rem] '}>
-                                <div className={'py-2 m-2 border-2 rounded-lg'}>
-                                    <p className={'border-b-2 p-1'}>Batch</p>
-                                    <h1 className={'p-2'}>Clases and info</h1>
-                                </div>
-                                <div className={'py-2 m-2 border-2 rounded-lg'}>
-                                    <p className={'border-b-2 p-1'}>Batch</p>
-                                    <h1 className={'p-2'}>Clases and info</h1>
-                                </div>
-                                <div className={'py-2 m-2 border-2 rounded-lg'}>
-                                    <p className={'border-b-2 p-1'}>Batch</p>
-                                    <h1 className={'p-2'}>Clases and info</h1>
-                                </div>
-                                <div className={'py-2 m-2 border-2 rounded-lg'}>
-                                    <p className={'border-b-2 p-1'}>Batch</p>
-                                    <h1 className={'p-2'}>Clases and info</h1>
-                                </div>
+                                {allClasses ? (allClasses.map((c, index) => (
+                                    <div className={'py-2 m-2 border-2 rounded-lg'}>
+                                        <div className={'border-b-2 p-2'}>
+                                            <p>{c.batchName}</p>
+                                        </div>
+                                        <div className={'flex p-2 justify-between'}>
+                                            <h1><span>Class:</span> {c.forStandard}</h1>
+                                            <h1><span>Subject:</span> {c.subjectName}</h1>
+                                            <h1><span>Time:</span> {c.time}</h1>
+                                        </div>
+                                    </div>
+                                ))) : (
+                                    <div>
+                                        YAY! No classes Scheduled for today.
+                                    </div>
+                                )}
+
                             </div>
                         </div>
 
                         {/*calender*/}
-                        <div className={'border-2 rounded-2xl w-[30%] mt-2'}>
-                            h1
+                        <div className="border-2 rounded-2xl w-[30%] mt-2 p-4">
+                            <Calendar
+                                onChange={setValue}
+                                value={value}
+                            />
                         </div>
                     </div>
-
-
 
 
                     <div className={' flex w-full gap-2'}>
