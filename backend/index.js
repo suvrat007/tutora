@@ -168,6 +168,58 @@ app.put("/update-batch/:id", async (req, res) => {
     }
 });
 
+//QUERIES
+app.get("/get-all-students-of-batch/:id", async (req, res) => {
+    const id = req.params.id;
+    try {
+        const selectedBatch = await Batch.findById(id);
+        const studentIdListInBatch = selectedBatch.enrolledStudents;
+
+        const studentsData = [];
+
+        for (const studentId of studentIdListInBatch) {
+            const std = await Student.findById(studentId);
+            if (std) studentsData.push(std);
+        }
+
+        return res.status(200).json(studentsData);
+    } catch (error) {
+        console.error("Error fetching students:", error);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+});
+app.post("/add-attendance/:studentId", async (req, res) => {
+    const { subject, batch, present, date } = req.body;
+    const studentId = req.params.studentId;
+
+    try {
+        const student = await Student.findById(studentId);
+
+        if (!student) {
+            return res.status(404).json({ message: "Student not found" });
+        }
+
+        // Check for duplicate attendance entry
+        const alreadyMarked = student.attendance.some((entry) =>
+            entry.subject === subject &&
+            entry.batch === batch &&
+            new Date(entry.date).toDateString() === new Date(date).toDateString()
+        );
+
+        if (alreadyMarked) {
+            return res.status(409).json({ message: "Attendance already marked for this date" });
+        }
+
+        // Add attendance if not already present
+        student.attendance.push({ subject, batch, present, date });
+        await student.save();
+
+        res.status(200).json({ message: "Attendance added successfully", student });
+    } catch (error) {
+        console.error("Error adding attendance:", error);
+        res.status(500).json({ message: "Internal server error", error });
+    }
+});
 
 
 

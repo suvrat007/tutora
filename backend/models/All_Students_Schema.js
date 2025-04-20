@@ -25,6 +25,8 @@ const All_Student_Schema = new Schema({
     attendance: [
         {
             date: { type: Date, required: true },
+            batch: { type: Schema.Types.ObjectId, required: true },
+            subject: { type: Schema.Types.ObjectId, required: true },
             present: { type: Boolean, default: false }
         }
     ],
