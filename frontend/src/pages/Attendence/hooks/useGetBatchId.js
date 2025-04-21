@@ -14,9 +14,10 @@ const useGetBatchId = (batchName,subjectName) => {
 
                 for (const batch of allBatches) {
                     if (batch.normalized_name === normalized) {
-                        setBatchId(batch._id);
+                        setBatchId(batch?._id);
                         for (const subs of batch?.subject){
                             if (subs?.name === subjectName) {
+                                console.log(subs);
                                 setSubId(batch?.subject?._id);
                             }
                         }

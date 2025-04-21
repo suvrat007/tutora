@@ -91,26 +91,15 @@ app.put("/update-student/:id", async (req, res) => {
 });
 
 // BATCH CRUD
-const normalizeName = async (name, currentId = null) => {
-    if (!name) return { success: true, value: null }; // nothing to normalize
-
-    const normalized = name.replace(/\s+/g, "").toLowerCase();
-
-    const existingBatch = await Batch.findOne({ normalized_name: normalized });
-
-    if (existingBatch && existingBatch._id.toString() !== currentId) {
-        return { success: false, message: "Batch with same name already exists" };
-    }
-
-    return { success: true, value: normalized };
-}
 app.post("/add-new-batch", async (req, res) => {
     const { name } = req.body;
+    const normalized = name.replace(/\s+/g, "").toLowerCase();
+
     try {
-        const {value} = await normalizeName(name);
+        // const {value} = await normalizeName(name);
         const response = new Batch({
             ...req.body,
-            "normalized_name":value
+            normalized_name:normalized
         });
         await response.save();
         console.log("Batch added:", response);
@@ -147,24 +136,21 @@ app.put("/update-batch/:id", async (req, res) => {
     const { name } = req.body;
 
     try {
-        // Normalize and check name
-        const normalizedName = await normalizeName(name, id); // pass id to ignore current batch
+        const updateData = { ...req.body };
 
-        if (!normalizedName.success) {
-            return res.status(409).json({ message: normalizedName.message });
+        if (name) {
+            updateData.normalized_name = name.replace(/\s+/g, "").toLowerCase();
         }
 
-        // Update with normalized_name added
-        const updated = await Batch.findByIdAndUpdate(id, {
-            ...req.body,
-            normalized_name: normalizedName.value
-        }, { new: true });
+        const updated = await Batch.findByIdAndUpdate(id, updateData, { new: true });
 
-        if (!updated) return res.status(404).json({ message: `${name} not found` });
+        if (!updated) {
+            return res.status(404).json({ message: `${name || "Batch"} not found` });
+        }
 
         res.status(200).json(updated);
     } catch (error) {
-        res.status(500).json({ message: `Error updating ${name}`, error: error.message });
+        res.status(500).json({ message: `Error updating ${name}, error: error.message `});
     }
 });
 
@@ -188,13 +174,12 @@ app.get("/get-all-students-of-batch/:id", async (req, res) => {
         return res.status(500).json({ message: "Internal Server Error" });
     }
 });
-app.post("/add-attendance/:studentId", async (req, res) => {
+app.post("/add-attendance/:id", async (req, res) => {
     const { subject, batch, present, date } = req.body;
-    const studentId = req.params.studentId;
+    const studentId = req.params.id;
 
     try {
         const student = await Student.findById(studentId);
-
         if (!student) {
             return res.status(404).json({ message: "Student not found" });
         }
@@ -210,16 +195,26 @@ app.post("/add-attendance/:studentId", async (req, res) => {
             return res.status(409).json({ message: "Attendance already marked for this date" });
         }
 
-        // Add attendance if not already present
-        student.attendance.push({ subject, batch, present, date });
-        await student.save();
+        // If not marked, push attendance
+        const updatedStudent = await Student.findByIdAndUpdate(
+            studentId,
+            {
+                $push: {
+                    attendance: { subject, batch, present, date }
+                }
+            },
+            { new: true }
+        );
 
-        res.status(200).json({ message: "Attendance added successfully", student });
+        res.status(200).json({ message: "Attendance added successfully", student: updatedStudent });
+
     } catch (error) {
         console.error("Error adding attendance:", error);
         res.status(500).json({ message: "Internal server error", error });
     }
 });
+
+
 
 
 
