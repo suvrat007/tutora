@@ -9,6 +9,7 @@ const AttendencePage = () => {
     const [batchName, setBatchName] = useState("");
     const [subjectName, setSubjectName] = useState("");
     const [date, setDate] = useState("");
+    const [allStudentsList, setAllStudentsList] = useState([]);
     const [fetchedStudents, setFetchedStudents] = useState([]);
     const [presentStudentIds, setPresentStudentIds] = useState(new Set());
     const [alreadyPresentStudents, setAlreadyPresentStudents] = useState([]);
@@ -43,13 +44,15 @@ const AttendencePage = () => {
         try {
             await editStudentAttendence(Array.from(presentStudentIds), subjectId, batchId, date);
             alert("Attendance submitted successfully!");
+            setPresentStudentIds(new Set());
+            fetchAllStudents();
         } catch (err) {
             console.error("Error submitting attendance:", err);
             setError("Failed to submit attendance. Please try again.");
         }
     };
 
-    // ✅ Fetch All Students -- (include batch id and subject)
+
     const fetchAllStudents = async () => {
         setError("");
         setFormTouched(true);
@@ -62,37 +65,35 @@ const AttendencePage = () => {
         try {
             const response = await axiosInstance.get(`/get-all-students-of-batch/${batchId}`);
             const students = response.data || [];
-            // console.log(students)
+            console.log(students)
 
             const alreadyMarkedPresent = new Set();
+            const alreadyMarkedIds = new Set();
 
             for (const student of students) {
                 const attendances = student?.attendance || [];
-                console.log(attendances);
-
                 for (const record of attendances) {
-                    const recordDate = new Date(record.date).toLocaleDateString("en-CA"); // format: YYYY-MM-DD
-                    // console.log(recordDate);
-
-                    if (recordDate === date ) {
+                    const recordDate = new Date(record.date).toLocaleDateString("en-CA");
+                    if (recordDate === date && record.subject === subjectId) {
                         alreadyMarkedPresent.add(student);
+                        alreadyMarkedIds.add(student._id);
                         break;
                     }
                 }
+
             }
-
-
-            // console.log(alreadyPresentStudents)
-
-
+            setAllStudentsList(students)
             setAlreadyPresentStudents(Array.from(alreadyMarkedPresent));
-            setFetchedStudents(students);
+            const filteredStudents = students.filter((student) => !alreadyMarkedIds.has(student._id));
+            // console.log(filteredStudents)
+            setFetchedStudents(filteredStudents);
             setPresentStudentIds(new Set()); // Clear previous selection
         } catch (err) {
             console.error("Error fetching students:", err);
             setError("Failed to fetch students. Please try again later.");
         }
     };
+
 
     // console.log(alreadyPresentStudents)
 
@@ -106,16 +107,50 @@ const AttendencePage = () => {
                 <div className="flex flex-col gap-4 m-2 overflow-hidden flex-1 items-center">
                     {/* === TOP FORM SECTION === */}
                     <div className="flex gap-4 w-[75%] p-4 border-2 rounded-2xl">
+                        {/*<div className="flex flex-col border-2 rounded-2xl flex-1 w-1/2">*/}
+                        {/*    <p className="text-xl mt-3 ml-3">*/}
+                        {/*        Student's Attendance Percentage Till Date:*/}
+                        {/*    </p>*/}
+                        {/*    <div className="flex flex-col items-center justify-center flex-1">*/}
+                        {/*        <h1 className="text-[5em] p-10 border-2 rounded-[50%] m-2">*/}
+                        {/*            100%*/}
+                        {/*        </h1>*/}
+                        {/*    </div>*/}
+                        {/*</div>*/}
+
                         <div className="flex flex-col border-2 rounded-2xl flex-1 w-1/2">
-                            <p className="text-xl mt-3 ml-3">
-                                Student's Attendance Percentage Till Date:
-                            </p>
-                            <div className="flex flex-col items-center justify-center flex-1">
-                                <h1 className="text-[5em] p-10 border-2 rounded-[50%] m-2">
-                                    100%
-                                </h1>
-                            </div>
+                            <p className="text-xl mt-3 ml-3">Overall Attendance Summary</p>
+                            <ul className="p-2 space-y-2 overflow-y-scroll h-[12em] flex flex-wrap justify-between">
+                                {allStudentsList.map((student) => {
+                                    // Filter attendance for the specific subject
+                                    const subjectAttendance = student.attendance.filter(
+                                        (record) => record.subject === subjectId
+                                    );
+
+                                    const presentCount = subjectAttendance.filter(record => record.present).length;
+
+                                    // Calculate the total number of classes held for this subject
+                                    const totalClassesHeld = Math.max(
+                                        ...allStudentsList.map(s =>
+                                            s.attendance.filter(record => record.subject === subjectId).length
+                                        )
+                                    ) || 1; // Prevent division by zero
+
+                                    const percentage = Math.round((presentCount / totalClassesHeld) * 100);
+
+                                    return (
+                                        <li
+                                            key={student._id}
+                                            className="flex flex-col rounded-xl justify-center items-center h-[5em] border-2 w-1/3"
+                                        >
+                                            <span>{student.name}</span>
+                                            <span className="font-bold">{percentage}%</span>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
                         </div>
+
 
                         <div className="flex flex-col gap-3 w-1/2 justify-between">
                             <input
@@ -125,7 +160,8 @@ const AttendencePage = () => {
                                 onChange={(e) => setBatchName(e.target.value)}
                                 className="border-2 rounded-2xl w-full text-xl p-2"
                             />
-                            {formTouched && !batchName && <p className="text-red-500 text-sm ml-2">Batch is required.</p>}
+                            {formTouched && !batchName &&
+                                <p className="text-red-500 text-sm ml-2">Batch is required.</p>}
 
                             <input
                                 type="text"
@@ -134,7 +170,8 @@ const AttendencePage = () => {
                                 onChange={(e) => setSubjectName(e.target.value)}
                                 className="border-2 rounded-2xl w-full text-xl p-2"
                             />
-                            {formTouched && !subjectName && <p className="text-red-500 text-sm ml-2">Subject is required.</p>}
+                            {formTouched && !subjectName &&
+                                <p className="text-red-500 text-sm ml-2">Subject is required.</p>}
 
                             <input
                                 type="date"

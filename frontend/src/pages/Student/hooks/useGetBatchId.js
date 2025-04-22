@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "../../../utilities/axiosInstance.jsx";
 
-const useGetBatchId = (batchName, subjectName) => {
+const useGetBatchId = (batchName) => {
     const [batchId, setBatchId] = useState("");
-    const [subjectId, setSubjectId] = useState("");
 
     useEffect(() => {
         const fetchBatchId = async () => {
@@ -15,14 +14,6 @@ const useGetBatchId = (batchName, subjectName) => {
                 for (const batch of allBatches) {
                     if (batch?.normalized_name === normalized) {
                         setBatchId(batch?._id);
-
-                        for (const subs of batch?.subject) {
-                            if (subs?.name.toLowerCase() === subjectName.toLowerCase()) {
-                                setSubjectId(subs?._id);
-                                break;
-                            }
-                        }
-
                         break;
                     }
                 }
@@ -31,11 +22,11 @@ const useGetBatchId = (batchName, subjectName) => {
             }
         };
 
-        if (batchName && subjectName) fetchBatchId();
-    }, [batchName, subjectName]);
+        if (batchName) fetchBatchId();
+    }, [batchName]);
 
 
-    return { batchId, subjectId };
+    return { batchId };
 };
 
 export default useGetBatchId;
