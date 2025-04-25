@@ -213,6 +213,19 @@ app.post("/add-attendance/:id", async (req, res) => {
         res.status(500).json({ message: "Internal server error", error });
     }
 });
+app.put('/update-batch-with-student/:id', async (req, res) => {
+    try {
+        const { studentId } = req.body;
+        const batch = await Batch.findByIdAndUpdate(
+            req.params.id,
+            { $addToSet: { enrolledStudents: studentId } }, // avoids duplicates
+            { new: true }
+        );
+        res.status(200).json(batch);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
 
 

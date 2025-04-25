@@ -6,6 +6,7 @@ const All_Student_Schema = new Schema({
     admission_date: { type: Date, default: Date.now },
     grade: { type: Number, required: true },
     school_name: { type: String, required: true },
+
     contact_info: {
         emailIds: {
             mom: { type: String },
@@ -18,24 +19,25 @@ const All_Student_Schema = new Schema({
             student: { type: String, required: true }
         }
     },
-    batch_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Batch',
-    },
+
     attendance: [
         {
             date: { type: Date, required: true },
-            batch: { type: Schema.Types.ObjectId, required: true },
-            subject: { type: Schema.Types.ObjectId, required: true },
+            batch: { type: Schema.Types.ObjectId, ref: 'Batch', required: true },
+            subject: { type: Schema.Types.ObjectId, ref: 'Subject', required: true },
             present: { type: Boolean, default: false }
         }
     ],
-    fee_status: [
-        {
-            date: { type: Date, required: true },
-            paid: { type: Boolean, default: false }
-        }
-    ]
+
+    fee_status: {
+        amount: { type: Number, required: true },
+        feeStatus: [
+            {
+                date: { type: Date, required: true },
+                paid: { type: Boolean, default: false }
+            }
+        ]
+    }
 });
 
 module.exports = mongoose.model('StudentSchema', All_Student_Schema);

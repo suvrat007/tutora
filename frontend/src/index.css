@@ -2,3 +2,6 @@
 .react-calendar__tile--active {
     @apply bg-blue-500 text-white;
 }
+.add-student-inputbar {
+    @apply border border-gray-300 rounded-xl text-base p-3 w-full mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500;
+}

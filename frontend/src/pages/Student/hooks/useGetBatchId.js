@@ -3,6 +3,7 @@ import axiosInstance from "../../../utilities/axiosInstance.jsx";
 
 const useGetBatchId = (batchName) => {
     const [batchId, setBatchId] = useState("");
+    const [orgName, setOrgName] = useState("");
 
     useEffect(() => {
         const fetchBatchId = async () => {
@@ -14,6 +15,7 @@ const useGetBatchId = (batchName) => {
                 for (const batch of allBatches) {
                     if (batch?.normalized_name === normalized) {
                         setBatchId(batch?._id);
+                        setOrgName(batch?.name)
                         break;
                     }
                 }
@@ -26,7 +28,7 @@ const useGetBatchId = (batchName) => {
     }, [batchName]);
 
 
-    return { batchId };
+    return { batchId , orgName};
 };
 
 export default useGetBatchId;
