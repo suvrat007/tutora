@@ -109,7 +109,9 @@ const StudentData = () => {
                             <button className="border-2 rounded-lg p-2" onClick={fetchStudents}>Search</button>
                         </div>
 
-                        {/* Add Student Form */}
+                    </div>
+                    {/* Add Student Form */}
+                    <div className="border-2 flex flex-col justify-between absolute z-10 background-blur-500">
                         {showAddStd && (
                             <AddStudent
                                 batchName={batchName}
@@ -119,6 +121,7 @@ const StudentData = () => {
                             />
                         )}
                     </div>
+
                 </div>
             </div>
         </div>

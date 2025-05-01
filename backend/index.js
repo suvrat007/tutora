@@ -215,10 +215,10 @@ app.post("/add-attendance/:id", async (req, res) => {
 });
 app.put('/update-batch-with-student/:id', async (req, res) => {
     try {
-        const { studentId } = req.body;
+        const { newStudentId } = req.body;
         const batch = await Batch.findByIdAndUpdate(
             req.params.id,
-            { $addToSet: { enrolledStudents: studentId } }, // avoids duplicates
+            { $addToSet: { enrolledStudents: newStudentId } }, // avoids duplicates
             { new: true }
         );
         res.status(200).json(batch);

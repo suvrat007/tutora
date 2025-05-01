@@ -3,6 +3,7 @@ const Schema = mongoose.Schema;
 
 const All_Student_Schema = new Schema({
     name: { type: String, required: true },
+    address: { type: String, required: true },
     admission_date: { type: Date, default: Date.now },
     grade: { type: Number, required: true },
     school_name: { type: String, required: true },
