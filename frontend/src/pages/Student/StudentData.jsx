@@ -5,6 +5,7 @@ import axiosInstance from "../../utilities/axiosInstance.jsx";
 import { FiPlus } from "react-icons/fi";
 import useGetBatchId from "../Student/hooks/useGetBatchId.js";
 import AddStudent from "./AddStudent.jsx";
+import StdDataDisplay from "./StdDataDisplay.jsx";
 
 const StudentData = () => {
     const [showAddStd, setShowAddStd] = useState(false);
@@ -14,7 +15,7 @@ const StudentData = () => {
     const [formTouched, setFormTouched] = useState(false);
     const { batchId, orgName } = useGetBatchId(batchName);
     const [addedShow, setAddedShow] = useState(false);
-
+    const [seeStdDetails, setSeeStdDetails] = useState(null);
     const fetchStudents = async () => {
         setFormTouched(true);
         setError("");
@@ -47,7 +48,7 @@ const StudentData = () => {
     }, []);
 
 
-
+console.log(seeStdDetails);
 
     return (
         <div className="flex h-screen">
@@ -58,10 +59,11 @@ const StudentData = () => {
 
                     {/* Left side: Student Cards */}
                     <div className="flex flex-col w-[200em] border-2 rounded-2xl p-4 gap-2 h-full">
-                        <h2 className="text-lg font-semibold">
+                        <h2 className="text-lg font-semibold border-b pb-3 z-10 bg-white/60 backdrop-blur-md">
                             All Students in <span>{orgName || "Org Name"}</span>
                         </h2>
-                        <div className="flex flex-wrap gap-4 p-2 w-full overflow-y-scroll border-2 justify-center">
+
+                        <div className="flex flex-wrap gap-4 p-2 w-full overflow-y-scroll justify-center">
                             {addedShow && (
                                 <li
                                     onClick={() => setShowAddStd(prev => !prev)}
@@ -85,7 +87,11 @@ const StudentData = () => {
                                         className="w-20 h-20 rounded-full object-cover border"
                                     />
                                     <span className="text-gray-500 text-sm font-semibold">#{index + 1}</span>
-                                    <span className="text-lg font-medium">{student.name}</span>
+                                    <span className="text-lg font-medium"
+                                          onClick={()=> setSeeStdDetails({
+                                              stdDetails: student,
+                                              show: true,
+                                          })}>{student.name}</span>
                                     <span className="text-gray-600 text-sm">{student.school_name}</span>
                                 </li>
                             ))}
@@ -93,7 +99,7 @@ const StudentData = () => {
                     </div>
 
                     {/* Right side: Form */}
-                    <div className="border-2 w-full flex flex-col justify-between">
+                    <div className=" w-full flex flex-col justify-between gap-2 ">
                         {/* Batch Name Input */}
                         <div className="flex flex-col gap-3 p-4 border-2 rounded-2xl">
                             <h2 className="text-xl font-bold">Manage Students by Batch</h2>
@@ -109,15 +115,19 @@ const StudentData = () => {
                             <button className="border-2 rounded-lg p-2" onClick={fetchStudents}>Search</button>
                         </div>
 
+
+                        {seeStdDetails?.show && (
+                            <StdDataDisplay seeStdDetails={seeStdDetails} setSeeStdDetails={setSeeStdDetails}/>
+                        )}
+
                     </div>
                     {/* Add Student Form */}
-                    <div className="border-2 flex flex-col justify-between absolute z-10 background-blur-500">
+                        <div className="border-2 flex flex-col justify-between absolute z-10 background-blur-500">
                         {showAddStd && (
                             <AddStudent
-                                batchName={batchName}
                                 batchId={batchId}
                                 onStudentAdded={fetchStudents}
-                                setAddedShow={setShowAddStd}
+                                setShowAddStd={setAddedShow}
                             />
                         )}
                     </div>

@@ -2,7 +2,15 @@ import { useEffect, useState } from "react";
 import axiosInstance from "../../utilities/axiosInstance.jsx";
 import { AiOutlineClose } from "react-icons/ai";
 
-const AddStudentModal = ({ batchName, batchId, onStudentAdded, setAddedShow }) => {
+const AddStudent = ({
+                             batchId,
+                             setEdit,
+                             onStudentAdded,
+                             setShowAddStd,
+                             existingStudentData = null,
+                             isEditMode = false,
+                         }) =>
+{
     const [newStudent, setNewStudent] = useState({
         name: "",
         address: "",
@@ -18,10 +26,13 @@ const AddStudentModal = ({ batchName, batchId, onStudentAdded, setAddedShow }) =
 
     useEffect(() => {
         document.body.style.overflow = "hidden";
+        if (existingStudentData) {
+            setNewStudent(existingStudentData);
+        }
         return () => {
             document.body.style.overflow = "auto";
         };
-    }, []);
+    }, [existingStudentData]);
 
     const validateForm = () => {
         const errors = {};
@@ -40,24 +51,31 @@ const AddStudentModal = ({ batchName, batchId, onStudentAdded, setAddedShow }) =
         return Object.keys(errors).length === 0;
     };
 
-    const addStudent = async () => {
+    const handleSubmit = async () => {
         if (!validateForm()) return;
         try {
-            const studentData = { ...newStudent };
-            const response = await axiosInstance.post(`/add-new-student`, studentData);
-            const newStudentId = response.data.student._id;
-            console.log(newStudentId)
-            const answer=await axiosInstance.put(`/update-batch-with-student/${batchId}`, {
-                newStudentId
-            });
-            console.log(answer);
-            // Reset form and close modal
-            resetForm();
+            if (isEditMode && existingStudentData?._id) {
+                // EDIT MODE
+                const response = await axiosInstance.put(`/update-student/${existingStudentData._id}`, newStudent);
+                console.log("Student updated:", response.data);
+            } else {
+                // ADD MODE
+                const studentData = { ...newStudent };
+                const response = await axiosInstance.post(`/add-new-student`, studentData);
+                const newStudentId = response.data.student._id;
+                console.log(newStudentId);
+                const answer = await axiosInstance.put(`/update-batch-with-student/${batchId}`, {
+                    newStudentId,
+                });
+                console.log(answer);
+            }
+            // Reset form and close m
             onStudentAdded();
-            setAddedShow(false);
+            setEdit(false);
+            setShowAddStd(false);
         } catch (err) {
-            console.error("Error adding student:", err);
-            alert("Failed to add student.");
+            console.error("Error submitting student data:", err);
+            alert("Failed to submit student data.");
         }
     };
 
@@ -162,9 +180,13 @@ const AddStudentModal = ({ batchName, batchId, onStudentAdded, setAddedShow }) =
             <div className="relative w-[50em] bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in">
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b">
-                    <h2 className="text-lg font-semibold">Add New Student</h2>
+                    <h2 className="text-lg font-semibold">
+                        {isEditMode ? "Edit Student" : "Add New Student"}
+                    </h2>
                     <button
-                        onClick={() => setAddedShow(false)}
+                        onClick={() => {
+                            isEditMode ? setEdit(false) : setShowAddStd(false)
+                        }}
                         className="text-gray-500 hover:text-red-500 transition"
                     >
                         <AiOutlineClose size={24} />
@@ -207,10 +229,10 @@ const AddStudentModal = ({ batchName, batchId, onStudentAdded, setAddedShow }) =
                 {/* Footer */}
                 <div className="flex justify-end p-4 border-t">
                     <button
-                        onClick={addStudent}
+                        onClick={handleSubmit}
                         className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
                     >
-                        Add Student
+                        {isEditMode ? "Save Changes" : "Add Student"}
                     </button>
                 </div>
             </div>
@@ -218,4 +240,4 @@ const AddStudentModal = ({ batchName, batchId, onStudentAdded, setAddedShow }) =
     );
 };
 
-export default AddStudentModal;
+export default AddStudent;
