@@ -3,14 +3,13 @@ import axiosInstance from "../../utilities/axiosInstance.jsx";
 import { AiOutlineClose } from "react-icons/ai";
 
 const AddStudent = ({
-                             batchId,
-                             setEdit,
-                             onStudentAdded,
-                             setShowAddStd,
-                             existingStudentData = null,
-                             isEditMode = false,
-                         }) =>
-{
+                        batchId,
+                        setEdit,
+                        onStudentAdded,
+                        setShowAddStd,
+                        existingStudentData = null,
+                        isEditMode = false,
+                    }) => {
     const [newStudent, setNewStudent] = useState({
         name: "",
         address: "",
@@ -55,43 +54,22 @@ const AddStudent = ({
         if (!validateForm()) return;
         try {
             if (isEditMode && existingStudentData?._id) {
-                // EDIT MODE
                 const response = await axiosInstance.put(`/update-student/${existingStudentData._id}`, newStudent);
                 console.log("Student updated:", response.data);
             } else {
-                // ADD MODE
                 const studentData = { ...newStudent };
                 const response = await axiosInstance.post(`/add-new-student`, studentData);
                 const newStudentId = response.data.student._id;
-                console.log(newStudentId);
-                const answer = await axiosInstance.put(`/update-batch-with-student/${batchId}`, {
+                await axiosInstance.put(`/update-batch-with-student/${batchId}`, {
                     newStudentId,
                 });
-                console.log(answer);
             }
-            // Reset form and close m
             onStudentAdded();
-            setEdit(false);
-            setShowAddStd(false);
+            isEditMode ? (setEdit(false) , setShowAddStd()) : setShowAddStd(false);
         } catch (err) {
             console.error("Error submitting student data:", err);
             alert("Failed to submit student data.");
         }
-    };
-
-    const resetForm = () => {
-        setNewStudent({
-            name: "",
-            address: "",
-            grade: "",
-            school_name: "",
-            contact_info: {
-                emailIds: { student: "", mom: "", dad: "" },
-                phoneNumbers: { student: "", mom: "", dad: "" },
-            },
-            fee_status: { amount: "" },
-        });
-        setFormErrors({});
     };
 
     const handleChange = (key, value) => {
@@ -178,22 +156,19 @@ const AddStudent = ({
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
             <div className="relative w-[50em] bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in">
-                {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b">
                     <h2 className="text-lg font-semibold">
                         {isEditMode ? "Edit Student" : "Add New Student"}
                     </h2>
                     <button
                         onClick={() => {
-                            isEditMode ? setEdit(false) : setShowAddStd(false)
+                            isEditMode ? setEdit(false) : setShowAddStd(false);
                         }}
                         className="text-gray-500 hover:text-red-500 transition"
                     >
                         <AiOutlineClose size={24} />
                     </button>
                 </div>
-
-                {/* Body */}
                 <div className="p-4 space-y-6 max-h-[75vh] overflow-y-auto">
                     <div className="flex items-center justify-center p-4">
                         <img
@@ -202,7 +177,6 @@ const AddStudent = ({
                             className="w-40 rounded-full border"
                         />
                     </div>
-
                     {formSections.map((section) => (
                         <div key={section.title}>
                             <p className="font-semibold mb-2">{section.title}</p>
@@ -225,8 +199,6 @@ const AddStudent = ({
                         </div>
                     ))}
                 </div>
-
-                {/* Footer */}
                 <div className="flex justify-end p-4 border-t">
                     <button
                         onClick={handleSubmit}

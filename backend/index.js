@@ -73,7 +73,7 @@ app.delete("/delete-student/:id", async (req, res) => {
         const { id } = req.params;
         const response = await Student.deleteOne({ _id: id });
         console.log(response);
-        return res.status(200).json(response);
+        return res.status(200).json(response.data);
     }catch(error){
         console.error("Error deleting student:", error.message);
     }
