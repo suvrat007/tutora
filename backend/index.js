@@ -174,9 +174,14 @@ app.get("/get-all-students-of-batch/:id", async (req, res) => {
         return res.status(500).json({ message: "Internal Server Error" });
     }
 });
-app.post("/add-attendance/:id", async (req, res) => {
-    const { subject, batch, present, date } = req.body;
+app.put("/add-attendance/:id", async (req, res) => {
+    const { subject, batch, present } = req.body;
     const studentId = req.params.id;
+
+    // Set present IST time, and save as Date object
+    const now = new Date();
+    const istOffset = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
+    const istNow = new Date(now.getTime() + istOffset);
 
     try {
         const student = await Student.findById(studentId);
@@ -184,35 +189,51 @@ app.post("/add-attendance/:id", async (req, res) => {
             return res.status(404).json({ message: "Student not found" });
         }
 
-        // Check for duplicate attendance entry
-        const alreadyMarked = student.attendance.some((entry) =>
-            entry.subject === subject &&
-            entry.batch === batch &&
-            new Date(entry.date).toDateString() === new Date(date).toDateString()
-        );
+        // Check for existing attendance on the same IST calendar day
+        const istDateStr = istNow.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });  // YYYY-MM-DD
+
+        const alreadyMarked = student.attendance.some((entry) => {
+            const entryIST = new Date(entry.date).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+            return (
+                entry.subject === subject &&
+                entry.batch === batch &&
+                entryIST === istDateStr
+            );
+        });
 
         if (alreadyMarked) {
             return res.status(409).json({ message: "Attendance already marked for this date" });
         }
 
-        // If not marked, push attendance
         const updatedStudent = await Student.findByIdAndUpdate(
             studentId,
             {
                 $push: {
-                    attendance: { subject, batch, present, date }
+                    attendance: {
+                        subject,
+                        batch,
+                        present,
+                        date: istNow // full IST timestamp
+                    }
                 }
             },
             { new: true }
         );
 
-        res.status(200).json({ message: "Attendance added successfully", student: updatedStudent });
+        res.status(200).json({
+            message: "Attendance added successfully",
+            student: updatedStudent
+        });
 
     } catch (error) {
         console.error("Error adding attendance:", error);
         res.status(500).json({ message: "Internal server error", error });
     }
 });
+
+
+
+
 app.put('/update-batch-with-student/:id', async (req, res) => {
     try {
         const { newStudentId } = req.body;
