@@ -175,23 +175,54 @@ app.get("/get-all-students-of-batch/:id", async (req, res) => {
     }
 });
 app.put("/add-attendance/:id", async (req, res) => {
-    const { subject, batch, present } = req.body;
+    const { subject, batch, present, date } = req.body;
     const studentId = req.params.id;
 
-    // Set present IST time, and save as Date object
-    const now = new Date();
-    const istOffset = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
-    const istNow = new Date(now.getTime() + istOffset);
-
     try {
+        // Validate input
+        if (!subject || !batch || present === undefined || !date) {
+            return res.status(400).json({ message: "Missing required fields: subject, batch, present, or date" });
+        }
+
+        // Validate date format (YYYY-MM-DD)
+        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        if (!dateRegex.test(date)) {
+            return res.status(400).json({ message: "Invalid date format. Use YYYY-MM-DD" });
+        }
+
+        // Parse the provided date
+        const inputDate = new Date(date);
+        if (isNaN(inputDate.getTime())) {
+            return res.status(400).json({ message: "Invalid date value" });
+        }
+
+        // Get current IST time
+        const now = new Date();
+        const istOffset = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
+        const istNow = new Date(now.getTime() + istOffset);
+
+        // Combine input date with current IST time
+        const istDateTime = new Date(
+            inputDate.getFullYear(),
+            inputDate.getMonth(),
+            inputDate.getDate(),
+            istNow.getHours(),
+            istNow.getMinutes(),
+            istNow.getSeconds(),
+            istNow.getMilliseconds()
+        );
+
+        // Convert to UTC for storage (MongoDB stores dates in UTC)
+        const utcDateTime = new Date(istDateTime.getTime() - istOffset);
+
+        // Find student
         const student = await Student.findById(studentId);
         if (!student) {
             return res.status(404).json({ message: "Student not found" });
         }
 
         // Check for existing attendance on the same IST calendar day
-        const istDateStr = istNow.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });  // YYYY-MM-DD
-
+        const istDateStr = inputDate.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }); // YYYY-MM-DD
         const alreadyMarked = student.attendance.some((entry) => {
             const entryIST = new Date(entry.date).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
             return (
@@ -205,6 +236,7 @@ app.put("/add-attendance/:id", async (req, res) => {
             return res.status(409).json({ message: "Attendance already marked for this date" });
         }
 
+        // Update student with new attendance
         const updatedStudent = await Student.findByIdAndUpdate(
             studentId,
             {
@@ -213,7 +245,7 @@ app.put("/add-attendance/:id", async (req, res) => {
                         subject,
                         batch,
                         present,
-                        date: istNow // full IST timestamp
+                        date: utcDateTime // Store in UTC
                     }
                 }
             },
@@ -227,7 +259,7 @@ app.put("/add-attendance/:id", async (req, res) => {
 
     } catch (error) {
         console.error("Error adding attendance:", error);
-        res.status(500).json({ message: "Internal server error", error });
+        res.status(500).json({ message: "Internal server error", error: error.message });
     }
 });
 

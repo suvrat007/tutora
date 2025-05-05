@@ -1,45 +1,33 @@
 import axiosInstance from "../../../utilities/axiosInstance.jsx";
 
-const editStudentAttendance = async (presentStudentIds, subjectId, batchId, date) => {
+const editStudentAttendance = async (presentStudents, subjectId, batchId, date) => {
     const errors = [];
 
-    let formattedDateTime;  // Move declaration here so it's accessible below
-
+    // Validate and format the date (keep only the date part)
+    let formattedDate;
     try {
-        // Parse the date provided (keep only the date part)
         const inputDate = new Date(date);
         if (isNaN(inputDate.getTime())) {
             throw new Error("Invalid date format");
         }
-
-        // Get current time (local)
-        const now = new Date();
-
-        // Set current time (hours, minutes, seconds, milliseconds) into inputDate
-        inputDate.setHours(
-            now.getHours(),
-            now.getMinutes(),
-            now.getSeconds(),
-            now.getMilliseconds()
-        );
-
-        // Convert to ISO string
-        formattedDateTime = inputDate.toLocaleString('sv-SE').replace(' ', 'T');
-
+        formattedDate = inputDate.toISOString().split("T")[0]; // e.g., "2025-04-29"
+        console.log("Submitting attendance for date:", formattedDate);
     } catch (error) {
         console.error("❌ Invalid date provided:", error.message);
         return [{ error: "Invalid date format provided" }];
     }
 
-    // Process each student
-    for (const studentId of presentStudentIds) {
+    for (const studentId of presentStudents) {
         try {
-            const response = await axiosInstance.put(`/add-attendance/${studentId}`, {
+            const payload = {
                 subject: subjectId,
                 batch: batchId,
                 present: true,
-                date: formattedDateTime,  // now correctly available here
-            });
+                date: formattedDate, // e.g., "2025-04-29"
+            };
+            console.log(`Submitting attendance for student ${studentId}`, payload);
+
+            const response = await axiosInstance.put(`/add-attendance/${studentId}`, payload);
             console.log(`✅ Attendance added for student ${studentId}`, response.data);
         } catch (error) {
             console.error(

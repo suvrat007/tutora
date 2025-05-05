@@ -20,7 +20,6 @@ const AttendencePage = () => {
     const { batchId, subjectId } = useGetBatchId(batchName, subjectName);
 
     useEffect(() => {
-        // Fetch initial data if batchId is available (even without subjectId or date)
         if (batchId) {
             fetchAllStudents();
         }
@@ -42,7 +41,6 @@ const AttendencePage = () => {
         setError("");
         setIsLoading(true);
 
-        // Only validate subjectName and date when submitting attendance, not for initial fetch
         if (!batchId) {
             setError("Batch ID is required to fetch students.");
             setIsLoading(false);
@@ -50,31 +48,42 @@ const AttendencePage = () => {
         }
 
         try {
-            // console.log("Fetching students for batchId:", batchId);
             const response = await axiosInstance.get(`/get-all-students-of-batch/${batchId}`);
             const students = response.data || [];
             console.log("API response:", response.data);
 
-            const formattedDate = date ? new Date(date).toISOString().slice(0, 10) : null;
+            const formattedDate = date ? new Date(date).toISOString().split("T")[0] : null;
             const alreadyMarkedPresent = [];
             const alreadyMarkedIds = new Set();
 
             for (const student of students) {
                 const attendances = student?.attendance || [];
-                let time
                 if (formattedDate && subjectId) {
+                    let time;
                     const isPresent = attendances.some((record) => {
-                        const isoString = record.date;
-                        const dateObj = new Date(isoString);
+                        if (!record.date) {
+                            console.warn(`Invalid date for student ${student._id}:`, record);
+                            return false;
+                        }
+                        const dateObj = new Date(record.date);
+                        if (isNaN(dateObj.getTime())) {
+                            console.warn(`Invalid date format for student ${student._id}:`, record.date);
+                            return false;
+                        }
                         const datePart = dateObj.toISOString().split("T")[0];
-                        const timePart = dateObj.toISOString().split("T")[1].split("Z")[0];
-                        time=timePart
-                        return datePart === formattedDate && record.subject === subjectId ;
-
+                        time = dateObj.toLocaleTimeString('en-IN', {
+                            timeZone: 'Asia/Kolkata',
+                            hour12: false,
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit'
+                        }); // e.g., "14:30:00"
+                        console.log(`Checking: date=${datePart}, time=${time}, subject=${record.subject}`);
+                        return datePart === formattedDate && record.subject === subjectId;
                     });
                     if (isPresent) {
-                        console.log("student:", student,"time:" , time)
-                        alreadyMarkedPresent.push({student: student,time: time});
+                        console.log("Student present:", student.name, "Time:", time);
+                        alreadyMarkedPresent.push({ student, time });
                         alreadyMarkedIds.add(student._id);
                     }
                 }
@@ -87,7 +96,8 @@ const AttendencePage = () => {
             setPresentStudentIds(new Set());
         } catch (err) {
             console.error("Error fetching students:", err.response?.data || err.message);
-            setError("Failed to fetch students. Please check the batch name or try again.");
+            setError("Failed to fetch students. Please try again.");
+            setAlreadyPresentStudents([]);
         } finally {
             setIsLoading(false);
         }
@@ -145,7 +155,7 @@ const AttendencePage = () => {
         setIsLoading(false);
     };
 
-    console.log("already added students" , alreadyPresentStudents)
+    console.log("Already present students:", alreadyPresentStudents);
 
     return (
         <div className="flex h-screen">
@@ -281,8 +291,8 @@ const AttendencePage = () => {
                                                 onClick={() => togglePresent(student._id)}
                                                 className={`w-8 h-8 border rounded-full flex items-center justify-center transition ${
                                                     isPresent
-                                                    ? "bg-green-500 text-white"
-                                                    : "bg-white text-gray-600"
+                                                        ? "bg-green-500 text-white"
+                                                        : "bg-white text-gray-600"
                                                 }`}
                                                 disabled={isLoading}
                                             >
@@ -300,7 +310,7 @@ const AttendencePage = () => {
                                 </h2>
                             </div>
                             <div className="flex-1 overflow-y-auto min-h-0 p-4 space-y-3">
-                                {alreadyPresentStudents.length === 0 && (
+                                {(!alreadyPresentStudents || alreadyPresentStudents.length === 0) && (
                                     <p className="text-gray-500">
                                         No students marked present for this date.
                                     </p>

@@ -6,6 +6,7 @@ import {createBrowserRouter, Outlet, RouterProvider} from "react-router-dom";
 import Home from "./pages/Dashboard/Home.jsx";
 import AttendencePage from "./pages/Attendence/AttendencePage.jsx";
 import StudentData from "./pages/Student/StudentData.jsx";
+import BatchPage from "./pages/BatchPage/BatchPage.jsx";
 
 const appRouter = createBrowserRouter([
     {
@@ -17,6 +18,9 @@ const appRouter = createBrowserRouter([
     },{
         path: '/student-data',
         element: <StudentData/>
+    },{
+        path: '/batches',
+        element: <BatchPage/>
     }
     ]
 )
