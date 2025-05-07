@@ -262,10 +262,6 @@ app.put("/add-attendance/:id", async (req, res) => {
         res.status(500).json({ message: "Internal server error", error: error.message });
     }
 });
-
-
-
-
 app.put('/update-batch-with-student/:id', async (req, res) => {
     try {
         const { newStudentId } = req.body;

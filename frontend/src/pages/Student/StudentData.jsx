@@ -3,7 +3,7 @@ import Navbar from "../Navbar/Navbar.jsx";
 import { useState, useEffect } from "react";
 import axiosInstance from "../../utilities/axiosInstance.jsx";
 import { FiPlus } from "react-icons/fi";
-import useGetBatchId from "../Student/hooks/useGetBatchId.js";
+import useGetBatchId from "./funtions/useGetBatchId.js";
 import AddStudent from "./AddStudent.jsx";
 import StdDataDisplay from "./StdDataDisplay.jsx";
 import {AiOutlineClose} from "react-icons/ai";

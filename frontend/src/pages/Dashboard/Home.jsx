@@ -18,14 +18,10 @@ const Home = () => {
     }, []);
     // console.log(allClasses);
     return (
-        <div className="flex">
-            <div className="">
-                <SideBar/>
-            </div>
-
-            <div className={'w-full'}>
-
-                <Navbar />
+        <div className="flex h-screen">
+            <SideBar/>
+            <div className="flex flex-col w-full overflow-hidden">
+                <Navbar/>
 
                 <div className={'flex flex-col flex-wrap  gap-2 mx-2'}>
                     <div className={'w-full flex gap-2'}>
