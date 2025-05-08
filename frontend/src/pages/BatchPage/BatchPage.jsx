@@ -4,10 +4,13 @@ import { useEffect, useState } from "react";
 import axiosInstance from "../../utilities/axiosInstance.jsx";
 import CreateEditBatch from "./CreateEditBatch.jsx";
 import ViewBatchDetails from "./ViewBatchDetails.jsx";
+import ConfirmationModal from "./ConfirmationModal.jsx";
 
 const BatchPage = () => {
     const [batches, setBatches] = useState([]);
+    // const [deleteStudents, setDeleteStudents] = useState(false);
     const [createBatches, setCreateBatches] = useState(false);
+    const [batchToDelete, setBatchToDelete] = useState(null);
     const [rerender, setRerender] = useState(false);
     const [viewDetails, setViewDetails] = useState({
         display: false,
@@ -27,17 +30,14 @@ const BatchPage = () => {
         getAllBatches();
     }, [rerender]);
 
-    const handleDelete = async (id) => {
-        const confirmDelete = window.confirm(
-            "This will delete this batch completely from the database. Do you want to continue?"
-        );
-        if (!confirmDelete) return;
-
+    const handleDelete = async (id, shouldDeleteStudents) => {
+        setBatchToDelete(null); // close modal
         setIsLoading(true);
         try {
             const toBeDeletedBatch = batches.find(batch => batch._id === id);
 
-            if (toBeDeletedBatch && toBeDeletedBatch.enrolledStudents.length > 0) {
+            // Delete students if user chose 'Yes'
+            if (shouldDeleteStudents && toBeDeletedBatch && toBeDeletedBatch.enrolledStudents.length > 0) {
                 await Promise.all(
                     toBeDeletedBatch.enrolledStudents.map(std =>
                         axiosInstance.delete(`/delete-student/${std}`)
@@ -59,6 +59,7 @@ const BatchPage = () => {
             setIsLoading(false);
         }
     };
+
 
     const handleViewDetails = (batch) => {
         setViewDetails({
@@ -147,12 +148,13 @@ const BatchPage = () => {
                                                     View Details
                                                 </button>
                                                 <button
-                                                    onClick={() => handleDelete(batch._id)}
+                                                    onClick={() => setBatchToDelete(batch._id)}
                                                     disabled={isLoading}
                                                     className={`py-2 px-4 rounded-lg cursor-pointer border-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition-all ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                                                 >
                                                     Delete Batch
                                                 </button>
+
                                             </div>
                                         </div>
                                     </div>
@@ -179,6 +181,14 @@ const BatchPage = () => {
                         />
                     </div>
                 </div>
+            )}
+
+            {/* Create Batch Modal */}
+            {batchToDelete && (
+                <ConfirmationModal
+                    closeModal={() => setBatchToDelete(null)}
+                    onClose={(shouldDeleteStudents) => handleDelete(batchToDelete, shouldDeleteStudents)}
+                />
             )}
 
 

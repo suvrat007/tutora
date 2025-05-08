@@ -20,10 +20,13 @@ const BatchSchema = new Schema({
                     }
                 }
             ],
-            heldOn:[
+            class_status:[
                 {
                     date: { type: Date, required: true },
-                    topic: { type: String },
+                    sessions: [{
+                        held:{type:Boolean, default: false, required: true},
+                        status:{type:String, required: true},
+                    }],
                     teacher_id: {
                         type: Schema.Types.ObjectId,
                         ref: 'Teacher'

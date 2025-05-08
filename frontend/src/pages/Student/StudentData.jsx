@@ -14,10 +14,11 @@ const StudentData = () => {
     const [students, setStudents] = useState([]);
     const [error, setError] = useState("");
     const [formTouched, setFormTouched] = useState(false);
-    const { batchId, orgName } = useGetBatchId(batchName);
     const [addedShow, setAddedShow] = useState(false);
     const [seeStdDetails, setSeeStdDetails] = useState(null);
-    const [rerender, setRerender] = useState(false); // Added for rerendering
+    const [rerender, setRerender] = useState(false);
+
+    const { batchId, orgName } = useGetBatchId(batchName);
 
     const fetchStudents = async () => {
         setFormTouched(true);
@@ -86,17 +87,16 @@ const StudentData = () => {
                             All Students in <span>{orgName || "Org Name"}</span>
                         </h2>
                         <div className="flex flex-wrap gap-4 p-2 w-full border-2 h-full overflow-y-scroll justify-center">
-                            {addedShow && (
-                                <li
-                                    onClick={() => setShowAddStd(prev => !prev)}
-                                    className="w-[12em] h-[15em] cursor-pointer bg-white border border-dashed border-gray-400
+                            <li
+                                onClick={() => setShowAddStd(prev => !prev)}
+                                className="w-[12em] h-[15em] cursor-pointer bg-white border border-dashed border-gray-400
                                     shadow-md rounded-2xl p-4 flex flex-col items-center space-y-2 hover:shadow-xl
                                     transition-shadow duration-300 justify-center"
-                                >
-                                    <FiPlus className="text-3xl"/>
-                                    <span className="text-base font-medium">Add Student</span>
-                                </li>
-                            )}
+                            >
+                                <FiPlus className="text-3xl"/>
+                                <span className="text-base font-medium">Add Student</span>
+                            </li>
+
                             {students.map((student, index) => (
                                 <div
                                     key={student._id} // Use unique _id for key
@@ -115,7 +115,7 @@ const StudentData = () => {
                                         }}
                                         className="absolute top-2 right-2 text-gray-500 hover:text-red-500 transition"
                                     >
-                                        <AiOutlineClose size={20} />
+                                        <AiOutlineClose size={20}/>
                                     </button>
                                     <div className="flex flex-col items-center text-center space-y-2 mt-4">
                                         <img

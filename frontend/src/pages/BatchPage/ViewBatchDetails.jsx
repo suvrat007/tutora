@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import fetchStudents from "../Student/funtions/HelperFunctions.js";
 import { calculateFees } from "./Functions/useFetchAllBatch.jsx";
 import CreateEditBatch from "./CreateEditBatch.jsx";
-import CreateBatch from "./CreateEditBatch.jsx";
 
 const ViewBatchDetails = ({ viewDetails, setViewDetails, setRerender }) => {
     const [allStudents, setAllStudents] = useState([]);
@@ -61,7 +60,7 @@ const ViewBatchDetails = ({ viewDetails, setViewDetails, setRerender }) => {
                 <div className="flex flex-col lg:flex-row gap-6 p-6 h-80">
                     {/* Batch Details */}
                     <div className="flex-1 border rounded-xl shadow-sm bg-white">
-                        <div className="sticky top-0 bg-gray-50 p-4 border-b">
+                        <div className="sticky top-0 bg-gray-50 p-4 border-b rounded-t-xl">
                             <h2 className="text-lg font-semibold text-gray-800">Batch Details</h2>
                         </div>
                         <div className="space-y-3 p-4 text-sm text-gray-600">
