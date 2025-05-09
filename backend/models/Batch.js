@@ -15,7 +15,7 @@ const BatchSchema = new Schema({
                     time: { type: String, required: true },
                     days: {
                         type: [String],
-                        enum: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',       'Sunday'],
+                        enum: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
                         required: true
                     }
                 }
