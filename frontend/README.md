@@ -1,12 +1,19 @@
-# React + Vite
+# Tutora
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A CRM (Consumer Relation Model) especially curated for small scale private tuition teacher's student logs like attendance, fees, contact information etc.
 
-Currently, two official plugins are available:
+This platform will provide every educator to build a website that has their institute's branding on it promoting their feeling of self pride and support their dream of have a website of their own.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Due to the complexity of the project it's divided into phases
+    
+- PHASE-1 : 
+  - Allows user to establish their own website.
+  - Contains basic CRUD features for Batches and Students.
+  - Allows user to manage and access each student's attendance.
+  - Manages any sort of reminder the user want to set for the future, etc.
+  
+- PHASE-2 : (as per present plan)
+    - Will provide user the facility to manage and keep track of fees submitted by students.
+    - Students Portal 
 
-## Expanding the ESLint configuration
 
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
