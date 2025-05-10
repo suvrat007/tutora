@@ -25,7 +25,10 @@ const BatchSchema = new Schema({
                     date: { type: Date, required: true },
                     sessions: [{
                         held:{type:Boolean, default: false, required: true},
-                        status:{type:String, required: true},
+                        status:[{
+                            updates: {type:String, required: true},
+                            forDate:{type: Date,required: true}
+                        }],
                     }],
                     teacher_id: {
                         type: Schema.Types.ObjectId,

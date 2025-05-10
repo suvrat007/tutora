@@ -174,6 +174,17 @@ app.get("/get-all-students-of-batch/:id", async (req, res) => {
         return res.status(500).json({ message: "Internal Server Error" });
     }
 });
+app.get("/get-batch/:id", async (req, res) => {
+    const id = req.params.id;
+    try {
+        const batch = await Batch.findById(id);
+        if (!batch) return res.status(404).json({ message: `${name} not found` });
+        return res.status(200).json(batch);
+    } catch (error) {
+        console.error("Error fetching batch:", error);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+});
 app.put("/add-attendance/:id", async (req, res) => {
     const { subject, batch, present, date } = req.body;
     const studentId = req.params.id;
