@@ -58,7 +58,7 @@ const Reminders = () => {
     };
 
     return (
-        <div className="rounded-2xl w-full sm:w-[45%] flex flex-col border-2 border-gray-300 bg-white shadow-md">
+        <div className="rounded-2xl w-[50%] flex flex-col border-2 border-gray-300 bg-white shadow-md">
             {/* Header */}
             <div className="px-4 py-3 border-b border-gray-200">
                 <h1 className="text-lg font-semibold text-gray-700">Reminders for Today</h1>

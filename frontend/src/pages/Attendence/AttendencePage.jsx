@@ -46,7 +46,6 @@ const AttendencePage = () => {
             setIsLoading(false);
             return;
         }
-
         try {
             const response = await axiosInstance.get(`/get-all-students-of-batch/${batchId}`);
             const students = response.data || [];
@@ -121,6 +120,7 @@ const AttendencePage = () => {
         }
 
         try {
+
             const errors = await editStudentAttendance(
                 Array.from(presentStudentIds),
                 subjectId,

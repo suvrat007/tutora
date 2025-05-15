@@ -30,7 +30,7 @@ const Home = () => {
                     </div>
 
 
-                    <div className={' flex w-full gap-2'}>
+                    <div className={' flex justify-between w-full gap-2'}>
                         {/*Status updates*/}
                         <ClassStatusUpdates/>
 

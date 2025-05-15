@@ -76,7 +76,7 @@ const ClassStatusUpdates = () => {
             return;
         }
 
-        if (!forDate) {
+        if (status[index] && !forDate) {
             setAttendanceErrors((prev) => ({
                 ...prev,
                 [index]: "Please select a date for the reminder",
@@ -84,7 +84,7 @@ const ClassStatusUpdates = () => {
             return;
         }
 
-        if (forDate < today) {
+        if (status[index] && forDate < today) {
             setAttendanceErrors((prev) => ({
                 ...prev,
                 [index]: "Reminder date cannot be in the past",
@@ -114,7 +114,7 @@ const ClassStatusUpdates = () => {
                         held: status[index],
                         status: [{
                             updates: reminderText,
-                            forDate: new Date(forDate).toISOString(),
+                            ...(status[index] && { forDate: new Date(forDate).toISOString() }),
                         }],
                     };
 
@@ -160,7 +160,7 @@ const ClassStatusUpdates = () => {
     }, []);
 
     return (
-        <div className="rounded-2xl shadow-xl p-4 border-2 max-h-[75vh] flex flex-col mx-auto w-full max-w-4xl">
+        <div className="rounded-2xl shadow-xl p-4 border-2 h-[20em] flex flex-col w-[50%]">
             <h1 className="text-xl font-semibold mb-4">
                 Set Today's Class Status & Reminder
             </h1>
@@ -197,7 +197,7 @@ const ClassStatusUpdates = () => {
                                         className="space-y-3 mt-2"
                                     >
                                         <div className="flex gap-2">
-                                            {["Held", "Cancelled"].map((label, i) => {
+                                            {["Held", "Cancelled"].map((label) => {
                                                 const isHeld = label === "Held";
                                                 const isActive = status[index] === isHeld;
                                                 const isDisabled =
@@ -252,19 +252,23 @@ const ClassStatusUpdates = () => {
                                                     className="w-full border p-2 rounded-lg text-sm"
                                                     disabled={isSubmitted[index]}
                                                 />
-                                                <input
-                                                    type="date"
-                                                    value={reminderDate[index] || ""}
-                                                    onChange={(e) =>
-                                                        setReminderDate((prev) => ({
-                                                            ...prev,
-                                                            [index]: e.target.value,
-                                                        }))
-                                                    }
-                                                    min={today}
-                                                    className="w-full border p-2 rounded-lg text-sm"
-                                                    disabled={isSubmitted[index]}
-                                                />
+
+                                                {status[index] && (
+                                                    <input
+                                                        type="date"
+                                                        value={reminderDate[index] || ""}
+                                                        onChange={(e) =>
+                                                            setReminderDate((prev) => ({
+                                                                ...prev,
+                                                                [index]: e.target.value,
+                                                            }))
+                                                        }
+                                                        min={today}
+                                                        className="w-full border p-2 rounded-lg text-sm"
+                                                        disabled={isSubmitted[index]}
+                                                    />
+                                                )}
+
                                                 <button
                                                     onClick={() => handleReminder(val.id, val.subjectId, index)}
                                                     className={`px-3 py-1 rounded-lg bg-green-500 text-white hover:bg-green-600 w-full text-sm ${
