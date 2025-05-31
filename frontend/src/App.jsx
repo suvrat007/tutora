@@ -7,6 +7,7 @@ import Home from "./pages/Dashboard/Home.jsx";
 import AttendencePage from "./pages/Attendence/AttendencePage.jsx";
 import StudentData from "./pages/Student/StudentData.jsx";
 import BatchPage from "./pages/BatchPage/BatchPage.jsx";
+import CompleteInformationDisplay from './pages/InfoCenter/CompleteInformationDisplay.jsx';
 
 const appRouter = createBrowserRouter([
     {
@@ -21,6 +22,9 @@ const appRouter = createBrowserRouter([
     },{
         path: '/batches',
         element: <BatchPage/>
+    },{
+        path: '/info-center',
+        element: <CompleteInformationDisplay/>
     }
     ]
 )
