@@ -1,11 +1,11 @@
 import { NavLink } from "react-router-dom";
-import { Home, CalendarCheck, Users, Layers, Info } from "lucide-react"; // Optional icons
+import { Home, CalendarCheck, Users, Layers, Info } from "lucide-react";
 
 const Sidebar = () => {
   const linkStyle =
-    "flex items-center gap-3 p-3 rounded-lg text-base font-medium transition-colors hover:bg-gray-200";
+    "flex items-center gap-3 p-3 rounded-lg text-base font-medium transition-colors hover:bg-blue-100";
 
-  const activeStyle = "bg-gray-300 font-semibold";
+  const activeStyle = "bg-blue-500 text-white font-semibold";
 
   return (
     <div className="w-[17.5em] border-r-2 bg-white shadow-sm flex flex-col h-screen py-10 px-6">

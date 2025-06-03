@@ -11,8 +11,8 @@ import CompleteInformationDisplay from './pages/InfoCenter/CompleteInformationDi
 import LandingPage from './pages/LandingPage/LandingPage.jsx';
 
 const appRouter = createBrowserRouter([
-    {path: '/', element: <LandingPage /> },
-    { path: '/dashboard', element: <Home /> },
+    { path: '/LandingPage', element: <LandingPage /> },
+    { path: '/', element: <Home /> },
     { path: '/attendence', element: <AttendencePage /> },
     { path: '/student-data', element: <StudentData /> },
     { path: '/batches', element: <BatchPage /> },
@@ -21,6 +21,7 @@ const appRouter = createBrowserRouter([
 ])
 
 function App() {
+
   return (
     // container with scroll and full viewport height
     <div style={{ height: '100vh', overflowY: 'auto' }}>
