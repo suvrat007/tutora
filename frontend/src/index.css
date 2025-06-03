@@ -1,10 +1,7 @@
-/* ✅ Google Fonts must come first */
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
 
-/* ✅ Tailwind import comes next */
 @import "tailwindcss";
 
-/* ✅ Set global font to Outfit */
 body {
   font-family: 'Outfit', sans-serif;
 }
@@ -104,4 +101,13 @@ body {
 .react-calendar__tile:disabled {
   color: #d1d5db; /* gray-300 */
   cursor: not-allowed;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.animate-blink {
+  animation: blink 1s step-end infinite;
 }
