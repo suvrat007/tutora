@@ -11,7 +11,7 @@ import CompleteInformationDisplay from './pages/InfoCenter/CompleteInformationDi
 import LandingPage from './pages/LandingPage/LandingPage.jsx';
 
 const appRouter = createBrowserRouter([
-    { path: '/LandingPage', element: <LandingPage /> },
+    { path: '/login', element: <LandingPage /> },
     { path: '/', element: <Home /> },
     { path: '/attendence', element: <AttendencePage /> },
     { path: '/student-data', element: <StudentData /> },
