@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Home, CalendarCheck, Users, Layers, Info } from "lucide-react";
+import { Home, CalendarCheck, Users, Layers, Info, LogIn } from "lucide-react";
 
 const Sidebar = () => {
   const linkStyle =
@@ -50,6 +50,14 @@ const Sidebar = () => {
         >
           <Info className="w-5 h-5" />
           Info Center
+        </NavLink>
+
+        <NavLink
+          to="/login"
+          className={({ isActive }) => `${linkStyle} ${isActive ? activeStyle : ""}`}
+        >
+          <LogIn className="w-5 h-5" />
+          Login
         </NavLink>
       </nav>
     </div>

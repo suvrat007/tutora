@@ -64,6 +64,16 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-blue-100 px-4">
       <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 bg-white shadow-2xl rounded-2xl overflow-hidden">
+
+         {/* Right: Decorative Image */}
+        <div className="flex w-full items-center justify-center">
+          <img
+            src="https://images.unsplash.com/photo-1564609116494-380be7238d7d?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            alt="Books"
+            className="rounded-2xl shadow-md w-[90%] max-h-[550px] object-cover"
+          />
+        </div>
+
         {/* Left: Login Form */}
         <div className="p-10">
           <TypingHeader />
@@ -118,14 +128,7 @@ const LandingPage = () => {
           </div>
         </div>
 
-        {/* Right: Decorative Image */}
-        <div className="flex w-full items-center justify-center">
-          <img
-            src="https://images.unsplash.com/photo-1564609116494-380be7238d7d?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            alt="Books"
-            className="rounded-2xl shadow-md w-[90%] max-h-[550px] object-cover"
-          />
-        </div>
+       
 
       </div>
     </div>
