@@ -62,7 +62,8 @@ const TypingHeader = () => {
 
 const LandingPage = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-blue-100 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-100 via-indigo-100 to-purple-100 px-4">
+
       <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 bg-white shadow-2xl rounded-2xl overflow-hidden">
 
          {/* Right: Decorative Image */}
