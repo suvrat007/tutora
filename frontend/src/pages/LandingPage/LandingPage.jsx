@@ -67,7 +67,8 @@ const LandingPage = () => {
       <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 bg-white shadow-2xl rounded-2xl overflow-hidden">
 
          {/* Right: Decorative Image */}
-        <div className="flex w-full items-center justify-center">
+        <div className="hidden md:flex w-full items-center justify-center">
+
           <img
             src="https://images.unsplash.com/photo-1564609116494-380be7238d7d?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
             alt="Books"
@@ -79,8 +80,7 @@ const LandingPage = () => {
         <div className="p-10">
           <TypingHeader />
           <p className="text-gray-600 mt-2 mb-6">
-            A brand new day is here. It's your day to shape.
-            Sign in and get started on your projects.
+            Let's Assign, Track and Analyze your students' performance with ease.
           </p>
 
           <form className="space-y-4">
