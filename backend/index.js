@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const QRCode = require('qrcode');
 
 
 // PERCENT ENCODING FOR PASSWORD
@@ -186,20 +187,20 @@ app.get("/get-batch/:id", async (req, res) => {
     }
 });
 app.put("/add-attendance/:id", async (req, res) => {
-    const { subject, batch, present, date } = req.body;
+    const { subject, batch, present, date} = req.body;
     const studentId = req.params.id;
 
     try {
         // Validate input
-        if (!subject || !batch || present === undefined || !date) {
+        if (!subject || !batch || present === undefined) {
             return res.status(400).json({ message: "Missing required fields: subject, batch, present, or date" });
         }
 
-        // Validate date format (YYYY-MM-DD)
-        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-        if (!dateRegex.test(date)) {
-            return res.status(400).json({ message: "Invalid date format. Use YYYY-MM-DD" });
-        }
+        // // Validate date format (YYYY-MM-DD)
+        // const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        // if (!dateRegex.test(date)) {
+        //     return res.status(400).json({ message: "Invalid date format. Use YYYY-MM-DD" });
+        // }
 
         // Parse the provided date
         const inputDate = new Date(date);
@@ -288,6 +289,23 @@ app.put('/update-batch-with-student/:id', async (req, res) => {
 });
 
 
+app.post('/generate-qr-code', async (req, res) => {
+    // const { batchId,
+    //         subjectId,
+    //         date} = req.body;
+    const data = JSON.stringify(req.body);
+
+    if (!data) {
+        return res.status(400).json({ error: 'Missing data to encode' });
+    }
+
+    try {
+        const qrCodeDataURL = await QRCode.toDataURL(data);
+        res.json({ qrCodeDataURL });
+    } catch (err) {
+        res.status(500).json({ error: 'QR code generation failed' });
+    }
+});
 
 
 

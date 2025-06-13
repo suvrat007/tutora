@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import axiosInstance from "../../utilities/axiosInstance.jsx";
 import useGetBatchId from "./hooks/useGetBatchId.js";
 import editStudentAttendance from "./hooks/editStudentAttendence.jsx";
+import QRCodeGenerator from "./QRGenerator.jsx";
 
 const AttendencePage = () => {
     const [batchName, setBatchName] = useState("");
@@ -163,6 +164,8 @@ const AttendencePage = () => {
             <div className="flex flex-col w-full overflow-hidden">
                 <Navbar />
                 <div className="flex flex-col gap-4 m-2 overflow-hidden flex-1 items-center">
+                    {/*<QRCodeGenerator batchId={batchId} subId={subjectId} date={date} />*/}
+
                     <div className="flex gap-4 w-[75%] p-4 border-2 rounded-2xl">
                         <div className="flex flex-col border-2 rounded-2xl flex-1 w-1/2">
                             <p className="text-xl mt-3 ml-3">Overall Attendance Summary</p>
