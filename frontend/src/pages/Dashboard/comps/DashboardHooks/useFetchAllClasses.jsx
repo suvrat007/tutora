@@ -1,6 +1,6 @@
 import axiosInstance from "../../../../utilities/axiosInstance.jsx";
 
-
+// Get current day and time
 const getTodayDay = () => {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     return days[new Date().getDay()];
@@ -16,14 +16,18 @@ const parseTimeToMinutes = (timeStr) => {
     return hours * 60 + minutes;
 };
 
-const processBatches = (batches) => {
+
+const processUpcomingBatches = (batches) => {
     const today = getTodayDay();
     const now = getCurrentTimeInMinutes();
 
     return batches.flatMap(batch =>
         batch.subject.flatMap(subject =>
             subject.classSchedule
-                .filter(schedule => schedule.days.includes(today) && parseTimeToMinutes(schedule.time) >= now)
+                .filter(schedule =>
+                    schedule.days.includes(today) &&
+                    parseTimeToMinutes(schedule.time) >= now
+                )
                 .map(schedule => ({
                     batchName: batch.name,
                     forStandard: batch.forStandard,
@@ -36,19 +40,17 @@ const processBatches = (batches) => {
 };
 
 const useFetchAllClasses = async () => {
-
-    try{
+    try {
         const response = await axiosInstance.get("/get-all-batches");
-        // console.log(response.data);
         const batches = response.data;
-        const filtered = processBatches(batches);
-        console.log(filtered);
-        return filtered;
-    }catch(error){
-        console.log(error.message);
+        return processUpcomingBatches(batches);
+    } catch (error) {
+        console.error("Error fetching upcoming classes:", error.message);
+        return [];
     }
-}
+};
 export default useFetchAllClasses;
+
 
 
 const processOverBatches = (batches) => {
@@ -58,13 +60,17 @@ const processOverBatches = (batches) => {
     return batches.flatMap(batch =>
         batch.subject.flatMap(subject =>
             subject.classSchedule
-                .filter(schedule => schedule.days.includes(today) && parseTimeToMinutes(schedule.time) < now)
+                .filter(schedule =>
+                    schedule.days.includes(today) &&
+                    parseTimeToMinutes(schedule.time) < now
+                )
                 .map(schedule => ({
                     batchName: batch.name,
-                    id:batch._id,
+                    id: batch._id,
                     forStandard: batch.forStandard,
                     subjectName: subject.name,
-                    subjectId: subject._id,
+                    subject_id: subject._id,
+                    date:subject.date,
                     time: schedule.time,
                     days: schedule.days
                 }))
@@ -76,13 +82,12 @@ const useFetchOverClasses = async () => {
     try {
         const response = await axiosInstance.get("/get-all-batches");
         const batches = response.data;
-        console.log(batches)
-        const filtered = processOverBatches(batches);
-        console.log(filtered);
-        return filtered;
+        return processOverBatches(batches);
     } catch (error) {
-        console.log(error.message);
+        console.error("Error fetching over classes:", error.message);
+        return [];
     }
 };
 
-export {useFetchOverClasses};
+export { useFetchOverClasses };
+

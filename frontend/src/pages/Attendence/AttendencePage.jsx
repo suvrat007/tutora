@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import axiosInstance from "../../utilities/axiosInstance.jsx";
 import useGetBatchId from "./hooks/useGetBatchId.js";
 import editStudentAttendance from "./hooks/editStudentAttendence.jsx";
-import QRCodeGenerator from "./QRGenerator.jsx";
+import { getTotalClasses } from "@/pages/Attendence/hooks/getTotalClasses.jsx"; // Correct import path
 
 const AttendencePage = () => {
     const [batchName, setBatchName] = useState("");
@@ -17,14 +17,37 @@ const AttendencePage = () => {
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [formTouched, setFormTouched] = useState(false);
+    const [totalClassesCount, setTotalClassesCount] = useState(0); // New state for total classes
 
     const { batchId, subjectId } = useGetBatchId(batchName, subjectName);
 
     useEffect(() => {
-        if (batchId) {
+        if (batchId && subjectId) {
             fetchAllStudents();
+            fetchTotalClasses(); // Fetch total classes when batch or subject changes
+        } else {
+            // Clear students and total classes if batch/subject not selected
+            setAllStudentsList([]);
+            setFetchedStudents([]);
+            setPresentStudentIds(new Set());
+            setAlreadyPresentStudents([]);
+            setTotalClassesCount(0);
         }
-    }, [batchId]);
+    }, [batchId, subjectId, date]); // Add date to dependency array to refetch when date changes
+
+    const fetchTotalClasses = async () => {
+        if (batchId && subjectId) {
+            try {
+                const count = await getTotalClasses(batchId, subjectId);
+                setTotalClassesCount(count);
+            } catch (err) {
+                console.error("Error fetching total classes:", err);
+                // Handle error for fetching total classes
+                setTotalClassesCount(0); // Reset in case of error
+            }
+        }
+    };
+
 
     const togglePresent = (studentId) => {
         setPresentStudentIds((prev) => {
@@ -93,7 +116,7 @@ const AttendencePage = () => {
             setAlreadyPresentStudents(alreadyMarkedPresent);
             const filteredStudents = students.filter((student) => !alreadyMarkedIds.has(student._id));
             setFetchedStudents(filteredStudents);
-            setPresentStudentIds(new Set());
+            setPresentStudentIds(new Set()); // Ensure this is cleared when new students are fetched
         } catch (err) {
             console.error("Error fetching students:", err.response?.data || err.message);
             setError("Failed to fetch students. Please try again.");
@@ -121,7 +144,6 @@ const AttendencePage = () => {
         }
 
         try {
-
             const errors = await editStudentAttendance(
                 Array.from(presentStudentIds),
                 subjectId,
@@ -130,8 +152,8 @@ const AttendencePage = () => {
             );
             if (errors.length === 0) {
                 alert("Attendance submitted successfully!");
-                await fetchAllStudents();
-                setPresentStudentIds(new Set());
+                await fetchAllStudents(); // Re-fetch students to update the lists
+                setPresentStudentIds(new Set()); // Clear selection after submit
             } else {
                 setError("Some attendance records failed to submit.");
             }
@@ -154,9 +176,9 @@ const AttendencePage = () => {
         setError("");
         setFormTouched(false);
         setIsLoading(false);
+        setTotalClassesCount(0); // Clear total classes count
     };
 
-    console.log("Already present students:", alreadyPresentStudents);
 
     return (
         <div className="flex h-screen">
@@ -164,31 +186,25 @@ const AttendencePage = () => {
             <div className="flex flex-col w-full overflow-hidden">
                 <Navbar />
                 <div className="flex flex-col gap-4 m-2 overflow-hidden flex-1 items-center">
-                    {/*<QRCodeGenerator batchId={batchId} subId={subjectId} date={date} />*/}
-
                     <div className="flex gap-4 w-[75%] p-4 border-2 rounded-2xl">
                         <div className="flex flex-col border-2 rounded-2xl flex-1 w-1/2">
                             <p className="text-xl mt-3 ml-3">Overall Attendance Summary</p>
                             <ul className="p-2 space-y-2 overflow-y-scroll h-[12em] flex flex-wrap gap-2">
+                                {allStudentsList.length === 0 && !isLoading && (
+                                    <p className="text-gray-500 p-2">Select Batch and Subject to see attendance summary.</p>
+                                )}
                                 {allStudentsList.map((student) => {
                                     const subjectAttendance = (student.attendance || []).filter(
                                         (record) => record.subject === subjectId
                                     );
                                     const presentCount = subjectAttendance.filter(
-                                        (record) => record.present
+                                        (record) => record.present === true
                                     ).length;
-                                    const totalClassesHeld =
-                                        Math.max(
-                                            ...allStudentsList.map((s) =>
-                                                (s.attendance || []).filter(
-                                                    (record) => record.subject === subjectId
-                                                ).length
-                                            ),
-                                            1
-                                        ) || 1;
-                                    const percentage = subjectId
-                                        ? Math.round((presentCount / totalClassesHeld) * 100)
-                                        : 0;
+
+                                    // Calculate percentage, handling division by zero
+                                    const percentage = totalClassesCount > 0
+                                        ? Math.round((presentCount / totalClassesCount)*100)
+                                        : 0; // If totalClassesCount is 0, percentage is 0
 
                                     return (
                                         <li
@@ -248,8 +264,8 @@ const AttendencePage = () => {
                             <div className="flex gap-2 w-full">
                                 <button
                                     className="w-1/2 border-2 rounded-lg p-2 cursor-pointer disabled:opacity-50"
-                                    onClick={fetchAllStudents}
-                                    disabled={isLoading || !batchName}
+                                    onClick={fetchAllStudents} // This will also trigger fetchTotalClasses due to useEffect
+                                    disabled={isLoading || !batchName || !subjectName || !date}
                                 >
                                     {isLoading ? "Loading..." : "Search"}
                                 </button>

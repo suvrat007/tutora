@@ -1,6 +1,4 @@
 const mongoose = require('mongoose');
-const QRCode = require('qrcode');
-
 
 // PERCENT ENCODING FOR PASSWORD
 
@@ -24,6 +22,8 @@ const Student = require("./models/All_Students_Schema");
 const Teacher = require("./models/All_Teachers_Schema");
 const Admin = require("./models/Admin");
 const Batch = require("./models/Batch");
+const Reminder = require ("./models/ReminderSchema");
+const ClassLog = require("./models/ClassLogSchema");
 
 app.get('/', (req, res) => {
     res.json({
@@ -154,6 +154,133 @@ app.put("/update-batch/:id", async (req, res) => {
         res.status(500).json({ message: `Error updating ${name}, error: error.message `});
     }
 });
+
+// REMINDER CRUD
+app.post('/add-reminder', async (req, res) => {
+    try{
+        const { batchName , subjectName , reminderDate, time, reminder} = req.body
+        const response = await Reminder({
+            batchName,
+            subjectName,
+            reminderDate,
+            time,
+            reminder
+        })
+        await response.save();
+        console.log("reminder added:", response);
+        return res.status(201).json({ message: "reminder added successfully", batch: response });
+    }catch(error){
+        console.log(error.message);
+    }
+})
+app.delete('/delete-reminder/:id', async (req, res) => {
+    try{
+        const {id} = req.params;
+        const response = await Reminder.findOneAndDelete({ _id: id });
+        console.log("reminder deleted", response);
+        return res.status(201).json({ message: "reminder deleted successfully", batch: response });
+    }catch(error){
+        console.log(error.message);
+    }
+})
+app.get('/get-reminder', async (req, res) => {
+    try{
+        const response = await Reminder.find();
+        console.log("reminder fetched", response);
+        return res.status(201).json({ message: "reminder fetched successfully", batch: response });
+    }catch(error){
+        console.error(error.message);
+    }
+})
+
+// CLASS LOG
+app.post('/add-class-update', async (req, res) => {
+    try {
+        const { batchName, subject_id, date, hasHeld, note } = req.body;
+        const normalizedBatchName = batchName.replace(/\s+/g, "").toLowerCase();
+
+        const batch = await Batch.findOne({ normalized_name: normalizedBatchName });
+
+        if (!batch) {
+            return res.status(404).json({ message: "Invalid batch name" });
+        }
+
+        let classLog = await ClassLog.findOne({ batch_id: batch._id });
+
+        if (!classLog) {
+            classLog = new ClassLog({
+                batch_id: batch._id,
+                classes: [{
+                    subject_id,
+                    date:date.split('T')[0],
+                    hasHeld,
+                    note
+                }]
+            });
+            await classLog.save();
+        } else {
+            await ClassLog.findOneAndUpdate(
+                { batch_id: batch._id },
+                {
+                    $push: {
+                        classes: {
+                            subject_id,
+                            date,
+                            hasHeld,
+                            note
+                        }
+                    }
+                }
+            );
+        }
+
+        const populatedLog = await ClassLog.findOne({ batch_id: batch._id }).populate('batch_id');
+
+        console.log("ClassLog added:", populatedLog);
+        return res.status(201).json({ message: "ClassLog added successfully", batch: populatedLog });
+
+    } catch (error) {
+        console.error("Error adding class log:", error.message);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+});
+app.get('/get-class-by-batchId/:id', async (req, res) => {
+    const {id}=req.params.id
+    try{
+        const populatedLog = await ClassLog.findById({batch_id:id}).populate('batch_id');
+
+    }catch (e){
+        console.log(e.message)
+    }
+})
+app.get('/check-class-in-log/:id', async (req, res) => {
+    try {
+        const batch_id = req.params.id;
+        const { subject_id, date } = req.query; // ✅ Use query params in GET
+
+        const dateString = date.split('T')[0]; // Normalize date
+
+        const logExists = await ClassLog.findOne({
+            batch_id,
+            classes: {
+                $elemMatch: {
+                    subject_id,
+                    date: dateString
+                }
+            }
+        });
+
+        if (logExists) {
+            return res.status(200).json({ exists: true });
+        } else {
+            return res.status(200).json({ exists: false });
+        }
+    } catch (error) {
+        console.log("Check class log error:", error);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+});
+
 
 //QUERIES
 app.get("/get-all-students-of-batch/:id", async (req, res) => {
@@ -287,30 +414,56 @@ app.put('/update-batch-with-student/:id', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
-
-
-app.post('/generate-qr-code', async (req, res) => {
-    // const { batchId,
-    //         subjectId,
-    //         date} = req.body;
-    const data = JSON.stringify(req.body);
-
-    if (!data) {
-        return res.status(400).json({ error: 'Missing data to encode' });
-    }
-
+app.post('/update-reminder-status', async (req, res) => {
     try {
-        const qrCodeDataURL = await QRCode.toDataURL(data);
-        res.json({ qrCodeDataURL });
-    } catch (err) {
-        res.status(500).json({ error: 'QR code generation failed' });
+        const { batchId, subjectId, reminderId, done } = req.body;
+
+        if (!batchId || !subjectId || !reminderId || typeof done !== "boolean") {
+            return res.status(400).json({ error: "Missing or invalid fields" });
+        }
+
+        const batch = await Batch.findById(batchId);
+        if (!batch) return res.status(404).json({ error: "Batch not found" });
+
+        const subject = batch.subject.find(sub => sub._id.toString() === subjectId);
+        if (!subject) return res.status(404).json({ error: "Subject not found" });
+
+        let reminderFound = false;
+
+        // Traverse to find the matching reminder by ID
+        for (let cs of subject.class_status) {
+            for (let session of cs.sessions) {
+                for (let status of session.status) {
+                    if (status._id.toString() === reminderId) {
+                        status.done = done;
+                        status.updated = true
+                        reminderFound = true;
+                        break;
+                    }
+                }
+                if (reminderFound) break;
+            }
+            if (reminderFound) break;
+        }
+
+        if (!reminderFound) {
+            return res.status(404).json({ error: "Reminder not found" });
+        }
+
+        await batch.save();
+
+        res.status(200).json({ message: "Reminder status updated successfully" });
+    } catch (error) {
+        console.error("Error updating reminder:", error);
+        res.status(500).json({ error: "Internal server error" });
     }
 });
 
 
-
 const port = process.env.PORT || 8000;
-app.listen(port)
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+});
 
 module.exports = app;
 

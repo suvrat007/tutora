@@ -1,109 +1,139 @@
 import { useEffect, useState } from "react";
-import { getAllRemindersForTheDay } from "../DashboardHooks/getAllRemindersForTheDay.js";
+import axiosInstance from "@/utilities/axiosInstance.jsx";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Reminders = () => {
+
     const [reminders, setReminders] = useState([]);
-    const [doneStatus, setDoneStatus] = useState({}); // Tracks done status by reminder ID
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [markedDoneIds, setMarkedDoneIds] = useState([]);
+    const [isSaving, setIsSaving] = useState(false);
 
-    // Load done status from localStorage on mount
-    useEffect(() => {
-        const storedDoneStatus = localStorage.getItem("reminderDoneStatus");
-        if (storedDoneStatus) {
-            try {
-                setDoneStatus(JSON.parse(storedDoneStatus));
-            } catch (err) {
-                console.error("Failed to parse localStorage done status:", err.message);
-            }
-        }
-    }, []);
-
-    // Fetch reminders on mount
     useEffect(() => {
         const fetchReminders = async () => {
             try {
-                const fetchedReminders = await getAllRemindersForTheDay();
-                if (!Array.isArray(fetchedReminders)) {
-                    throw new Error("Invalid reminders data received");
-                }
-                setReminders(fetchedReminders);
+                const res = await axiosInstance.get('get-reminder');
+                const allReminders = res.data.batch;
+
+                const now = new Date();
+                const today = now.toISOString().split('T')[0]; // yyyy-mm-dd
+                const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+                // Filter based on today's date & past or equal time
+                const filtered = allReminders.filter((rem) => {
+                    const remDate = new Date(rem.reminderDate).toISOString().split('T')[0];
+                    if (remDate !== today) return false;
+
+                    const [timeString] = rem.time.split(" ");
+                    let [hours, minutes] = timeString.split(":").map(Number);
+
+
+                    const remMinutes = hours * 60 + minutes;
+                    return remMinutes <= currentMinutes;
+                });
+                console.log(filtered);
+                setReminders(filtered);
             } catch (err) {
-                setError(err.message);
+                setError("Failed to load reminders. Please try again.");
+                console.error(err);
+            } finally {
+                setLoading(false);
             }
         };
 
         fetchReminders();
     }, []);
 
-    // Update localStorage whenever doneStatus changes
-    useEffect(() => {
+
+    const toggleReminderDone = (id) => {
+        setMarkedDoneIds((prev) =>
+            prev.includes(id) ? prev.filter((remId) => remId !== id) : [...prev, id]
+        );
+    };
+
+    const handleSaveChanges = async () => {
+        if (markedDoneIds.length === 0) return;
+
+        setIsSaving(true);
         try {
-            localStorage.setItem("reminderDoneStatus", JSON.stringify(doneStatus));
+            for (let id of markedDoneIds) {
+                await axiosInstance.delete(`delete-reminder/${id}`);
+            }
+
+            setReminders((prev) => prev.filter((rem) => !markedDoneIds.includes(rem._id)));
+            setMarkedDoneIds([]);
         } catch (err) {
-            console.error("Failed to save done status to localStorage:", err.message);
+            console.error("Failed to delete reminders", err);
+            alert("Some deletions failed. Check console.");
+        } finally {
+            setIsSaving(false);
         }
-    }, [doneStatus]);
-
-    // Toggle done status for a reminder
-    const handleToggleDone = (reminderId) => {
-        setDoneStatus((prev) => ({
-            ...prev,
-            [reminderId]: !prev[reminderId], // Toggle true/false
-        }));
     };
 
-    // Generate a unique ID for each reminder (since index may not be stable)
-    const getReminderId = (reminder, index) => {
-        return `${reminder.batchName}-${reminder.subjectName}-${reminder.reminder}-${index}`;
-    };
+
 
     return (
-        <div className="rounded-2xl w-[50%] flex flex-col border-2 border-gray-300 bg-white shadow-md">
-            {/* Header */}
-            <div className="px-4 py-3 border-b border-gray-200">
-                <h1 className="text-lg font-semibold text-gray-700">Reminders for Today</h1>
+        <div className="rounded-2xl w-full max-w-2xl mx-auto border border-gray-300 bg-white shadow-lg overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200 bg-gray-100 flex justify-between items-center">
+                <h1 className="text-xl font-semibold text-gray-800">📅 Reminders for Today</h1>
+                <button
+                    onClick={handleSaveChanges}
+                    disabled={isSaving || loading}
+                    className={`px-4 py-2 text-sm rounded-md font-medium shadow-sm transition-colors duration-150
+                        ${isSaving ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}
+                    `}
+                >
+                    {isSaving ? 'Deleting...' : 'Save Changes'}
+                </button>
             </div>
 
-            {/* Main component */}
-            <div className="p-4 space-y-3">
-                {error ? (
-                    <p className="text-red-500 text-sm">{error}</p>
+            <div className="p-5 space-y-4">
+                {loading ? (
+                    <p className="text-sm text-gray-500">Loading reminders...</p>
+                ) : error ? (
+                    <div className="text-red-600 bg-red-100 px-4 py-2 rounded-md text-sm">{error}</div>
                 ) : reminders.length === 0 ? (
-                    <p className="text-gray-500 text-sm">No reminders for today</p>
+                    <div className="text-center text-gray-500 py-6">
+                        <p className="text-sm">You have no reminders for today 🎉</p>
+                    </div>
                 ) : (
-                    reminders.map((value, index) => {
-                        const reminderId = getReminderId(value, index);
-                        const isDone = !!doneStatus[reminderId];
+                    <AnimatePresence>
+                        {reminders.map(({ batchName, subjectName, reminder, _id }) => {
+                            const isDone = markedDoneIds.includes(_id);
 
-                        return (
-                            <div
-                                key={reminderId}
-                                className="flex flex-col sm:flex-row items-start sm:items-center border border-gray-200 rounded-lg p-3 bg-gray-50"
-                            >
-                                <div className="flex-1">
-                                    <h2 className="text-sm font-medium text-gray-800">{value.batchName}</h2>
-                                    <p className="text-xs text-gray-600">{value.subjectName}</p>
-                                    <p
-                                        className={`text-sm text-gray-700 ${
-                                            isDone ? "line-through text-gray-400" : ""
+                            return (
+                                <motion.div
+                                    key={_id}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.3 } }}
+                                    className="flex flex-col sm:flex-row justify-between items-start sm:items-center border border-gray-200 rounded-xl px-4 py-2 bg-white hover:shadow-md transition-shadow duration-200"
+                                >
+                                    <div className="flex-1 w-full space-y-1">
+                                        <div className="flex flex-wrap items-center gap-2 border-b pb-1">
+                                            <span className="text-sm font-semibold text-indigo-600">{batchName}</span>
+                                            <span className="text-xs text-gray-500 border-l border-gray-300 pl-2">{subjectName}</span>
+                                        </div>
+                                        <p className={`text-[15px] leading-snug ${isDone ? "line-through text-gray-400 italic" : "text-gray-700"}`}>
+                                            {reminder}
+                                        </p>
+                                    </div>
+
+                                    <button
+                                        onClick={() => toggleReminderDone(_id)}
+                                        className={`mt-3 sm:mt-0 sm:ml-6 px-4 py-2 text-sm rounded-md font-medium shadow-sm transition-colors duration-150 ${
+                                            isDone
+                                                ? "bg-emerald-500 text-white hover:bg-emerald-600"
+                                                : "bg-sky-500 text-white hover:bg-sky-600"
                                         }`}
                                     >
-                                        {value.reminder}
-                                    </p>
-                                </div>
-                                <button
-                                    onClick={() => handleToggleDone(reminderId)}
-                                    className={`mt-2 sm:mt-0 px-3 py-1 rounded-lg text-sm ${
-                                        isDone
-                                            ? "bg-green-500 text-white hover:bg-green-600"
-                                            : "bg-blue-500 text-white hover:bg-blue-600"
-                                    }`}
-                                >
-                                    {isDone ? "Mark Undone" : "Mark Done"}
-                                </button>
-                            </div>
-                        );
-                    })
+                                        {isDone ? "Mark Undone" : "Mark Done"}
+                                    </button>
+                                </motion.div>
+                            );
+                        })}
+                    </AnimatePresence>
                 )}
             </div>
         </div>
