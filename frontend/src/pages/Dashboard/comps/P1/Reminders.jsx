@@ -17,23 +17,41 @@ const Reminders = () => {
                 const allReminders = res.data.batch;
 
                 const now = new Date();
-                const today = now.toISOString().split('T')[0]; // yyyy-mm-dd
-                const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-                // Filter based on today's date & past or equal time
                 const filtered = allReminders.filter((rem) => {
-                    const remDate = new Date(rem.reminderDate).toISOString().split('T')[0];
-                    if (remDate !== today) return false;
+                    const reminderDate = new Date(rem.reminderDate);
+                    const timeStr = rem.time.trim();
 
-                    const [timeString] = rem.time.split(" ");
-                    let [hours, minutes] = timeString.split(":").map(Number);
+                    let hours = 0, minutes = 0;
 
+                    // Handle both "HH:mm" and "hh:mm AM/PM"
+                    if (/AM|PM/i.test(timeStr)) {
+                        const [timePart, modifier] = timeStr.split(" ");
+                        [hours, minutes] = timePart.split(":").map(Number);
+                        if (modifier.toUpperCase() === "PM" && hours !== 12) hours += 12;
+                        if (modifier.toUpperCase() === "AM" && hours === 12) hours = 0;
+                    } else {
+                        [hours, minutes] = timeStr.split(":").map(Number);
+                    }
 
-                    const remMinutes = hours * 60 + minutes;
-                    return remMinutes <= currentMinutes;
+                    // Set hours and minutes on the reminderDate
+                    const reminderDateTime = new Date(reminderDate);
+                    reminderDateTime.setHours(hours);
+                    reminderDateTime.setMinutes(minutes);
+                    reminderDateTime.setSeconds(0);
+                    reminderDateTime.setMilliseconds(0);
+
+                    // Check if it's today AND past/equal to now
+                    return (
+                        reminderDateTime.toDateString() === now.toDateString() &&
+                        reminderDateTime <= now
+                    );
                 });
+
                 console.log(filtered);
                 setReminders(filtered);
+
+
             } catch (err) {
                 setError("Failed to load reminders. Please try again.");
                 console.error(err);
