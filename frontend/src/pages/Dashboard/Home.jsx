@@ -9,7 +9,8 @@ import Reminders from "./comps/P1/Reminders.jsx";
 const Home = () => {
 
     return (
-        <div className="flex h-screen">
+        <div className="bg-blac">
+            <div className="flex h-screen bg-">
             <SideBar/>
             <div className="flex flex-col w-full overflow-hidden">
                 <Navbar/>
@@ -40,6 +41,7 @@ const Home = () => {
             </div>
 
 
+            </div>
         </div>
     )
 }

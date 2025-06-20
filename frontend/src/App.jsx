@@ -1,3 +1,4 @@
+import './index.css'
 import './App.css'
 import {createBrowserRouter, Outlet, RouterProvider} from "react-router-dom";
 import store from "../src/utilities/redux/store.jsx";

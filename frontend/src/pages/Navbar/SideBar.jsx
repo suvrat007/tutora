@@ -16,7 +16,7 @@ const Sidebar = () => {
     const [register, setRegister] = useState(false);
 
     return (
-        <div className="w-[17.5em] border-2 shadow-lg rounded-r-xl flex flex-col h-screen py-10 px-6">
+        <div className="bg-white w-[17.5em] border-2 shadow-lg rounded-r-xl flex flex-col h-screen py-10 px-6">
             <div className="flex flex-col gap-2 text-lg font-medium">
 
                 {/* Home */}
