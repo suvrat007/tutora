@@ -5,44 +5,36 @@ import Callendar from "./comps/P1/Callendar.jsx";
 import ClassStatusUpdates from "./comps/P1/ClassStatusUpdates.jsx";
 import Reminders from "./comps/P1/Reminders.jsx";
 
-
 const Home = () => {
+  return (
+    <div className="bg-white"> {/* change to 'bg-black' if needed */}
+      <div className="flex h-screen">
+        <SideBar />
 
-    return (
-        <div className="bg-blac">
-            <div className="flex h-screen bg-">
-            <SideBar/>
-            <div className="flex flex-col w-full overflow-hidden">
-                <Navbar/>
+        <div className="flex flex-col w-full overflow-hidden">
+          <Navbar />
 
-                <div className={'flex flex-col flex-wrap gap-2 mx-2'}>
+          <div className="flex flex-col gap-2 p-2">
+            <div className="flex gap-2 w-full">
+              {/* Today's Classes */}
+              <TodaysClasses />
 
-                    <div className={'w-full flex gap-2'}>
-                        {/*todays classes*/}
-                        <TodaysClasses/>
-
-                        {/*calender*/}
-                        <Callendar/>
-
-                    </div>
-
-
-                    <div className={' flex justify-between w-full gap-2'}>
-                        {/*Status updates*/}
-                        <ClassStatusUpdates/>
-
-                        {/*Reminders*/}
-                        <Reminders/>
-
-                    </div>
-
-
-                </div>
+              {/* Calendar */}
+              <Callendar />
             </div>
 
+            <div className="flex gap-2 w-full justify-between">
+              {/* Status Updates */}
+              <ClassStatusUpdates />
 
+              {/* Reminders */}
+              <Reminders />
             </div>
+          </div>
         </div>
-    )
-}
-export default Home
+      </div>
+    </div>
+  );
+};
+
+export default Home;
