@@ -121,7 +121,8 @@ const ClassStatusForm = () => {
 
 
     return (
-        <div className="rounded-2xl shadow-xl p-6 border border-gray-200 h-[20em] overflow-y-auto w-full sm:w-[90%] md:w-[70%] lg:w-[50%] bg-white">
+        <div className="w-full h-full p-6 rounded-2xl bg-white shadow-xl border border-gray-200 overflow-y-auto">
+
             <h1 className="text-xl font-semibold mb-4 text-gray-800">Set Today's Class Status & Reminder</h1>
 
             {error ? (

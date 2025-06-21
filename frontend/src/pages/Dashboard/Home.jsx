@@ -4,31 +4,40 @@ import TodaysClasses from "./comps/FuturePhases/TodaysClasses.jsx";
 import Callendar from "./comps/P1/Callendar.jsx";
 import ClassStatusUpdates from "./comps/P1/ClassStatusUpdates.jsx";
 import Reminders from "./comps/P1/Reminders.jsx";
+import Card from "./comps/uii/Card.jsx";
 
 const Home = () => {
   return (
-    <div className="bg-white"> {/* change to 'bg-black' if needed */}
-      <div className="flex h-screen">
+    <div className="min-h-screen bg-[#d3a781] text-white flex justify-center items-center py-10">
+      {/* Soft Background Container */}
+      <div className="bg-[#fee5cf] relative w-[97%] max-w-[1750px] min-h-[92vh] rounded-[2rem] bg-[#e7c6a5] border border-[#e0b890] shadow-2xl overflow-hidden flex">
+        {/* Sidebar + Main Content */}
         <SideBar />
 
         <div className="flex flex-col w-full overflow-hidden">
           <Navbar />
 
-          <div className="flex flex-col gap-2 p-2">
-            <div className="flex gap-2 w-full">
-              {/* Today's Classes */}
-              <TodaysClasses />
+          <div className="flex flex-col gap-4 p-4">
+            {/* Top row: Today's Classes + Calendar */}
+            <div className="flex gap-4 flex-wrap">
+              <Card className="flex-1 min-w-[400px]">
+                <TodaysClasses />
+              </Card>
 
-              {/* Calendar */}
-              <Callendar />
+              <Card className="w-[24em]">
+                <Callendar />
+              </Card>
             </div>
 
-            <div className="flex gap-2 w-full justify-between">
-              {/* Status Updates */}
-              <ClassStatusUpdates />
+            {/* Bottom row: Status Updates + Reminders */}
+            <div className="flex gap-4 flex-wrap">
+              <Card className="flex-1">
+                <ClassStatusUpdates />
+              </Card>
 
-              {/* Reminders */}
-              <Reminders />
+              <Card className="flex-1">
+                <Reminders />
+              </Card>
             </div>
           </div>
         </div>

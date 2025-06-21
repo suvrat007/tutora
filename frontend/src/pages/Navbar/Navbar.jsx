@@ -1,14 +1,14 @@
 const Navbar = () => {
     return (
-        <div className="mx-4 mt-4 mb-2 px-6 py-3 bg-gradient-to-r from-[#f9fafb] to-[#e5e7eb] rounded-2xl shadow-md flex justify-between items-center">
+        <div className="bg-[#e7c6a5] mx-4 mt-4 mb-2 px-6 py-3  rounded-2xl shadow-md flex justify-between items-center">
             {/* Logo or App Name */}
-            <div className="text-xl font-semibold text-gray-700">
+            <div className="text-xl font-semibold text-[#4a3a2c]">
                 LOGO
             </div>
 
             {/* Organization Name */}
-            <div className="text-base font-medium text-gray-600">
-                Name of User Organization
+            <div className="text-base font-medium text-[#4a3a2c]">
+                Tutora
             </div>
 
             {/* Profile Image */}
