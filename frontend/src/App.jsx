@@ -6,11 +6,15 @@ import Home from "./pages/Dashboard/Home.jsx";
 import AttendencePage from "./pages/Attendence/AttendencePage.jsx";
 import StudentData from "./pages/Student/StudentData.jsx";
 import BatchPage from "./pages/BatchPage/BatchPage.jsx";
+import Landing from './pages/LandingPage/Landing';
 import {Provider} from "react-redux";
 
 const appRouter = createBrowserRouter([
     {
         path: '/',
+        element: <Landing />,
+    },{
+        path: '/Home',
         element: <Home />,
     },{
         path: '/attendence',
