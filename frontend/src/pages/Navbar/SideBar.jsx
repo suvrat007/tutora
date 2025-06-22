@@ -19,7 +19,6 @@ const Sidebar = () => {
   const [management, setManagement] = useState(false);
   const [register, setRegister] = useState(false);
 
-  // Updated earth-toned sidebar link style
   const linkClass = (path) =>
     `flex items-center gap-3 p-3 rounded-lg transition-all group ${
       location.pathname === path
@@ -29,15 +28,15 @@ const Sidebar = () => {
 
   return (
     <div
-      className={`bg-[#e7c6a5] shadow-2xl rounded-3xl flex flex-col h-[95vh] py-6 px-4 transition-all duration-300 ease-in-out ml-4 mt-4
-       ${isOpen ? "w-[17.5em]" : "w-[4.5em]"}`}
+    className={`bg-[#e7c6a5] shadow-2xl rounded-3xl flex flex-col 
+    h-full overflow-y-auto py-6 px-4
+    transition-all duration-300 ease-in-out ml-4 my-4
+    ${isOpen ? "w-[17.5em]" : "w-[4.5em]"}`}
     >
+
       <div className="flex flex-col gap-2 text-base font-medium">
-        {/* Toggle Button with Arrow and Animation */}
-        <button
-          onClick={() => setIsOpen((prev) => !prev)}
-          className={linkClass()}
-        >
+        {/* Collapse Button */}
+        <button onClick={() => setIsOpen((prev) => !prev)} className={linkClass()}>
           <span
             className={`transition-transform duration-300 ${
               isOpen ? "rotate-0" : "rotate-90"
@@ -60,10 +59,7 @@ const Sidebar = () => {
 
         {/* Management Dropdown */}
         <div>
-          <div
-            onClick={() => setManagement((prev) => !prev)}
-            className={linkClass()}
-          >
+          <div onClick={() => setManagement((prev) => !prev)} className={linkClass()}>
             <div className="flex items-center gap-3">
               <MdManageAccounts size={20} className="group-hover:scale-110 transition-transform" />
               {isOpen && <span>Management</span>}
@@ -86,10 +82,7 @@ const Sidebar = () => {
 
         {/* Registrations Dropdown */}
         <div>
-          <div
-            onClick={() => setRegister((prev) => !prev)}
-            className={linkClass()}
-          >
+          <div onClick={() => setRegister((prev) => !prev)} className={linkClass()}>
             <div className="flex items-center gap-3">
               <BsFillPeopleFill size={20} className="group-hover:scale-110 transition-transform" />
               {isOpen && <span>Registrations & Info</span>}
