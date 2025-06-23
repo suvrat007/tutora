@@ -25,11 +25,11 @@
         >
           <Card className="rounded-2xl shadow-2xl bg-white/10 backdrop-blur-md border-white/10 text-white">
             <CardContent className="p-8">
-              {/* ✨ Fancy Title */}
+              {/* ✨ Fancy Title */}  
               <h1 className="text-3xl md:text-4xl font-bold text-center mb-2">
                 <span className="text-white inline">TUTORA</span>
-                <span className="inline-block text-purple-300">
-                  <FlipWords words={words} />
+                <span className="">
+                  <FlipWords className="text-purple-400" words={words} />
                 </span>
               </h1>
 
