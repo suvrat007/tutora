@@ -1,0 +1,84 @@
+const express = require('express');
+const router = express.Router();
+const Student = require("../models/Student.js");
+const Batch = require("../models/Batch.js");
+const userAuth  =require("../middleware/userAuth.js");
+
+
+router.post("/add-new-student/:batchId",userAuth, async (req, res) => {
+    const batchId = req.params.batchId;
+    const { contact_info } = req.body;
+
+    try {
+        // Check for existing student
+        const existingStudent = await Student.findOne({
+            $or: [
+                { "contact_info.emailIds.student": contact_info.emailIds.student },
+                { "contact_info.phoneNumbers.student": contact_info.phoneNumbers.student }
+            ]
+        });
+
+        if (existingStudent) {
+            return res.status(409).json({ message: "Student with same email or phone already exists" });
+        }
+
+        // Create and save new student
+        const newStudent = new Student(req.body);
+        await newStudent.save();
+
+        // Add student to batch
+        const updatedBatch = await Batch.findByIdAndUpdate(
+            batchId,
+            { $push: { enrolledStudents: newStudent._id } },
+            { new: true }
+        ).populate("enrolledStudents"); // optional: to confirm enrollment
+
+        if (!updatedBatch) {
+            return res.status(404).json({ message: "Batch not found" });
+        }
+
+        return res.status(201).json({
+            message: "Student added and enrolled successfully",
+            student: newStudent,
+            updatedBatch
+        });
+
+    } catch (error) {
+        console.error("Error adding student:", error);
+        return res.status(500).json({ message: "Failed to add student", error: error.message });
+    }
+});
+router.get("/get-all-students",userAuth, async (req, res) => {
+    try{
+        const response = await Student.find();
+        console.log(response);
+        return res.status(200).json(response);
+
+    }catch(error){
+        console.error("Error adding student:", error);
+        return res.status(500).json({ message: "Failed to fetch students", error: error.message });
+    }
+})
+router.delete("/delete-student/:id",userAuth, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const response = await Student.deleteOne({ _id: id });
+        console.log(response);
+        return res.status(200).json(response.data);
+    }catch(error){
+        console.error("Error deleting student:", error.message);
+    }
+})
+router.put("/update-student/:id", userAuth,async (req, res) => {
+    const { id } = req.params;
+    try {
+        const updated = await Student.findByIdAndUpdate(id, req.body, { new: true });
+        if (!updated) return res.status(404).json({ message: `${name} not found` });
+
+        res.status(200).json(updated);
+    } catch (error) {
+        res.status(500).json({ message: `Error updating ${name}`, error: error.message });
+    }
+});
+
+module.exports=router

@@ -2,14 +2,18 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema
 
 const BatchSchema = new Schema({
+    adminId:{
+        type:Schema.Types.ObjectId,
+        ref:"Admin"
+    },
     name: {type: String, required: true},
     normalized_name: { type: String, required: true, unique: true }, // internal use only
     forStandard: {type: String, required: true},
-    enrolledStudents: [{type: Schema.Types.ObjectId, ref: "Student"}],
+    enrolledStudents: [{type: Schema.Types.ObjectId, ref: 'Student'}],
     subject: [
         {
             name: {type: String, required: true},
-            classSchedule: [
+            classSchedule:
                 {
                     time: { type: String, required: true },
                     days: {
@@ -18,7 +22,7 @@ const BatchSchema = new Schema({
                         required: true
                     }
                 }
-            ],
+
         }
     ]
 

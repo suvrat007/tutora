@@ -3,8 +3,7 @@ const {ObjectId} = require("mongodb")
 const Schema = mongoose.Schema
 
 const ClassLogSchema = new Schema({
-    adminId: {type: ObjectId, default: null},
-    instituteId: {type: ObjectId, default: null},
+    adminId: {type: ObjectId, ref: 'Admin'},
     batch_id: {type: Schema.Types.ObjectId,required: true, ref: 'Batch'},
     classes: [
         {
@@ -12,8 +11,9 @@ const ClassLogSchema = new Schema({
             date: {type: Date, default: Date.now, required: true},
             hasHeld: {type: Boolean, default: false},
             note: {type: String, default: null, required: true},
+            attendance: [{type: Schema.Types.ObjectId, ref: 'Student'}],
         }
     ]
 
 })
-module.exports= mongoose.model('ClassLog', ClassLogSchema);
+module.exports= mongoose.model('ClassLog', ClassLogSchema);``

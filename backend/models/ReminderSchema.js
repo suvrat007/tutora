@@ -5,7 +5,6 @@
         batchName: { type: String },
         subjectName: { type: String },
         reminderDate: { type: Date, required: true },
-        time: { type: String, required: true },
         reminder: { type: String, required: true },
     });
 

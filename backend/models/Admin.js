@@ -6,12 +6,8 @@ const AdminSchema = new Schema({
     emailId: { type: String, required: true },
     password: { type: String, required: true },
     institute_info: {
-        insti_name: { type: String, required: true },
-        logo_URL: { type: String, required: true },
-        contact_info: {
-            emailId: { type: String, required: true },
-            phone_number: { type: String, required: true }
-        }
+        type:Schema.Types.ObjectId,
+        ref: 'Institute',
     }
 });
 
