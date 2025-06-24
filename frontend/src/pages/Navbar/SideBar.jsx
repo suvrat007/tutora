@@ -53,7 +53,7 @@ const Sidebar = () => {
         </button>
 
         {/* Home */}
-        <Link to="/" className={linkClass("/")}>
+        <Link to="/main" className={linkClass("/")}>
           <AiFillHome size={20} className="group-hover:scale-110 transition-transform" />
           {isOpen && <span>Home</span>}
         </Link>
@@ -76,7 +76,7 @@ const Sidebar = () => {
                 management ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
               }`}
             >
-              <Link to="/attendence" className="py-2 hover:text-[#6b4c3b] transition-colors">
+              <Link to="/main/attendance" className="py-2 hover:text-[#6b4c3b] transition-colors">
                 <FaClipboardList className="inline mr-2" />
                 Attendence
               </Link>
@@ -102,11 +102,11 @@ const Sidebar = () => {
                 register ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
               }`}
             >
-              <Link to="/student-data" className="py-2 hover:text-[#6b4c3b] transition-colors">
+              <Link to="/main/student-data" className="py-2 hover:text-[#6b4c3b] transition-colors">
                 <AiOutlineTeam className="inline mr-2" />
                 Students
               </Link>
-              <Link to="/batches" className="py-2 hover:text-[#6b4c3b] transition-colors">
+              <Link to="/main/batches" className="py-2 hover:text-[#6b4c3b] transition-colors">
                 <IoIosSchool className="inline mr-2" />
                 Batches
               </Link>
@@ -115,7 +115,7 @@ const Sidebar = () => {
         </div>
 
         {/* Class Status */}
-        <Link to="/class-status" className={linkClass("/class-status")}>
+        <Link to="/main/class-status" className={linkClass("/class-status")}>
           <FaClipboardList size={20} className="group-hover:scale-110 transition-transform" />
           {isOpen && <span>Class Status</span>}
         </Link>

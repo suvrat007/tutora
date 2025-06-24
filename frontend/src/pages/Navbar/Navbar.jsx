@@ -1,4 +1,8 @@
+import useLogoutAdmin from "@/useLogoutAdmin.js";
+
 const Navbar = () => {
+    const handleLogout = useLogoutAdmin();
+
     return (
         <div className="bg-[#e7c6a5] mx-4 mt-4 mb-2 px-6 py-3  rounded-2xl shadow-md flex justify-between items-center">
             {/* Logo or App Name */}
@@ -18,6 +22,7 @@ const Navbar = () => {
                     alt="User Avatar"
                     className="w-10 h-10 rounded-full border border-gray-400 shadow-sm"
                 />
+                <button onClick={handleLogout}>Logout</button>
             </div>
         </div>
     );

@@ -5,6 +5,7 @@ import Callendar from "./comps/P1/Callendar.jsx";
 import ClassStatusUpdates from "./comps/P1/ClassStatusUpdates.jsx";
 import Reminders from "./comps/P1/Reminders.jsx";
 import Card from "./comps/uii/Card.jsx";
+import useLogoutAdmin from "@/useLogoutAdmin.js";
 
 const Home = () => {
   return (

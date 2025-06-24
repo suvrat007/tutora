@@ -1,18 +1,26 @@
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import axiosInstance from "@/utilities/axiosInstance.jsx";
-import {useDispatch} from "react-redux";
-import {deleteUser} from "@/utilities/redux/userSlice.jsx";
+import { deleteUser } from "./utilities/redux/userSlice.jsx";
 
-const handleLogoutAdmin = async () => {
+const useLogoutAdmin = () => {
     const dispatch = useDispatch();
-    try {
-        const response = await axiosInstance.post("/api/auth/logout", null, {
-            withCredentials: true,
-        });
-        dispatch(deleteUser());
-        console.log(response);
-    } catch (error) {
-        console.log(error);
-    }
-}
+    const navigate = useNavigate();
 
-export default {handleLogoutAdmin};
+    const handleLogout = async () => {
+        try {
+            await axiosInstance.post("/api/auth/logout", {}, {
+                withCredentials: true,
+            });
+
+            dispatch(deleteUser());         // Clear user from Redux
+            navigate("/login", { replace: true }); // Redirect to login or landing
+        } catch (error) {
+            console.error("Logout failed:", error);
+        }
+    };
+
+    return handleLogout;
+};
+
+export default useLogoutAdmin;
