@@ -7,6 +7,7 @@ import AttendencePage from "./pages/Attendence/AttendencePage.jsx";
 import StudentData from "./pages/Student/StudentData.jsx";
 import BatchPage from "./pages/BatchPage/BatchPage.jsx";
 import Landing from './pages/LandingPage/Landing';
+import CompleteInformationDisplay from './pages/InfoCenter/CompleteInformationDisplay';
 import {Provider} from "react-redux";
 
 const appRouter = createBrowserRouter([
@@ -25,6 +26,9 @@ const appRouter = createBrowserRouter([
     },{
         path: '/batches',
         element: <BatchPage/>
+    },{
+        path: '/Info-Center',
+        element: <CompleteInformationDisplay/>
     }
     ]
 )
