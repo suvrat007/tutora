@@ -1,64 +1,56 @@
 import { useState } from "react"
-import axiosInstance from "@/utilities/axiosInstance.jsx";
-import OnboardingForm from "@/pages/Auth/OnboardingForm.jsx";
-import {useNavigate} from "react-router-dom";
-import {useDispatch} from "react-redux";
-import {setUser} from "@/utilities/redux/userSlice.jsx";
+import { useNavigate } from "react-router-dom"
+import OnboardingForm from "@/pages/Auth/OnboardingForm"
+import axiosInstance from "@/utilities/axiosInstance"
 
 const Login = () => {
     const [isSignup, setIsSignup] = useState(false)
-    const [signupComplete, setSignupComplete] = useState(false)
-
+    const [signupCreds, setSignupCreds] = useState(null)
     const [formData, setFormData] = useState({
         username: "",
         email: "",
         password: "",
     })
 
+    const navigate = useNavigate()
+
     const handleInputChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value })
     }
 
-    const navigate = useNavigate();
-    const dispatch = useDispatch();
-
-    const handleSubmit =async (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault()
+        try {
+            const response = await axiosInstance.post("/api/auth/login", {
+                emailId: formData.email,
+                password: formData.password,
+            }, { withCredentials: true })
 
-        if (isSignup) {
-            const response=await axiosInstance.post('api/auth/signup', {
-                name: formData.username,
-                emailId: formData.email,
-                password: formData.password,
-            },{withCredentials:true});
-            console.log("Signing up user:", response.data)
-            setSignupComplete(true)
-        } else {
-            const response = await axiosInstance.post('api/auth/login', {
-                emailId: formData.email,
-                password: formData.password,
-            },{withCredentials:true});
-            console.log("Logging in user:", response.data)
-            dispatch(setUser(response.data.user));
-            navigate("/main", { replace: true });
+            console.log("Login success:", response.data)
+            navigate("/main")
+        } catch (err) {
+            console.error("Login failed:", err)
         }
     }
 
-    const handleOnboardingSubmit = (e) => {
+    const handleSignupCreds = (e) => {
         e.preventDefault()
-        console.log("Onboarding complete")
-        // Redirect to /home or update auth state here
+        setSignupCreds({
+            name: formData.username,
+            emailId: formData.email,
+            password: formData.password,
+        })
     }
 
     return (
-        <div className="flex flex-col items-center justify-center ">
+        <div className="flex flex-col items-center justify-center min-h-screen">
             <div className="border-2 p-6 rounded-lg shadow-md w-full max-w-md">
-                {!signupComplete ? (
+                {!signupCreds ? (
                     <>
                         <h2 className="text-2xl font-bold mb-4 text-center">
                             {isSignup ? "Sign Up" : "Login"}
                         </h2>
-                        <form onSubmit={handleSubmit} className="space-y-4">
+                        <form onSubmit={isSignup ? handleSignupCreds : handleLogin} className="space-y-4">
                             {isSignup && (
                                 <input
                                     type="text"
@@ -92,7 +84,7 @@ const Login = () => {
                                 type="submit"
                                 className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
                             >
-                                {isSignup ? "Sign Up" : "Login"}
+                                {isSignup ? "Next" : "Login"}
                             </button>
                         </form>
                         <p className="text-center mt-4 text-sm">
@@ -101,7 +93,7 @@ const Login = () => {
                                 type="button"
                                 onClick={() => {
                                     setIsSignup(!isSignup)
-                                    setSignupComplete(false)
+                                    setSignupCreds(null)
                                 }}
                                 className="text-blue-600 underline"
                             >
@@ -110,7 +102,7 @@ const Login = () => {
                         </p>
                     </>
                 ) : (
-                    <OnboardingForm/>
+                    <OnboardingForm adminCreds={signupCreds} />
                 )}
             </div>
         </div>
