@@ -9,6 +9,7 @@ const ReminderRouter = require("./routes/Reminders.js");
 const ClassLogRouter  =require("./routes/ClassLogs.js");
 const AdminRouter  =require("./routes/Admin.js");
 const AuthRouter = require("./routes/Auth.js");
+const InstituteRouter = require("./routes/Institute.js");
 
 app.use(cors({
     origin:['http://localhost:5173'],
@@ -25,6 +26,7 @@ app.use('/api/reminder',ReminderRouter);
 app.use('/api/classLog', ClassLogRouter);
 app.use('/api/admin', AdminRouter);
 app.use('/api/auth', AuthRouter)
+app.use('/api/institute',InstituteRouter)
 
 
 connectDb().then(()=>{

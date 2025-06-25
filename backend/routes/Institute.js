@@ -3,24 +3,20 @@ const router = express.Router();
 const userAuth = require('../middleware/userAuth');
 const Institute = require('../models/Institutes.js');
 
-router.post('/create-institute', userAuth, async (req, res) => {
-    const adminId = req.user._id;
-    const { name, logo_URL, contact_info } = req.body;
+router.get('/get', userAuth ,async(req, res) => {
+    try{
+        const adminId= req.user._id;
+        const institute = await Institute.findOne({adminId})
+        if (!institute) {
+            return res.status(404).json({ success: false, message: "No institute found" });
+        }
 
-    try {
-        const newInstitute = new Institute({
-            adminId,
-            name,
-            logo_URL,
-            contact_info
-        });
+        res.status(200).json({ success: true, message: "Institute fetched", data: institute });
 
-        const savedInstitute = await newInstitute.save()
-
-        res.status(201).json({ success: true, institute: savedInstitute });
     } catch (error) {
-        res.status(500).json({ success: false, message: "Failed to create institute", error: error.message });
+        console.error("Error fetching institute:", error);
+        res.status(500).json({ success: false, message: "Internal server error" });
     }
-});
+})
 
 module.exports=router;
