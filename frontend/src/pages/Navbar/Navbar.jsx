@@ -25,7 +25,6 @@ const Navbar = () => {
 
     return (
         <div className="bg-[#e7c6a5] mx-4 mt-4 mb-2 px-6 py-3 rounded-2xl shadow-md flex justify-between items-center">
-            {/* Logo or App Name */}
             <div className="flex items-center gap-3">
                 {institution?.logo_URL ? (
                     <img
@@ -38,12 +37,10 @@ const Navbar = () => {
                 )}
             </div>
 
-            {/* Organization Name */}
             <div className="text-base font-medium text-[#4a3a2c]">
                 {institution?.name || "Institute Name"}
             </div>
 
-            {/* Profile and Logout */}
             <div className="flex items-center gap-4">
                 <img
                     src="https://www.svgrepo.com/show/527961/user.svg"
