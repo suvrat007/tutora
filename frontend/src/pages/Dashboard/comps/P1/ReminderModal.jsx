@@ -11,7 +11,14 @@ const ReminderModal = ({ setShowModal, value }) => {
     const [batchName, setBatchName] = useState("");
     const [selectedBatch, setSelectedBatch] = useState(null);
     const [subjectName, setSubjectName] = useState("");
-    const [reminderDate, setReminderDate] = useState(value || new Date());
+
+    // Initialize with today, but update whenever 'value' changes
+    const [reminderDate, setReminderDate] = useState(new Date());
+
+    useEffect(() => {
+        if (value) setReminderDate(new Date(value));
+    }, [value]);
+
     const [time, setTime] = useState("");
     const [reminderText, setReminderText] = useState("");
     const [batches, setBatches] = useState([]);
@@ -37,16 +44,28 @@ const ReminderModal = ({ setShowModal, value }) => {
             return alert("❌ Invalid or missing date.");
         }
 
+        const [hour, minute] = time.split(":").map(Number);
+
+        // Construct date+time in local timezone
+        const finalDateAndTime = new Date(
+            reminderDate.getFullYear(),
+            reminderDate.getMonth(),
+            reminderDate.getDate(),
+            hour,
+            minute,
+            0,
+            0
+        ).toISOString(); // Save as ISO string for backend consistency
+
         const payload = {
             batchName: batchName || undefined,
             subjectName: subjectName || undefined,
-            reminderDate,
-            time,
+            reminderDate: finalDateAndTime,
             reminder: reminderText.trim()
         };
 
         try {
-            await axiosInstance.post('/add-reminder', payload);
+            await axiosInstance.post('/api/reminder/add-reminder', payload, { withCredentials: true });
             alert(`✅ Reminder Set!\n\nDate: ${reminderDate.toDateString()}\nTime: ${time}\nNote: ${reminderText}`);
             setShowModal(false);
         } catch (err) {
@@ -57,7 +76,7 @@ const ReminderModal = ({ setShowModal, value }) => {
 
     return (
         <motion.div
-            className="fixed inset-0 z-50 bg-black/20 backdrop-blur-md flex items-center justify-center"
+            className="fixed inset-0 z-50 bg-black/20 text-black backdrop-blur-md flex items-center justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -105,7 +124,7 @@ const ReminderModal = ({ setShowModal, value }) => {
                     className="w-full px-3 py-2 mb-3 border rounded-md shadow-sm text-sm"
                 >
                     <option value="">No Subject</option>
-                    {selectedBatch?.subject.map((subj, idx) => (
+                    {selectedBatch?.subject?.map((subj, idx) => (
                         <option key={idx} value={subj.name}>{subj.name}</option>
                     ))}
                 </select>
@@ -115,7 +134,11 @@ const ReminderModal = ({ setShowModal, value }) => {
                 <input
                     type="date"
                     value={`${reminderDate.getFullYear()}-${String(reminderDate.getMonth() + 1).padStart(2, '0')}-${String(reminderDate.getDate()).padStart(2, '0')}`}
-                    onChange={(e) => setReminderDate(new Date(e.target.value))}
+                    onChange={(e) => {
+                        const [year, month, day] = e.target.value.split('-').map(Number);
+                        const localDate = new Date(year, month - 1, day);
+                        setReminderDate(localDate);
+                    }}
                     className="w-full px-3 py-2 mb-3 border rounded-md text-sm"
                 />
 

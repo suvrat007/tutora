@@ -10,16 +10,13 @@ import useLogoutAdmin from "@/useLogoutAdmin.js";
 const Home = () => {
   return (
     <div className="min-h-screen bg-[#d3a781] text-white flex justify-center items-center py-10">
-      {/* Soft Background Container */}
       <div className="bg-[#fee5cf] relative w-[97%] max-w-[1750px] min-h-[92vh] rounded-[2rem] bg-[#e7c6a5] border border-[#e0b890] shadow-2xl overflow-hidden flex">
-        {/* Sidebar + Main Content */}
         <SideBar />
 
         <div className="flex flex-col w-full overflow-hidden">
           <Navbar />
 
           <div className="flex flex-col gap-4 p-4">
-            {/* Top row: Today's Classes + Calendar */}
             <div className="flex gap-4 flex-wrap">
               <Card className="flex-1 min-w-[400px]">
                 <TodaysClasses />
@@ -30,7 +27,6 @@ const Home = () => {
               </Card>
             </div>
 
-            {/* Bottom row: Status Updates + Reminders */}
             <div className="flex gap-4 flex-wrap">
               <Card className="flex-1">
                 <ClassStatusUpdates />

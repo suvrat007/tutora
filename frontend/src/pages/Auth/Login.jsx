@@ -27,7 +27,7 @@ const Login = () => {
             }, { withCredentials: true })
 
             console.log("Login success:", response.data)
-            navigate("/main")
+            navigate("/")
         } catch (err) {
             console.error("Login failed:", err)
         }

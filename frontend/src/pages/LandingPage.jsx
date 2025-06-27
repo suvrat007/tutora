@@ -1,6 +1,7 @@
 import {ModeToggle} from "@/components/ui/ModeToggle.jsx";
 import {useNavigate} from "react-router-dom";
 import {useSelector} from "react-redux";
+import Navbar from "@/pages/Navbar/Navbar.jsx";
 
 const LandingPage = () => {
     const navigate = useNavigate();
@@ -16,6 +17,7 @@ const LandingPage = () => {
     console.log(user);
     return (
         <div>
+            {/*<Navbar/>*/}
             <ModeToggle />
             Landing Page
             {!user ? (<button onClick={goToLogin}>Login</button>) : (
