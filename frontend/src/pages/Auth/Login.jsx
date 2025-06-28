@@ -2,6 +2,9 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import OnboardingForm from "@/pages/Auth/OnboardingForm"
 import axiosInstance from "@/utilities/axiosInstance"
+import useFetchUser from "@/pages/useFetchUser.js";
+import {useDispatch} from "react-redux";
+import {setUser} from "@/utilities/redux/userSlice.jsx";
 
 const Login = () => {
     const [isSignup, setIsSignup] = useState(false)
@@ -18,6 +21,7 @@ const Login = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value })
     }
 
+    const dispatch = useDispatch()
     const handleLogin = async (e) => {
         e.preventDefault()
         try {
@@ -27,7 +31,8 @@ const Login = () => {
             }, { withCredentials: true })
 
             console.log("Login success:", response.data)
-            navigate("/")
+            dispatch(setUser(response.data))
+            navigate("/main")
         } catch (err) {
             console.error("Login failed:", err)
         }
