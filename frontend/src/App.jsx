@@ -6,6 +6,8 @@ import Home from "./pages/Dashboard/Home.jsx";
 import AttendencePage from "./pages/Attendence/AttendencePage.jsx";
 import StudentData from "./pages/Student/StudentData.jsx";
 import BatchPage from "./pages/BatchPage/BatchPage.jsx";
+import Landing from './pages/LandingPage/Landing';
+import CompleteInformationDisplay from './pages/InfoCenter/CompleteInformationDisplay';
 import {Provider} from "react-redux";
 import LandingPage from "@/pages/LandingPage.jsx";
 import Body from "@/pages/Body.jsx";
@@ -20,7 +22,7 @@ const appRouter = createBrowserRouter([
         children: [
             {
                 index: true,
-                element: <LandingPage />,
+                element: <Landing/>,
             },
             {
                 path: "login",
@@ -58,6 +60,14 @@ const appRouter = createBrowserRouter([
                         element: (
                             <ProtectedRoute>
                                 <BatchPage />
+                            </ProtectedRoute>
+                        ),
+                    },
+                    {
+                        path: "info",
+                        element: (
+                            <ProtectedRoute>
+                                <CompleteInformationDisplay />
                             </ProtectedRoute>
                         ),
                     },

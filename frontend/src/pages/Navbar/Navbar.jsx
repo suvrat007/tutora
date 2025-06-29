@@ -1,10 +1,14 @@
 import useLogoutAdmin from "@/useLogoutAdmin.js";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import axiosInstance from "@/utilities/axiosInstance.jsx";
+import { BsSearch} from "react-icons/bs";
+import { useState } from "react";
 
 const Navbar = () => {
     const handleLogout = useLogoutAdmin();
     const [institution, setInstitution] = useState(null);
+    const [darkMode, setDarkMode] = useState(false);
+    const toggleTheme = () => setDarkMode(!darkMode);
 
     useEffect(() => {
         const getInstituteInfo = async () => {
@@ -32,14 +36,19 @@ const Navbar = () => {
                         alt="Institute Logo"
                         className="h-10 w-10 object-contain rounded-full border border-gray-300"
                     />
-                ): (
-                    <span className="text-xl font-semibold text-[#4a3a2c]">LOGO</span>
-                )}
+                ) : (
+                    <div
+                        className="bg-[#e7c6a5] mx-4 mt-4 mb-2 px-6 py-3 rounded-2xl shadow-md flex justify-between items-center text-[#4a3a2c]">
+                        <div className="flex items-center gap-4">
+                            <div
+                                className="bg-[#4a3a2c] text-white w-9 h-9 flex items-center justify-center rounded-full font-bold text-sm">
+                                Tutora
+                            </div>
+                        </div>
+                    </div>)}
             </div>
 
-            <div className="text-base font-medium text-[#4a3a2c]">
-                {institution?.name || "Institute Name"}
-            </div>
+            <div className="text-base font-medium">{institution?.name}</div>
 
             <div className="flex items-center gap-4">
                 <img

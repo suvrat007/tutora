@@ -4,15 +4,19 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken');
 const Admin = require('../models/Admin');
 const {signupValidation,logInValidation} = require('../utils/validations');
-const userAuth = require("../middleware/userAuth");
 const Institute = require("../models/Institutes");
 
 
 router.post("/signup", async (req, res) => {
-    const { error } = signupValidation.validate(req.body.admin);
+    const { error } = signupValidation.validate(req.body);
     if (error) return res.status(400).json({ message: error.details[0].message });
 
-    const { name, emailId, password } = req.body.admin;
+    const { admin } = req.body;
+    if (!admin || !admin.name || !admin.emailId || !admin.password) {
+        return res.status(400).json({ message: "Incomplete admin credentials" });
+    }
+
+    const { name, emailId, password } = admin;
 
     try {
         const existingUser = await Admin.findOne({ emailId });
@@ -24,10 +28,10 @@ router.post("/signup", async (req, res) => {
 
         const newInstitute = new Institute({
             adminId: newUser._id,
-            name: req.body.name,
+            name: req.body.instiName,
             logo_URL: req.body.logo_URL,
             contact_info: {
-                emailId: req.body.emailId,
+                emailId: req.body.instituteEmailId,
                 phone_number: req.body.phone_number,
             },
         });
@@ -49,7 +53,6 @@ router.post("/signup", async (req, res) => {
 
         res.status(201).json({ message: "User created", user: userObject });
     } catch (err) {
-        console.error("Signup Error:", err);
         res.status(500).json({ message: "Internal server error" });
     }
 });
