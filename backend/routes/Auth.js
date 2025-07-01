@@ -38,6 +38,9 @@ router.post("/signup", async (req, res) => {
 
         await newInstitute.save();
 
+        newUser.institute_info = newInstitute._id;
+        await newUser.save();
+
         const token = jwt.sign({ _id: newUser._id }, process.env.JWT_KEY, { expiresIn: "1d" });
 
         res.cookie("token", token, {

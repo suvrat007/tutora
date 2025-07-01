@@ -6,32 +6,38 @@ import ClassStatusUpdates from "./comps/P1/ClassStatusUpdates.jsx";
 import Reminders from "./comps/P1/Reminders.jsx";
 import Card from "./comps/uii/Card.jsx";
 import useLogoutAdmin from "@/useLogoutAdmin.js";
+import {useEffect} from "react";
+import axiosInstance from "@/utilities/axiosInstance.jsx";
+import {useDispatch} from "react-redux";
+import {addBatches} from "@/utilities/redux/batchSlice.jsx";
+import useFetchBatches from "@/pages/useFetchBatches.js";
+import useFetchStudents from "@/pages/useFetchStudents.js";
 
 const Home = () => {
+  const getBatches =  useFetchBatches()
+  const getStudents = useFetchStudents()
+  useEffect(() => {
+    getBatches()
+    getStudents()
+  }, []);
+
+
   return (
     <div className="min-h-screen w-screen bg-[#d3a781] text-white flex justify-center items-start overflow-hidden">
-      {/* Outer Container */}
       <div className="bg-[#fee5cf] relative w-full min-h-[95vh] rounded-[2rem] border border-[#e0b890] shadow-2xl overflow-hidden flex mx-2 my-4">
-
-        {/* Sidebar */}
         <SideBar />
 
         <div className="flex flex-col w-full overflow-hidden">
           <Navbar />
-
-          {/* Content Area */}
           <div className="flex flex-col gap-4 p-4 flex-1 overflow-hidden">
-            {/* Top Row: Today's Classes + Calendar */}
             <div className="flex gap-4 flex-1 overflow-hidden">
 
-              {/* Wrapper Card */}
               <div className="bg-[#f4d8bb] p-2 rounded-3xl shadow-md flex-1 min-w-[400px]">
                 <div className="bg-white rounded-2xl shadow p-4 h-full">
                   <TodaysClasses />
                 </div>
               </div>
 
-              {/* Wrapper Card */}
               <div className="bg-[#f4d8bb] p-2 rounded-3xl shadow-md w-[28%] min-w-[280px]">
                 <div className="bg-white rounded-2xl shadow p-4 h-full">
                   <Callendar />
@@ -40,17 +46,13 @@ const Home = () => {
 
             </div>
 
-            {/* Bottom Row: Class Status + Reminders */}
             <div className="flex gap-4 flex-1 overflow-hidden">
-
-              {/* Wrapper Card */}
               <div className="bg-[#f4d8bb] p-2 rounded-3xl shadow-md flex-1 min-w-[400px]">
                 <div className="bg-white rounded-2xl shadow p-4 h-full">
                   <ClassStatusUpdates />
                 </div>
               </div>
 
-              {/* Wrapper Card */}
               <div className="bg-[#f4d8bb] p-2 rounded-3xl shadow-md flex-1 min-w-[400px]">
                 <div className="bg-white rounded-2xl shadow p-4 h-full">
                   <Reminders />

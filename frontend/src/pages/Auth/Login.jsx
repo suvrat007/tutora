@@ -12,6 +12,7 @@ import { FaFacebook, FaGithub } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { BackgroundBeams } from "@/components/ui/background-beams";
 import { FlipWords } from "@/components/ui/flip-words";
+import useFetchUser from "@/pages/useFetchUser.js";
 
 const Login = () => {
     const words = ["mazing", "wesome", "mbitious", "daptive", "dvanced"];
@@ -21,6 +22,7 @@ const Login = () => {
     const [formData, setFormData] = useState({ name: "", emailId: "", password: "" });
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const fetchUser = useFetchUser()
 
     const handleInputChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -37,7 +39,7 @@ const Login = () => {
                 },
                 { withCredentials: true }
             );
-            dispatch(setUser(response.data));
+            await fetchUser();
             navigate("/main");
         } catch (err) {
             alert("Login failed. Please check your credentials.");

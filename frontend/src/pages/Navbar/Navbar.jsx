@@ -3,36 +3,22 @@ import { useEffect } from "react";
 import axiosInstance from "@/utilities/axiosInstance.jsx";
 import { BsSearch} from "react-icons/bs";
 import { useState } from "react";
+import {useSelector} from "react-redux";
 
 const Navbar = () => {
     const handleLogout = useLogoutAdmin();
-    const [institution, setInstitution] = useState(null);
     const [darkMode, setDarkMode] = useState(false);
     const toggleTheme = () => setDarkMode(!darkMode);
 
-    useEffect(() => {
-        const getInstituteInfo = async () => {
-            try {
-                const response = await axiosInstance.get(`/api/institute/get`, {
-                    withCredentials: true
-                });
-                if (response?.data) {
-                    setInstitution(response.data.data || response.data); // Handle either format
-                }
-            } catch (error) {
-                console.error("Error fetching institute:", error);
-            }
-        };
+    const adminData = useSelector(state=> state.user)
 
-        getInstituteInfo();
-    }, []);
 
     return (
         <div className="bg-[#e7c6a5] mx-4 mt-4 mb-2 px-6 py-3 rounded-2xl shadow-md flex justify-between items-center">
             <div className="flex items-center gap-3">
-                {institution?.logo_URL ? (
+                {adminData?.institute_info?.logo_URL ? (
                     <img
-                        src={institution.logo_URL}
+                        src={adminData?.institute_info?.logo_URL}
                         alt="Institute Logo"
                         className="h-10 w-10 object-contain rounded-full border border-gray-300"
                     />
@@ -48,7 +34,7 @@ const Navbar = () => {
                     </div>)}
             </div>
 
-            <div className="text-base font-medium">{institution?.name}</div>
+            <div className="text-base font-medium">{adminData?.institute_info?.name}</div>
 
             <div className="flex items-center gap-4">
                 <img

@@ -1,12 +1,14 @@
 import { configureStore } from '@reduxjs/toolkit';
-import userDataSlice from "@/utilities/redux/userDataSlice.jsx";
+import batchSlice from "@/utilities/redux/batchSlice.jsx";
 import userSlice from "@/utilities/redux/userSlice.jsx";
 import reminderSlice from "@/utilities/redux/reminderSlice.js";
+import studentSlice from "@/utilities/redux/studentSlice.jsx";
 
 const store =  configureStore({
     reducer: {
         user: userSlice,
-        userData : userDataSlice,
+        batches : batchSlice,
+        students : studentSlice,
         reminder : reminderSlice,
     },
 });

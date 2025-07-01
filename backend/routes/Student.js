@@ -8,10 +8,12 @@ const userAuth  =require("../middleware/userAuth.js");
 router.post("/add-new-student/:batchId",userAuth, async (req, res) => {
     const batchId = req.params.batchId;
     const { contact_info } = req.body;
+    const adminId = req.user._id;
 
     try {
-        // Check for existing student
         const existingStudent = await Student.findOne({
+            adminId:adminId,
+            bathId:batchId,
             $or: [
                 { "contact_info.emailIds.student": contact_info.emailIds.student },
                 { "contact_info.phoneNumbers.student": contact_info.phoneNumbers.student }
@@ -22,25 +24,17 @@ router.post("/add-new-student/:batchId",userAuth, async (req, res) => {
             return res.status(409).json({ message: "Student with same email or phone already exists" });
         }
 
-        // Create and save new student
-        const newStudent = new Student(req.body);
+        const newStudent = new Student({
+            adminId:adminId,
+            batchId:batchId,
+            ...req.body
+        });
         await newStudent.save();
-
-        // Add student to batch
-        const updatedBatch = await Batch.findByIdAndUpdate(
-            batchId,
-            { $push: { enrolledStudents: newStudent._id } },
-            { new: true }
-        ).populate("enrolledStudents"); // optional: to confirm enrollment
-
-        if (!updatedBatch) {
-            return res.status(404).json({ message: "Batch not found" });
-        }
 
         return res.status(201).json({
             message: "Student added and enrolled successfully",
             student: newStudent,
-            updatedBatch
+            newStudent
         });
 
     } catch (error) {
@@ -48,9 +42,10 @@ router.post("/add-new-student/:batchId",userAuth, async (req, res) => {
         return res.status(500).json({ message: "Failed to add student", error: error.message });
     }
 });
-router.get("/get-all-students",userAuth, async (req, res) => {
+router.get("/get-all-students-of-institute",userAuth, async (req, res) => {
     try{
-        const response = await Student.find();
+        const adminId = req.user._id;
+        const response = await Student.find({adminId: adminId}).populate('admin');
         console.log(response);
         return res.status(200).json(response);
 

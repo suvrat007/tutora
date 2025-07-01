@@ -9,15 +9,15 @@ const ViewBatchDetails = ({ viewDetails, setViewDetails, setRerender }) => {
     const [showEditModal, setShowEditModal] = useState(false);
     const batch = viewDetails.batch;
 
-    const fee = calculateFees(allStudents);
+    // const fee = calculateFees(allStudents);
 
-    useEffect(() => {
-        const getStudents = async () => {
-            const students = await fetchStudents(batch._id);
-            setAllStudents(students);
-        };
-        getStudents();
-    }, [batch._id]);
+    // useEffect(() => {
+    //     const getStudents = async () => {
+    //         const students = await fetchStudents(batch._id);
+    //         setAllStudents(students);
+    //     };
+    //     getStudents();
+    // }, [batch._id]);
 
     const handleCloseDetails = () => {
         setViewDetails({ display: false, batch: null });
@@ -27,7 +27,7 @@ const ViewBatchDetails = ({ viewDetails, setViewDetails, setRerender }) => {
         setShowEditModal(true);
     };
 
-    const handleBatchCreated = () => {
+    const handleBatchUpdated = () => {
         setRerender(prev => !prev);
         setShowEditModal(false);
     };
@@ -35,7 +35,6 @@ const ViewBatchDetails = ({ viewDetails, setViewDetails, setRerender }) => {
     return (
         <div className="p-4">
             <div className="rounded-2xl border border-gray-200 shadow bg-white flex flex-col">
-                {/* Header */}
                 <div className="flex justify-between items-center px-6 py-4 border-b bg-gray-50">
                     <h1 className="text-xl font-bold text-gray-900">{batch.name}</h1>
                     <div className="flex gap-2">
@@ -55,10 +54,7 @@ const ViewBatchDetails = ({ viewDetails, setViewDetails, setRerender }) => {
                         </button>
                     </div>
                 </div>
-
-                {/* Main Content */}
                 <div className="flex flex-col lg:flex-row gap-6 p-6 h-80">
-                    {/* Batch Details */}
                     <div className="flex-1 border rounded-xl shadow-sm bg-white">
                         <div className="sticky top-0 bg-gray-50 p-4 border-b rounded-t-xl">
                             <h2 className="text-lg font-semibold text-gray-800">Batch Details</h2>
@@ -68,18 +64,16 @@ const ViewBatchDetails = ({ viewDetails, setViewDetails, setRerender }) => {
                                 📚 <span className="font-medium">For Class:</span> {batch.forStandard}
                             </p>
                             <p className="flex gap-2">
-                                👥 <span className="font-medium">Total Students:</span> {batch.enrolledStudents.length}
+                                👥 <span className="font-medium">Total Students:</span> {allStudents.length}
                             </p>
                             <p className="flex gap-2">
                                 📝 <span className="font-medium">Total Subjects:</span> {batch.subject.length}
                             </p>
                             <p className="flex gap-2">
-                                💰 <span className="font-medium">Total Fee:</span> ₹{fee}
+                                💰 <span className="font-medium">Total Fee:</span> ₹
                             </p>
                         </div>
                     </div>
-
-                    {/* Subjects & Schedule */}
                     <div className="flex-1 border rounded-xl shadow-sm bg-white overflow-y-scroll">
                         <div className="sticky top-0 bg-gray-50 p-4 border-b">
                             <h2 className="text-lg font-semibold text-gray-800">Subjects & Schedule</h2>
@@ -93,10 +87,10 @@ const ViewBatchDetails = ({ viewDetails, setViewDetails, setRerender }) => {
                                         </div>
                                         <div className="ml-6 text-xs text-gray-600 mt-1 space-y-1">
                                             <p className="flex gap-2">
-                                                🕒 {item.classSchedule[0]?.time || "N/A"}
+                                                🕒 {item.classSchedule?.time || "N/A"}
                                             </p>
                                             <p className="flex gap-2">
-                                                📅 {item.classSchedule[0]?.days?.join(", ") || "No days set"}
+                                                📅 {item.classSchedule?.days?.join(", ") || "No days set"}
                                             </p>
                                         </div>
                                     </div>
@@ -107,8 +101,6 @@ const ViewBatchDetails = ({ viewDetails, setViewDetails, setRerender }) => {
                         )}
                     </div>
                 </div>
-
-                {/* Students List */}
                 <div className="border rounded-xl shadow-sm bg-white m-6 mt-0 h-60 overflow-y-auto">
                     <div className="sticky top-0 bg-gray-50 p-4 border-b flex justify-between">
                         <div className="flex gap-3 w-1/2">
@@ -149,11 +141,10 @@ const ViewBatchDetails = ({ viewDetails, setViewDetails, setRerender }) => {
                     )}
                 </div>
             </div>
-
             {showEditModal && (
                 <CreateEditBatch
                     onClose={() => setShowEditModal(false)}
-                    onBatchCreated={handleBatchCreated}
+                    onBatchUpdated={handleBatchUpdated}
                     setRerender={setRerender}
                     batchToEdit={batch}
                 />

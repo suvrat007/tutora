@@ -7,6 +7,8 @@ import useGetBatchId from "./funtions/useGetBatchId.js";
 import AddStudent from "./AddStudent.jsx";
 import StdDataDisplay from "./StdDataDisplay.jsx";
 import { AiOutlineClose } from "react-icons/ai";
+import useFetchStudents from "@/pages/useFetchStudents.js";
+import {useDispatch, useSelector} from "react-redux";
 
 const WrapperCard = ({ children }) => (
   <div className="relative bg-[#f3d8b6] rounded-3xl shadow-lg p-2 flex flex-1 justify-center items-center h-full">
@@ -56,18 +58,8 @@ const StudentData = () => {
     }
   };
 
-  useEffect(() => {
-    const getAllStudents = async () => {
-      try {
-        const response = await axiosInstance.get(`/get-all-students`);
-        setStudents(response.data || []);
-      } catch (error) {
-        console.log(error.message);
-      }
-    };
-    getAllStudents();
-    if (batchId) fetchStudents();
-  }, [batchId, rerender]);
+  const std = useSelector(state => state.students)
+  setStudents(std)
 
   return (
     <div className="min-h-screen w-screen bg-[#d3a781] text-white flex justify-center items-start overflow-hidden">

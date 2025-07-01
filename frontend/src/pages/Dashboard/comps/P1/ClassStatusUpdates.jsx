@@ -1,215 +1,153 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, ChevronUp, Loader2 } from "lucide-react";
-import axios from "axios";
-import {useFetchOverClasses} from "@/pages/Dashboard/comps/DashboardHooks/useFetchAllClasses.jsx";
 import axiosInstance from "@/utilities/axiosInstance.jsx";
+import useFetchUnUpdatedClasslog from "../DashboardHooks/useFetchUnUpdatedClasslog.js";
 
 const ClassStatusForm = () => {
-    const [overClasses, setOverClasses] = useState([]);
-    const [error, setError] = useState(null);
-    const [openIndex, setOpenIndex] = useState(null);
+    const [rerender, setRerender] = useState(false);
+    const { filteredLogs, loading, error } = useFetchUnUpdatedClasslog(rerender);
     const [statusData, setStatusData] = useState({});
+    const [openIndex, setOpenIndex] = useState(null);
     const [loadingStates, setLoadingStates] = useState({});
 
-    useEffect(() => {
-        const fetchClasses = async () => {
-            try {
-                const classes = await useFetchOverClasses();
-                const finalClasses = [];
-
-                if (!Array.isArray(classes)) throw new Error("Invalid class data");
-
-                for (const classItem of classes) {
-                    const { id: batch_id, subject_id, date } = classItem;
-
-                    try {
-                        const response = await axiosInstance.get(`/check-class-in-log/${batch_id}`, {
-                            params: {
-                                subject_id,
-                                date: date.split("T")[0]  // Ensure it's in YYYY-MM-DD
-                            }
-                        });
-
-                        // If class log doesn't exist, add to final list
-                        if (!response.data.exists) {
-                            finalClasses.push(classItem);
-                        }
-                    } catch (checkError) {
-                        console.error(`Error checking log for batch ${batch_id}:`, checkError);
-                    }
-                }
-
-                setOverClasses(finalClasses);
-            } catch (err) {
-                setError(`Failed to fetch classes: ${err.message}`);
-            }
-        };
-
-        fetchClasses();
-    }, []);
-
+    // console.log(filteredLogs)
 
     const handleToggle = (index) => {
         setOpenIndex(openIndex === index ? null : index);
     };
 
     const handleStatusChange = (index, held) => {
-        setStatusData((prev) => ({
+        setStatusData(prev => ({
             ...prev,
-            [index]: {
-                ...prev[index],
-                held,
-                error: null
-            }
+            [index]: { ...prev[index], held, error: null }
         }));
     };
 
     const handleInputChange = (index, value) => {
-        setStatusData((prev) => ({
+        setStatusData(prev => ({
             ...prev,
-            [index]: {
-                ...prev[index],
-                note: value,
-                error: null
-            }
+            [index]: { ...prev[index], note: value, error: null }
         }));
     };
 
     const handleSubmit = async (classInfo, index) => {
-        const classStatus = statusData[index];
+        const status = statusData[index];
 
-        if (!classStatus?.note?.trim()) {
-            return setStatusData((prev) => ({
+        if (!status?.held && !status?.note?.trim()) {
+            return setStatusData(prev => ({
                 ...prev,
-                [index]: {
-                    ...prev[index],
-                    error: "Note or reason is required."
-                }
+                [index]: { ...prev[index], error: "Reason is required for cancelled class." }
+            }));
+        }
+
+        if (status.held && (!classInfo.attendance || classInfo.attendance.length === 0)) {
+            return setStatusData(prev => ({
+                ...prev,
+                [index]: { ...prev[index], error: "Please mark attendance before submitting held class." }
             }));
         }
 
         const payload = {
-            batchName: classInfo.batchName,
-            subject_id: classInfo.subject_id,
-            date: new Date().toISOString(),
-            hasHeld: classStatus.held,
-            note: classStatus.note
+            batch_id: classInfo.batchId,
+            subject_id: classInfo.subjectId,
+            date: classInfo.date,
+            hasHeld: status.held,
+            note: status.note,
+            updated: true
         };
 
         try {
-            setLoadingStates((prev) => ({ ...prev, [index]: true }));
-            await axiosInstance.post("/add-class-update", payload);
-            setLoadingStates((prev) => ({ ...prev, [index]: false }));
+            setLoadingStates(prev => ({ ...prev, [index]: true }));
 
-            setOverClasses((prev) => prev.filter((_, i) => i !== index));
+            await axiosInstance.post("/api/classLog/add-class-update", payload, { withCredentials: true });
 
-            setOpenIndex(null);
-            setStatusData((prev) => {
-                const newData = { ...prev };
-                delete newData[index];
-                return newData;
-            });
-
-            alert("Class log submitted successfully");
+            alert("Class updated!");
+            setLoadingStates(prev => ({ ...prev, [index]: false }));
+            // fetch un updated classlogs again
+            setRerender(prev => !prev)
         } catch (err) {
-            console.error("Submission failed", err);
-            setLoadingStates((prev) => ({ ...prev, [index]: false }));
-            alert("Failed to submit class log.");
+            console.error(err);
+            alert("Failed to update class.");
         }
     };
 
-
     return (
-        <div className="w-full h-full p-6 rounded-2xl bg-white shadow-xl border border-gray-200 overflow-y-auto">
+        <div className="p-6 text-black rounded-xl border shadow-lg">
+            <h2 className="text-xl font-semibold mb-4">Update Unupdated Classes</h2>
 
-            <h1 className="text-xl font-semibold mb-4 text-gray-800">Set Today's Class Status & Reminder</h1>
+            {error && <p className="text-red-500">{error}</p>}
+            {loading && <p>Loading...</p>}
+            {!loading && filteredLogs.length === 0 && <p>No classes to update.</p>}
 
-            {error ? (
-                <p className="text-red-500 text-sm">{error}</p>
-            ) : overClasses.length === 0 ? (
-                <p className="text-gray-500">No classes over yet.</p>
-            ) : (
-                <div className="space-y-4">
-                    {overClasses.map((val, index) => (
-                        <div key={index} className="rounded-xl border border-gray-200 shadow-sm p-4 bg-gray-50">
-                            <div className="flex justify-between items-center">
-                                <div>
-                                    <h2 className="font-medium text-base text-gray-800">Batch: {val.batchName}</h2>
-                                    <p className="text-sm text-gray-500">Subject: {val.subjectName}</p>
-                                </div>
-                                <button
-                                    onClick={() => handleToggle(index)}
-                                    className="text-blue-600 text-sm hover:underline flex items-center gap-1"
-                                >
-                                    Update {openIndex === index ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                                </button>
-                            </div>
-
-                            <AnimatePresence>
-                                {openIndex === index && (
-                                    <motion.div
-                                        initial={{ opacity: 0, height: 0 }}
-                                        animate={{ opacity: 1, height: "auto" }}
-                                        exit={{ opacity: 0, height: 0 }}
-                                        className="mt-3 space-y-3 overflow-hidden transition-all"
-                                    >
-                                        {/* Held / Cancelled Buttons */}
-                                        <div className="flex gap-2">
-                                            {["Held", "Cancelled"].map((label) => (
-                                                <button
-                                                    key={label}
-                                                    onClick={() => handleStatusChange(index, label === "Held")}
-                                                    className={`px-3 py-1 rounded-lg border text-sm transition ${
-                                                        statusData[index]?.held === (label === "Held")
-                                                            ? "bg-blue-600 text-white"
-                                                            : "bg-white text-blue-600 hover:bg-blue-100"
-                                                    }`}
-                                                >
-                                                    {label}
-                                                </button>
-                                            ))}
-                                        </div>
-
-                                        {/* Note Input */}
-                                        <input
-                                            type="text"
-                                            placeholder={
-                                                statusData[index]?.held
-                                                    ? "What was done in class?"
-                                                    : "Reason for cancellation"
-                                            }
-                                            value={statusData[index]?.note || ""}
-                                            onChange={(e) => handleInputChange(index, e.target.value)}
-                                            className="w-full border border-gray-300 p-2 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                        />
-
-                                        {/* Error */}
-                                        {statusData[index]?.error && (
-                                            <p className="text-sm text-red-500">{statusData[index]?.error}</p>
-                                        )}
-
-                                        {/* Submit */}
-                                        <button
-                                            onClick={() => handleSubmit(val, index)}
-                                            className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm py-2 rounded-lg font-medium transition"
-                                            disabled={loadingStates[index]}
-                                        >
-                                            {loadingStates[index] ? (
-                                                <>
-                                                    <Loader2 className="w-4 h-4 animate-spin" /> Submitting...
-                                                </>
-                                            ) : (
-                                                "Submit"
-                                            )}
-                                        </button>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
+            {filteredLogs.map((cls, index) => (
+                <div key={cls.classId} className="mb-4 border p-4 rounded-xl bg-gray-50 shadow-sm">
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <p className="text-sm font-semibold text-gray-800">Batch: {cls.batchName}</p>
+                            <p className="text-xs text-gray-500">Subject: {cls.subjectName}</p>
+                            <p className="text-xs text-gray-500">Date: {cls.date} | Time: {cls.scheduledTime}</p>
                         </div>
-                    ))}
+                        <button onClick={() => handleToggle(index)} className="text-blue-600 text-sm flex items-center gap-1">
+                            {openIndex === index ? "Close" : "Update"} {openIndex === index ? <ChevronUp /> : <ChevronDown />}
+                        </button>
+                    </div>
+
+                    <AnimatePresence>
+                        {openIndex === index && (
+                            <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="mt-4 space-y-3"
+                            >
+                                <div className="flex gap-2">
+                                    {["Held", "Cancelled"].map(label => (
+                                        <button
+                                            key={label}
+                                            onClick={() => handleStatusChange(index, label === "Held")}
+                                            className={`px-3 py-1 rounded-lg border text-sm ${
+                                                statusData[index]?.held === (label === "Held")
+                                                    ? "bg-blue-600 text-white"
+                                                    : "bg-white text-blue-600 hover:bg-blue-100"
+                                            }`}
+                                        >
+                                            {label}
+                                        </button>
+                                    ))}
+                                </div>
+                                <input
+                                    type="text"
+                                    value={statusData[index]?.note || ""}
+                                    onChange={(e) => handleInputChange(index, e.target.value)}
+                                    className="w-full border p-2 rounded-md text-sm"
+                                    placeholder={
+                                        statusData[index]?.held
+                                            ? "What was done in class?"
+                                            : "Why was class cancelled?"
+                                    }
+                                />
+                                {statusData[index]?.error && (
+                                    <p className="text-red-500 text-sm">{statusData[index].error}</p>
+                                )}
+                                <button
+                                    onClick={() => handleSubmit(cls, index)}
+                                    disabled={loadingStates[index]}
+                                    className="w-full bg-green-600 text-white py-2 rounded-lg flex items-center justify-center gap-2"
+                                >
+                                    {loadingStates[index] ? (
+                                        <>
+                                            <Loader2 className="animate-spin w-4 h-4" /> Submitting...
+                                        </>
+                                    ) : (
+                                        "Submit"
+                                    )}
+                                </button>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
-            )}
+            ))}
         </div>
     );
 };

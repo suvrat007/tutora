@@ -6,7 +6,7 @@ const Institute = require('../models/Institutes.js');
 router.get('/get', userAuth ,async(req, res) => {
     try{
         const adminId= req.user._id;
-        const institute = await Institute.findOne({adminId})
+        const institute = await Institute.findOne({adminId}).populate('adminId')
         if (!institute) {
             return res.status(404).json({ success: false, message: "No institute found" });
         }

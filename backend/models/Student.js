@@ -2,6 +2,9 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const Student = new Schema({
+    adminId:{type: Schema.Types.ObjectId, ref: 'Admin'},
+    batchId:{type: Schema.Types.ObjectId, ref: 'Batch'},
+    subjectId:[{type: Schema.Types.ObjectId}],
     name: { type: String, required: true },
     address: { type: String, required: true },
     admission_date: { type: Date, default: Date.now },

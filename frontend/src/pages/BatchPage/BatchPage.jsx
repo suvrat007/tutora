@@ -5,6 +5,7 @@ import axiosInstance from "../../utilities/axiosInstance.jsx";
 import CreateEditBatch from "./CreateEditBatch.jsx";
 import ViewBatchDetails from "./ViewBatchDetails.jsx";
 import ConfirmationModal from "./ConfirmationModal.jsx";
+import {useSelector} from "react-redux";
 
 const WrapperCard = ({ children }) => (
   <div className="relative bg-[#f3d8b6] rounded-3xl shadow-lg p-2 flex flex-1 justify-center items-center">
@@ -13,30 +14,23 @@ const WrapperCard = ({ children }) => (
 );
 
 const BatchPage = () => {
-  const [batches, setBatches] = useState([]);
   const [createBatches, setCreateBatches] = useState(false);
   const [batchToDelete, setBatchToDelete] = useState(null);
   const [rerender, setRerender] = useState(false);
   const [viewDetails, setViewDetails] = useState({ display: false, batch: null });
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const getAllBatches = async () => {
-      try {
-        const response = await axiosInstance.get(`/get-all-batches`);
-        setBatches(response.data || []);
-      } catch (error) {
-        console.log(error.message);
-      }
-    };
-    getAllBatches();
-  }, [rerender]);
+  const adminData = useSelector(state=> state.user)
+  const batches = useSelector(state=> state.batches)
 
+
+  //check later
   const handleDelete = async (id, shouldDeleteStudents) => {
     setBatchToDelete(null);
     setIsLoading(true);
     try {
       const toBeDeletedBatch = batches.find(batch => batch._id === id);
+
       if (shouldDeleteStudents && toBeDeletedBatch?.enrolledStudents?.length > 0) {
         await Promise.all(
           toBeDeletedBatch.enrolledStudents.map(std => axiosInstance.delete(`/delete-student/${std}`))
@@ -83,7 +77,7 @@ const BatchPage = () => {
             ) : (
               <WrapperCard>
                 <div className="w-full p-4 bg-white rounded-2xl shadow-md">
-                  <h1 className="text-3xl font-semibold text-gray-800 mb-6 text-center">All Batches in ORG NAME</h1>
+                  <h1 className="text-3xl font-semibold text-gray-800 mb-6 text-center">All Batches in {adminData?.institute_info?.name}</h1>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div
                       onClick={() => !isLoading && setCreateBatches(true)}
@@ -91,6 +85,7 @@ const BatchPage = () => {
                     >
                       <span className="text-xl text-gray-500">+ Create New Batch</span>
                     </div>
+
                     {batches.map((batch, index) => {
                       const infoSections = [
                         { title: "Grade", value: batch.forStandard ?? "N/A" },

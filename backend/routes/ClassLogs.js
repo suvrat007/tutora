@@ -5,47 +5,61 @@ const Batch = require("../models/Batch.js");
 const userAuth  =require("../middleware/userAuth.js");
 
 
-router.post('/add-class-update',userAuth, async (req, res) => {
+router.post('/add-class-update', userAuth, async (req, res) => {
     try {
-        const { batchName, subject_id, date, hasHeld, note } = req.body;
-        const normalizedBatchName = batchName.replace(/\s+/g, "").toLowerCase();
+        const { batch_id, subject_id, date, hasHeld, note ,updated} = req.body;
+        const adminId = req.user._id;
+        const isoDate = new Date(date).toISOString().split('T')[0];
 
-        const batch = await Batch.findOne({ normalized_name: normalizedBatchName });
-
-        if (!batch) {
-            return res.status(404).json({ message: "Invalid batch name" });
-        }
-
-        let classLog = await ClassLog.findOne({ batch_id: batch._id });
+        let classLog = await ClassLog.findOne({
+            adminId,
+            batch_id: batch_id,
+            subject_id: subject_id
+        });
 
         if (!classLog) {
             classLog = new ClassLog({
-                batch_id: batch._id,
+                adminId: adminId,
+                batch_id: batch_id,
+                subject_id: subject_id,
                 classes: [{
-                    subject_id,
-                    date:date.split('T')[0],
+                    date: isoDate,
                     hasHeld,
-                    note
+                    note,
+                    updated: false,
+                    attendance: []
                 }]
             });
             await classLog.save();
         } else {
-            await ClassLog.findOneAndUpdate(
-                { batch_id: batch._id },
-                {
-                    $push: {
-                        classes: {
-                            subject_id,
-                            date,
-                            hasHeld,
-                            note
-                        }
-                    }
-                }
+            const index = classLog.classes.findIndex(
+                cls => new Date(cls.date).toISOString().split('T')[0] === isoDate
             );
+
+            if (index !== -1) {
+                // If class already exists, update it
+                classLog.classes[index].hasHeld = hasHeld;
+                classLog.classes[index].note = note;
+                classLog.classes[index].updated = updated;
+                await classLog.save();
+            } else {
+                // Add new class entry
+                classLog.classes.push({
+                    date: isoDate,
+                    hasHeld,
+                    note,
+                    updated: updated || false,
+                    attendance: []
+                });
+                await classLog.save();
+            }
         }
 
-        const populatedLog = await ClassLog.findOne({ batch_id: batch._id }).populate('batch_id');
+        const populatedLog = await ClassLog.findOne({
+            adminId,
+            batch_id: batch_id,
+            subject_id: subject_id
+        }).populate('batch_id');
 
         console.log("ClassLog added:", populatedLog);
         return res.status(201).json({ message: "ClassLog added successfully", batch: populatedLog });
@@ -55,6 +69,8 @@ router.post('/add-class-update',userAuth, async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 });
+
+
 router.get('/get-class-by-batchId/:id',userAuth, async (req, res) => {
     const {id}=req.params.id
     try{
@@ -64,32 +80,23 @@ router.get('/get-class-by-batchId/:id',userAuth, async (req, res) => {
         console.log(e.message)
     }
 })
-router.get('/check-class-in-log/:id', userAuth,async (req, res) => {
+
+
+router.get('/getAllClasslogs', userAuth, async (req, res) => {
     try {
-        const batch_id = req.params.id;
-        const { subject_id, date } = req.query; // ✅ Use query params in GET
+        const adminId = req.user._id;
 
-        const dateString = date.split('T')[0]; // Normalize date
+        const response = await ClassLog.find({ adminId })
+            .populate('batch_id');
 
-        const logExists = await ClassLog.findOne({
-            batch_id,
-            classes: {
-                $elemMatch: {
-                    subject_id,
-                    date: dateString
-                }
-            }
-        });
+        res.status(200).json(response);
 
-        if (logExists) {
-            return res.status(200).json({ exists: true });
-        } else {
-            return res.status(200).json({ exists: false });
-        }
     } catch (error) {
-        console.log("Check class log error:", error);
+        console.error("Error fetching class logs:", error);
         return res.status(500).json({ message: "Internal Server Error" });
     }
 });
+
+
 
 module.exports=router

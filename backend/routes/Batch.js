@@ -25,7 +25,7 @@ router.post("/add-new-batch",userAuth, async (req, res) => {
 router.get("/get-all-batches",userAuth, async (req, res) => {
     try{
         const adminId = req.user._id
-        const response = await Batch.find({adminId:adminId}).populate('enrolledStudents admin');
+        const response = await Batch.find({adminId:adminId});
         console.log(response);
         return res.status(200).json(response);
 
@@ -37,14 +37,15 @@ router.get("/get-all-batches",userAuth, async (req, res) => {
 router.delete("/delete-batch/:id",userAuth, async (req, res) => {
     try {
         const { id } = req.params;
-        const response = await Batch.deleteOne({ _id: id });
+        const adminId = req.user._id
+        const response = await Batch.deleteOne({adminId: adminId, _id: id });
         console.log(response);
         return res.status(200).json(response);
     }catch(error){
         console.error("Error deleting batch:", error.message);
     }
 })
-router.put("/update-batch/:id", userAuth,async (req, res) => {
+router.patch("/update-batch/:id", userAuth,async (req, res) => {
     const { id } = req.params;
     const { name } = req.body;
 
@@ -66,6 +67,8 @@ router.put("/update-batch/:id", userAuth,async (req, res) => {
         res.status(500).json({ message: `Error updating ${name}, error: error.message `});
     }
 });
+
+
 router.get("/get-batch/:id", userAuth,async (req, res) => {
     const id = req.params.id;
     const adminId = req.user._id
@@ -78,20 +81,6 @@ router.get("/get-batch/:id", userAuth,async (req, res) => {
     } catch (error) {
         console.error("Error fetching batch:", error);
         return res.status(500).json({ message: "Internal Server Error" });
-    }
-});
-
-router.put('/update-batch-with-student/:id', userAuth,async (req, res) => {
-    try {
-        const { newStudentId } = req.body;
-        const batch = await Batch.findByIdAndUpdate(
-            req.params.id,
-            { $addToSet: { enrolledStudents: newStudentId } }, // avoids duplicates
-            { new: true }
-        );
-        res.status(200).json(batch);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
     }
 });
 
