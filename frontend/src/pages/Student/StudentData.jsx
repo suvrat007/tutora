@@ -19,47 +19,31 @@ const WrapperCard = ({ children }) => (
 const StudentData = () => {
   const [showAddStd, setShowAddStd] = useState(false);
   const [batchName, setBatchName] = useState("");
-  const [students, setStudents] = useState([]);
   const [error, setError] = useState("");
   const [formTouched, setFormTouched] = useState(false);
   const [seeStdDetails, setSeeStdDetails] = useState(null);
   const [rerender, setRerender] = useState(false);
 
+  const user = useSelector((state) => state.user);
+  const students = useSelector((state) => state.students);
   const { batchId, orgName } = useGetBatchId(batchName);
 
-  const fetchStudents = async () => {
-    setFormTouched(true);
-    setError("");
-    if (!batchName) {
-      setError("Batch name is required to fetch students.");
-      return;
-    }
-    try {
-      const response = await axiosInstance.get(`/get-all-students-of-batch/${batchId}`);
-      setStudents(response.data || []);
-    } catch (err) {
-      console.error("Error fetching students:", err);
-      setError("Failed to fetch students. Try again.");
-    }
-  };
+  const fetchStudents = useFetchStudents()
 
   const deleteStudent = async (studentId) => {
     const confirmDelete = window.confirm("This will delete this student from the database. Continue?");
     if (!confirmDelete) return;
     try {
-      const response = await axiosInstance.delete(`/delete-student/${studentId}`);
+      const response = await axiosInstance.delete(`/api/student/delete-student/${studentId}`,{withCredentials:true});
       if (response.status !== 200) throw new Error("Failed to delete student");
       alert("Student successfully deleted.");
       setRerender(prev => !prev);
-      fetchStudents();
+      await fetchStudents();
     } catch (error) {
       console.error("Error deleting student:", error);
       alert("An error occurred while deleting the student.");
     }
   };
-
-  const std = useSelector(state => state.students)
-  setStudents(std)
 
   return (
     <div className="min-h-screen w-screen bg-[#d3a781] text-white flex justify-center items-start overflow-hidden">
@@ -69,12 +53,11 @@ const StudentData = () => {
           <Navbar />
           <div className="flex flex-col gap-4 p-6 flex-1 overflow-hidden">
             <div className="flex gap-4 h-full">
-              {/* Left 65% */}
               <div className="w-[65%] h-full">
                 <WrapperCard>
                   <div className="flex flex-col h-full bg-white rounded-2xl shadow-md overflow-hidden">
                     <h2 className="text-xl font-bold text-gray-800 p-4 border-b">
-                      All Students in <span>{orgName || "Org Name"}</span>
+                      All Students in <span>{user?.institute_info?.name || "Org Name"}</span>
                     </h2>
                     <div className="flex flex-wrap gap-4 overflow-y-auto p-4 justify-center">
                       <li
@@ -161,7 +144,6 @@ const StudentData = () => {
           <AddStudent
             batchId={batchId}
             onStudentAdded={() => {
-              fetchStudents();
               setRerender(prev => !prev);
             }}
             setShowAddStd={setShowAddStd}

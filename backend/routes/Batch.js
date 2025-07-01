@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const userAuth  =require("../middleware/userAuth.js");
 const Batch = require("../models/Batch.js");
+const Student = require("../models/Student.js");
 
 router.post("/add-new-batch",userAuth, async (req, res) => {
     const { name } = req.body;
@@ -34,17 +35,40 @@ router.get("/get-all-batches",userAuth, async (req, res) => {
         return res.status(500).json({ message: "Failed to fetch Batches", error: error.message });
     }
 })
-router.delete("/delete-batch/:id",userAuth, async (req, res) => {
+
+router.delete("/delete-batch/:id", userAuth, async (req, res) => {
     try {
-        const { id } = req.params;
-        const adminId = req.user._id
-        const response = await Batch.deleteOne({adminId: adminId, _id: id });
-        console.log(response);
-        return res.status(200).json(response);
-    }catch(error){
+        const batchId = req.params.id;
+        const adminId = req.user._id;
+        const { shouldDeleteStudents } = req.body;
+
+        const batchDeleteResult = await Batch.deleteOne({ adminId, _id: batchId });
+
+        if (shouldDeleteStudents) {
+            const studentDeleteResult = await Student.deleteMany({ batchId });
+            return res.status(200).json({
+                message: "Batch and associated students deleted successfully",
+                batchDeleteResult,
+                studentDeleteResult,
+            });
+        } else {
+            const studentUpdateResult = await Student.updateMany(
+                { batchId },
+                { $set: { batchId: null } }
+            );
+            return res.status(200).json({
+                message: "Batch deleted and students disassociated",
+                batchDeleteResult,
+                studentUpdateResult,
+            });
+        }
+    } catch (error) {
         console.error("Error deleting batch:", error.message);
+        return res.status(500).json({ message: "Internal server error", error: error.message });
     }
-})
+});
+
+
 router.patch("/update-batch/:id", userAuth,async (req, res) => {
     const { id } = req.params;
     const { name } = req.body;

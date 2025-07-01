@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "@/utilities/axiosInstance";
-import { useDispatch } from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import { setUser } from "@/utilities/redux/userSlice.jsx";
 import OnboardingForm from "@/pages/Auth/OnboardingForm.jsx";
 import { Button } from "@/components/ui/button";
@@ -21,12 +21,18 @@ const Login = () => {
     const [signupCreds, setSignupCreds] = useState(null);
     const [formData, setFormData] = useState({ name: "", emailId: "", password: "" });
     const navigate = useNavigate();
-    const dispatch = useDispatch();
     const fetchUser = useFetchUser()
 
     const handleInputChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
+
+    const loggedInUser = useSelector((state) => state.user);
+    useEffect(() => {
+        if (loggedInUser) {
+            navigate("/main");
+        }
+    }, [loggedInUser]);
 
     const handleLogin = async (e) => {
         e.preventDefault();

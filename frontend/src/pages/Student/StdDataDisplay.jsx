@@ -14,7 +14,7 @@ const StdDataDisplay = ({ seeStdDetails, setSeeStdDetails, onStudentEdited }) =>
         <div className="border-2 rounded-2xl overflow-y-scroll">
             {edit && (
                 <AddStudent
-                    batchId={seeStdDetails.stdDetails._id}
+                    batchId={seeStdDetails._id}
                     existingStudentData={seeStdDetails.stdDetails}
                     isEditMode={edit}
                     setEdit={setEdit}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "../../utilities/axiosInstance.jsx";
 import { AiOutlineClose } from "react-icons/ai";
+import { useSelector } from "react-redux";
 
 const AddStudent = ({
                         batchId: initialBatchId,
@@ -10,9 +11,11 @@ const AddStudent = ({
                         existingStudentData = null,
                         isEditMode = false,
                     }) => {
-    const [batches, setBatches] = useState([]);
+    const batches = useSelector((state) => state.batches);
     const [selectedBatchId, setSelectedBatchId] = useState(initialBatchId || "");
     const [newStudent, setNewStudent] = useState({
+        batchId: null,
+        subjectId: [],
         name: "",
         address: "",
         grade: "",
@@ -26,24 +29,11 @@ const AddStudent = ({
     const [formErrors, setFormErrors] = useState({});
 
     useEffect(() => {
-        document.body.style.overflow = "hidden";
-        if (existingStudentData) {
+        if (isEditMode && existingStudentData) {
             setNewStudent(existingStudentData);
+            setSelectedBatchId(existingStudentData.batchId);
         }
-        fetchBatches();
-        return () => {
-            document.body.style.overflow = "auto";
-        };
-    }, [existingStudentData]);
-
-    const fetchBatches = async () => {
-        try {
-            const response = await axiosInstance.get("get-all-batches");
-            setBatches(response.data);
-        } catch (error) {
-            console.error("Failed to load batches:", error.message);
-        }
-    };
+    }, [isEditMode, existingStudentData]);
 
     const validateForm = () => {
         const errors = {};
@@ -59,26 +49,35 @@ const AddStudent = ({
         if (!newStudent.contact_info.phoneNumbers.mom) errors.mom_phone = "Mother phone is required";
         if (!newStudent.fee_status.amount) errors.fee_amount = "Fee amount is required";
         if (!selectedBatchId) errors.batch = "Please select a batch";
+
+        if (selectedBatchId) {
+            const selectedBatch = batches.find((b) => b._id === selectedBatchId);
+            if (selectedBatch?.forStandard !== String(newStudent.grade)) {
+                errors.batchGradeMismatch = `Selected batch is for Class ${selectedBatch.forStandard}, but student is in Class ${newStudent.grade}.`;
+            }
+        }
+
         setFormErrors(errors);
         return Object.keys(errors).length === 0;
     };
 
     const handleSubmit = async () => {
         if (!validateForm()) return;
+
         try {
+            const studentData = {
+                ...newStudent,
+                batchId: selectedBatchId,
+            };
+
             if (isEditMode && existingStudentData?._id) {
-                await axiosInstance.put(`/update-student/${existingStudentData._id}`, newStudent);
-                console.log("Student updated");
+                await axiosInstance.patch(`/api/student/update-student/${existingStudentData._id}`, studentData,{withCredentials:true});
             } else {
-                const studentResponse = await axiosInstance.post("/add-new-student", newStudent);
-                const newStudentId = studentResponse.data.student._id;
-
-                const response=await axiosInstance.put(`/update-batch-with-student/${selectedBatchId}`, {
-                    newStudentId,
+                await axiosInstance.post("/api/student/add-new-student", studentData, {
+                    withCredentials: true,
                 });
-
-                console.log("Student created and added to batch",response.data);
             }
+
             onStudentAdded();
             isEditMode ? setEdit(false) : setShowAddStd(false);
         } catch (err) {
@@ -90,7 +89,7 @@ const AddStudent = ({
     const handleChange = (key, value) => {
         if (key.includes("email") || key.includes("phone")) {
             const [type, field] = key.split("_");
-            setNewStudent(prev => ({
+            setNewStudent((prev) => ({
                 ...prev,
                 contact_info: {
                     ...prev.contact_info,
@@ -101,7 +100,7 @@ const AddStudent = ({
                 },
             }));
         } else if (key === "fee_amount") {
-            setNewStudent(prev => ({
+            setNewStudent((prev) => ({
                 ...prev,
                 fee_status: {
                     ...prev.fee_status,
@@ -109,7 +108,7 @@ const AddStudent = ({
                 },
             }));
         } else {
-            setNewStudent(prev => ({
+            setNewStudent((prev) => ({
                 ...prev,
                 [key]: value,
             }));
@@ -144,26 +143,39 @@ const AddStudent = ({
         },
         {
             title: "Fee Details",
-            fields: [{ label: "Fee Amount", key: "fee_amount", type: "number", value: newStudent.fee_status.amount }],
+            fields: [
+                { label: "Fee Amount", key: "fee_amount", type: "number", value: newStudent.fee_status.amount },
+            ],
         },
     ];
 
+    const eligibleBatches = batches.filter(
+        (batch) => String(batch.forStandard) === String(newStudent.grade)
+    );
+
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div className="fixed text-black inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
             <div className="relative w-[50em] bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in">
                 <div className="flex items-center justify-between p-4 border-b">
                     <h2 className="text-lg font-semibold">{isEditMode ? "Edit Student" : "Add New Student"}</h2>
-                    <button onClick={() => (isEditMode ? setEdit(false) : setShowAddStd(false))} className="text-gray-500 hover:text-red-500 transition">
+                    <button
+                        onClick={() => (isEditMode ? setEdit(false) : setShowAddStd(false))}
+                        className="text-gray-500 hover:text-red-500 transition"
+                    >
                         <AiOutlineClose size={24} />
                     </button>
                 </div>
 
                 <div className="p-4 space-y-6 max-h-[75vh] overflow-y-auto">
                     <div className="flex items-center justify-center p-4">
-                        <img src="https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png" alt="Student Avatar" className="w-40 rounded-full border" />
+                        <img
+                            src="https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png"
+                            alt="Student Avatar"
+                            className="w-40 rounded-full border"
+                        />
                     </div>
 
-                    {formSections.map(section => (
+                    {formSections.map((section) => (
                         <div key={section.title}>
                             <p className="font-semibold mb-2">{section.title}</p>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -173,7 +185,7 @@ const AddStudent = ({
                                             type={type}
                                             placeholder={label}
                                             value={value}
-                                            onChange={e => handleChange(key, e.target.value)}
+                                            onChange={(e) => handleChange(key, e.target.value)}
                                             className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         />
                                         {formErrors[key] && <p className="text-red-500 text-sm">{formErrors[key]}</p>}
@@ -188,20 +200,56 @@ const AddStudent = ({
                             <p className="font-semibold mb-2">Choose Batch to add student in</p>
                             <select
                                 value={selectedBatchId}
-                                onChange={e => setSelectedBatchId(e.target.value)}
+                                onChange={(e) => setSelectedBatchId(e.target.value)}
                                 className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
                                 <option value="">Select a batch</option>
-                                {batches.map(batch => (
+                                {eligibleBatches.map((batch) => (
                                     <option key={batch._id} value={batch._id}>
-                                        {batch.name}
+                                        {batch.name} (Class {batch.forStandard})
                                     </option>
                                 ))}
                             </select>
                             {formErrors.batch && <p className="text-red-500 text-sm">{formErrors.batch}</p>}
+                            {formErrors.batchGradeMismatch && (
+                                <p className="text-red-500 text-sm">{formErrors.batchGradeMismatch}</p>
+                            )}
+
+                            {selectedBatchId && (
+                                <div className="mt-4">
+                                    <p className="font-semibold mb-2">Select Subjects for this student</p>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {batches
+                                            .find((batch) => batch._id === selectedBatchId)
+                                            ?.subject?.map((subject) => (
+                                                <label key={subject._id} className="flex items-center space-x-2 text-gray-700">
+                                                    <input
+                                                        type="checkbox"
+                                                        value={subject._id}
+                                                        checked={newStudent.subjectId.includes(subject._id)}
+                                                        onChange={(e) => {
+                                                            const subjectId = e.target.value;
+                                                            setNewStudent((prev) => {
+                                                                const exists = prev.subjectId.includes(subjectId);
+                                                                return {
+                                                                    ...prev,
+                                                                    subjectId: exists
+                                                                        ? prev.subjectId.filter((id) => id !== subjectId)
+                                                                        : [...prev.subjectId, subjectId],
+                                                                };
+                                                            });
+                                                        }}
+                                                        className="form-checkbox h-4 w-4 text-blue-500"
+                                                    />
+                                                    <span>{subject.name}</span>
+                                                </label>
+                                            ))}
+                                    </div>
+                                    {formErrors.subjectId && <p className="text-red-500 text-sm">{formErrors.subjectId}</p>}
+                                </div>
+                            )}
                         </div>
                     )}
-
 
                     <div className="flex justify-end">
                         <button
