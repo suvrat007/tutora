@@ -1,26 +1,14 @@
 import { AiOutlineClose, AiOutlineEdit } from "react-icons/ai";
-import { useEffect, useState } from "react";
-import fetchStudents from "../Student/funtions/HelperFunctions.js";
-import { calculateFees } from "./Functions/useFetchAllBatch.jsx";
+import {  useState } from "react";
+
 import CreateEditBatch from "./CreateEditBatch.jsx";
 
 const ViewBatchDetails = ({ viewDetails, setViewDetails, setRerender }) => {
-    const [allStudents, setAllStudents] = useState([]);
     const [showEditModal, setShowEditModal] = useState(false);
     const batch = viewDetails.batch;
-
-    // const fee = calculateFees(allStudents);
-
-    // useEffect(() => {
-    //     const getStudents = async () => {
-    //         const students = await fetchStudents(batch._id);
-    //         setAllStudents(students);
-    //     };
-    //     getStudents();
-    // }, [batch._id]);
-
+    const allStudents =viewDetails.studentsForBatch
     const handleCloseDetails = () => {
-        setViewDetails({ display: false, batch: null });
+        setViewDetails({ display: false, batch: null,studentsForBatch:null });
     };
 
     const handleEditBatch = () => {
@@ -32,6 +20,13 @@ const ViewBatchDetails = ({ viewDetails, setViewDetails, setRerender }) => {
         setShowEditModal(false);
     };
 
+        const getTotalFee = () => {
+            let total =0;
+            allStudents.forEach(student => {
+                total=total+student.fee_status.amount
+            })
+            return total
+        }
     return (
         <div className="p-4">
             <div className="rounded-2xl border border-gray-200 shadow bg-white flex flex-col">
@@ -70,7 +65,7 @@ const ViewBatchDetails = ({ viewDetails, setViewDetails, setRerender }) => {
                                 📝 <span className="font-medium">Total Subjects:</span> {batch.subject.length}
                             </p>
                             <p className="flex gap-2">
-                                💰 <span className="font-medium">Total Fee:</span> ₹
+                                💰 <span className="font-medium">Total Fee:</span> ₹{getTotalFee()}
                             </p>
                         </div>
                     </div>
@@ -82,7 +77,7 @@ const ViewBatchDetails = ({ viewDetails, setViewDetails, setRerender }) => {
                             <div className="space-y-4 p-4">
                                 {batch.subject.map((item, index) => (
                                     <div key={item._id} className="border-b pb-3 last:border-b-0">
-                                        <div className="flex gap-2 font-medium text-sm">
+                                        <div className="flex gap-2 font-medium text-black text-sm">
                                             {index + 1}. {item.name.toUpperCase()}
                                         </div>
                                         <div className="ml-6 text-xs text-gray-600 mt-1 space-y-1">
@@ -101,7 +96,7 @@ const ViewBatchDetails = ({ viewDetails, setViewDetails, setRerender }) => {
                         )}
                     </div>
                 </div>
-                <div className="border rounded-xl shadow-sm bg-white m-6 mt-0 h-60 overflow-y-auto">
+                <div className="border rounded-xl text-black shadow-sm bg-white m-6 mt-0 h-60 overflow-y-auto">
                     <div className="sticky top-0 bg-gray-50 p-4 border-b flex justify-between">
                         <div className="flex gap-3 w-1/2">
                             <div className="w-6 text-gray-500 font-medium">#</div>
@@ -121,7 +116,7 @@ const ViewBatchDetails = ({ viewDetails, setViewDetails, setRerender }) => {
                             {allStudents.map((item, index) => (
                                 <div
                                     key={item._id}
-                                    className="flex justify-between items-center px-4 py-2 hover:bg-gray-50"
+                                    className="flex justify-between text-black items-center px-4 py-2 hover:bg-gray-50"
                                 >
                                     <div className="flex gap-3 w-1/2">
                                         <div className="w-6 text-gray-500">{index + 1}.</div>

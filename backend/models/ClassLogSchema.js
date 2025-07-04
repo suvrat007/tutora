@@ -5,7 +5,7 @@ const Schema = mongoose.Schema
 const ClassLogSchema = new Schema({
     adminId: {type: ObjectId, ref: 'Admin'},
     batch_id: {type: Schema.Types.ObjectId,required: true, ref: 'Batch'},
-    subject_id: {type: String,required: true},
+    subject_id: {type: Schema.Types.ObjectId,required: true},
     classes: [
         {
             date: {type: Date, default: Date.now, required: true},
@@ -17,4 +17,4 @@ const ClassLogSchema = new Schema({
     ]
 
 })
-module.exports= mongoose.model('ClassLog', ClassLogSchema);``
+module.exports= mongoose.model('ClassLog', ClassLogSchema);

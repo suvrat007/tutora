@@ -3,6 +3,7 @@ const router = express.Router();
 const userAuth  =require("../middleware/userAuth.js");
 const Batch = require("../models/Batch.js");
 const Student = require("../models/Student.js");
+const ClassLog = require("../models/ClassLogSchema.js");
 
 router.post("/add-new-batch",userAuth, async (req, res) => {
     const { name } = req.body;
@@ -46,20 +47,24 @@ router.delete("/delete-batch/:id", userAuth, async (req, res) => {
 
         if (shouldDeleteStudents) {
             const studentDeleteResult = await Student.deleteMany({ batchId });
+            const classLogDeleteResult = await ClassLog.deleteMany({ batchId });
             return res.status(200).json({
                 message: "Batch and associated students deleted successfully",
                 batchDeleteResult,
                 studentDeleteResult,
+                classLogDeleteResult
             });
         } else {
             const studentUpdateResult = await Student.updateMany(
                 { batchId },
                 { $set: { batchId: null } }
             );
+            const classLogUpdateResult = await ClassLog.deleteMany({ batchId });
             return res.status(200).json({
                 message: "Batch deleted and students disassociated",
                 batchDeleteResult,
                 studentUpdateResult,
+                classLogUpdateResult
             });
         }
     } catch (error) {

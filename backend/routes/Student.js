@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const Student = require("../models/Student.js");
 const Batch = require("../models/Batch.js");
 const userAuth  =require("../middleware/userAuth.js");
@@ -53,6 +54,47 @@ router.get("/get-all-students-of-institute", userAuth, async (req, res) => {
     }
 });
 
+router.get("/get-students-grouped-by-batch", userAuth, async (req, res) => {
+    try {
+        const adminId = req.user._id;
+
+        const groupedStudents = await Student.aggregate([
+            {
+                $match: { adminId: new mongoose.Types.ObjectId(adminId) }
+            },
+            {
+                $group: {
+                    _id: "$batchId",
+                    students: { $push: "$$ROOT" }
+                }
+            },
+            {
+                $lookup: {
+                    from: "batches",
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "batchInfo"
+                }
+            },
+            { $unwind: "$batchInfo" },
+            {
+                $project: {
+                    _id: 0,
+                    batchId: "$batchInfo._id",
+                    batchName: "$batchInfo.name",
+                    forStandard: "$batchInfo.forStandard",
+                    students: 1
+                }
+            }
+        ]);
+
+        res.status(200).json(groupedStudents);
+    } catch (error) {
+        console.error("Error grouping students by batch:", error);
+        res.status(500).json({ message: "Internal server error", error: error.message });
+    }
+});
+
 
 router.delete("/delete-student/:id",userAuth, async (req, res) => {
     try {
@@ -66,18 +108,22 @@ router.delete("/delete-student/:id",userAuth, async (req, res) => {
     }
 })
 
-router.patch("/update-student/:id", userAuth,async (req, res) => {
+router.patch("/update-student/:id", userAuth, async (req, res) => {
     const { id } = req.params;
     const adminId = req.user._id;
 
     try {
-        const updated = await Student.findByIdAndUpdate({id, adminId}, req.body, { new: true });
-        if (!updated) return res.status(404).json({ message: `${name} not found` });
+        const student = await Student.findById(id);
+        if (!student || student.adminId.toString() !== adminId.toString()) {
+            return res.status(404).json({ message: "Student not found or unauthorized" });
+        }
 
+        const updated = await Student.findByIdAndUpdate(id, req.body, { new: true });
         res.status(200).json(updated);
     } catch (error) {
-        res.status(500).json({ message: `Error updating ${name}`, error: error.message });
+        res.status(500).json({ message: "Error updating student", error: error.message });
     }
 });
+
 
 module.exports=router

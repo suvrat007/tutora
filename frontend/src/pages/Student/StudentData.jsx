@@ -8,7 +8,7 @@ import AddStudent from "./AddStudent.jsx";
 import StdDataDisplay from "./StdDataDisplay.jsx";
 import { AiOutlineClose } from "react-icons/ai";
 import useFetchStudents from "@/pages/useFetchStudents.js";
-import {useDispatch, useSelector} from "react-redux";
+import { useSelector} from "react-redux";
 
 const WrapperCard = ({ children }) => (
   <div className="relative bg-[#f3d8b6] rounded-3xl shadow-lg p-2 flex flex-1 justify-center items-center h-full">
@@ -21,14 +21,20 @@ const StudentData = () => {
   const [batchName, setBatchName] = useState("");
   const [error, setError] = useState("");
   const [formTouched, setFormTouched] = useState(false);
-  const [seeStdDetails, setSeeStdDetails] = useState(null);
+  const [seeStdDetails, setSeeStdDetails] = useState(false);
   const [rerender, setRerender] = useState(false);
-
+  const batches = useSelector(state => state.batches);
   const user = useSelector((state) => state.user);
-  const students = useSelector((state) => state.students);
+  const students = useSelector((state) => state.students.groupedStudents);
   const { batchId, orgName } = useGetBatchId(batchName);
 
   const fetchStudents = useFetchStudents()
+
+  useEffect(() => {
+    fetchStudents();
+  }, [rerender]);
+
+  console.log(students);
 
   const deleteStudent = async (studentId) => {
     const confirmDelete = window.confirm("This will delete this student from the database. Continue?");
@@ -69,35 +75,38 @@ const StudentData = () => {
                         <FiPlus className="text-3xl text-gray-600" />
                         <span className="text-base font-medium text-gray-700">Add Student</span>
                       </li>
-                      {students.map((student, index) => (
-                        <div
-                          key={student._id}
-                          onClick={() => setSeeStdDetails({ stdDetails: student, show: true })}
-                          className="relative w-[12em] h-[15em] cursor-pointer hover:underline bg-[#fff8f1] border
-                          shadow-md rounded-2xl p-4 hover:shadow-xl transition-shadow duration-300 flex flex-col
-                          items-center justify-center"
-                        >
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              deleteStudent(student._id);
-                            }}
-                            className="absolute top-2 right-2 text-gray-500 hover:text-red-500 transition"
-                          >
-                            <AiOutlineClose size={20} />
-                          </button>
-                          <div className="flex flex-col items-center text-center space-y-2 mt-4">
-                            <img
-                              src="https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png"
-                              alt="Student Avatar"
-                              className="w-20 h-20 rounded-full object-cover border"
-                            />
-                            <span className="text-gray-500 text-sm font-semibold">#{index + 1}</span>
-                            <span className="text-lg font-medium text-gray-800">{student.name}</span>
-                            <span className="text-gray-600 text-sm">{student.school_name}</span>
-                          </div>
-                        </div>
-                      ))}
+                      {students.map((batchGroup) =>
+                          batchGroup.students.map((student, index) => (
+                              <div
+                                  key={student._id}
+                                  onClick={() => setSeeStdDetails({ stdDetails: student, show: true })}
+                                  className="relative w-[12em] h-[15em] cursor-pointer hover:underline bg-[#fff8f1] border
+        shadow-md rounded-2xl p-4 hover:shadow-xl transition-shadow duration-300 flex flex-col
+        items-center justify-center"
+                              >
+                                <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      deleteStudent(student._id);
+                                    }}
+                                    className="absolute top-2 right-2 text-gray-500 hover:text-red-500 transition"
+                                >
+                                  <AiOutlineClose size={20} />
+                                </button>
+                                <div className="flex flex-col items-center text-center space-y-2 mt-4">
+                                  <img
+                                      src="https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png"
+                                      alt="Student Avatar"
+                                      className="w-20 h-20 rounded-full object-cover border"
+                                  />
+                                  <span className="text-gray-500 text-sm font-semibold">#{index + 1}</span>
+                                  <span className="text-lg font-medium text-gray-800">{student.name}</span>
+                                  <span className="text-gray-600 text-sm">{student.school_name}</span>
+                                </div>
+                              </div>
+                          ))
+                      )}
+
                     </div>
                   </div>
                 </WrapperCard>
@@ -146,6 +155,7 @@ const StudentData = () => {
             onStudentAdded={() => {
               setRerender(prev => !prev);
             }}
+            setSeeStdDetails={setSeeStdDetails}
             setShowAddStd={setShowAddStd}
           />
         )}

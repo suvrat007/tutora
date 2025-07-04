@@ -1,14 +1,16 @@
-import {createSlice} from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 
 const studentSlice = createSlice({
-    name: "studentSlice",
-    initialState: [],
-    reducers: {
-        addStudents: (state, action) => {
-            return action.payload;
-        }
+    name: "students",
+    initialState: {
+        groupedStudents: [],
     },
+    reducers: {
+        setGroupedStudents: (state, action) => {
+            state.groupedStudents = action.payload;
+        },
+    },
+});
 
-})
-export const {addStudents} = studentSlice.actions;
-export default studentSlice.reducer ;
+export const { setGroupedStudents } = studentSlice.actions;
+export default studentSlice.reducer;

@@ -64,7 +64,6 @@ const ClassStatusForm = () => {
 
             alert("Class updated!");
             setLoadingStates(prev => ({ ...prev, [index]: false }));
-            // fetch un updated classlogs again
             setRerender(prev => !prev)
         } catch (err) {
             console.error(err);

@@ -7,7 +7,7 @@ const StdDataDisplay = ({ seeStdDetails, setSeeStdDetails, onStudentEdited }) =>
 
     const handleStudentAdded = () => {
         console.log("Student was added or edited!");
-        onStudentEdited(); // Trigger rerender in parent
+        onStudentEdited();
     };
 
     return (
@@ -30,7 +30,7 @@ const StdDataDisplay = ({ seeStdDetails, setSeeStdDetails, onStudentEdited }) =>
                     <AiOutlineEdit size={24}/>
                 </button>
                 <button
-                    onClick={() => setSeeStdDetails({ ...seeStdDetails, show: false })}
+                    onClick={() => setSeeStdDetails(prev=>!prev)}
                     className="text-gray-500 hover:text-red-500 w-2 transition left-0 mr-2 mt-2"
                 >
                     <AiOutlineClose size={24}/>

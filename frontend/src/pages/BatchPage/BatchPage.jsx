@@ -6,8 +6,8 @@ import Navbar from "../Navbar/Navbar.jsx";
 import CreateEditBatch from "./CreateEditBatch.jsx";
 import ViewBatchDetails from "./ViewBatchDetails.jsx";
 import ConfirmationModal from "./ConfirmationModal.jsx";
-import {addBatches} from "@/utilities/redux/batchSlice";
-import useFetchBatches from "@/pages/useFetchBatches.js"; // Update this if your slice path differs
+import useFetchBatches from "@/pages/useFetchBatches.js";
+import { addBatches } from "@/utilities/redux/batchSlice.jsx";
 
 const WrapperCard = ({ children }) => (
     <div className="relative bg-[#f3d8b6] rounded-3xl shadow-lg p-2 flex flex-1 justify-center items-center">
@@ -20,32 +20,35 @@ const BatchPage = () => {
   const [batchToDelete, setBatchToDelete] = useState(null);
   const [viewDetails, setViewDetails] = useState({ display: false, batch: null });
   const [isLoading, setIsLoading] = useState(false);
+  const [rerender, setRerender] = useState(false);
 
-  const adminData = useSelector(state => state.user);
-  const batches = useSelector(state => state.batches);
+  const adminData = useSelector((state) => state.user);
+  const batches = useSelector((state) => state.batches);
+  const groupedStudents = useSelector((state) => state.students.groupedStudents);
+
   const dispatch = useDispatch();
   const fetchBatches = useFetchBatches();
 
   useEffect(() => {
     const getAllBatches = async () => {
       await fetchBatches();
-    }
+    };
     getAllBatches();
-  },[]);
-
+  }, [rerender]);
 
   const handleDelete = async (id, shouldDeleteStudents) => {
     setBatchToDelete(null);
     setIsLoading(true);
     try {
-      const response = await axiosInstance.delete(`/delete-batch/${id}`, {
+      const response = await axiosInstance.delete(`/api/batch/delete-batch/${id}`, {
         data: { shouldDeleteStudents },
         withCredentials: true,
       });
+
       if (response.status !== 200) throw new Error("Failed to delete the batch");
 
       alert("Batch successfully deleted.");
-      await fetchBatches
+      await fetchBatches();
     } catch (error) {
       console.error(error);
       alert(error?.response?.data?.message || "Something went wrong during deletion.");
@@ -54,14 +57,14 @@ const BatchPage = () => {
     }
   };
 
-  const handleViewDetails = (batch) => {
-    setViewDetails({ display: true, batch });
+  const handleViewDetails = (batch,studentsForBatch) => {
+    setViewDetails({ display: true, batch ,studentsForBatch});
   };
 
   const handleBatchUpdated = (updatedBatch) => {
-    dispatch(setBatches(
-        batches.map(b => (b._id === updatedBatch._id ? updatedBatch : b))
-    ));
+    dispatch(
+        addBatches(batches.map((b) => (b._id === updatedBatch._id ? updatedBatch : b)))
+    );
   };
 
   return (
@@ -73,11 +76,11 @@ const BatchPage = () => {
             <div className="flex flex-col gap-6 p-6 flex-1 overflow-hidden">
               {viewDetails.display ? (
                   <div onClick={() => setViewDetails({ display: false, batch: null })}>
-                    <div onClick={e => e.stopPropagation()}>
+                    <div onClick={(e) => e.stopPropagation()}>
                       <ViewBatchDetails
                           viewDetails={viewDetails}
                           setViewDetails={setViewDetails}
-                          handleBatchUpdated={handleBatchUpdated}
+                          setRerender={setRerender}
                       />
                     </div>
                   </div>
@@ -96,20 +99,30 @@ const BatchPage = () => {
                         </div>
 
                         {batches.map((batch) => {
+                          const studentCount =
+                              groupedStudents.find((g) => g.batchId === batch._id)?.students?.length || 0;
+
                           const infoSections = [
                             { title: "Grade", value: batch.forStandard ?? "N/A" },
-                            { title: "Total Students", value: batch.enrolledStudents?.length ?? 0 },
+                            { title: "Total Students", value: studentCount },
                             { title: "Total Subjects", value: batch.subject?.length ?? 0 },
                           ];
+
                           return (
-                              <div key={batch._id} className="h-80 rounded-lg shadow hover:shadow-lg transition-shadow flex flex-col border border-gray-200">
+                              <div
+                                  key={batch._id}
+                                  className="h-80 rounded-lg shadow hover:shadow-lg transition-shadow flex flex-col border border-gray-200"
+                              >
                                 <div className="border-b border-gray-200 py-4 flex justify-center items-center">
                                   <h2 className="text-xl font-medium text-gray-800">{batch.name}</h2>
                                 </div>
                                 <div className="flex-1 flex flex-col justify-between p-4">
                                   <div className="space-y-2">
                                     {infoSections.map((item, i) => (
-                                        <div key={i} className="flex justify-between items-center border rounded-md p-3 bg-gray-50">
+                                        <div
+                                            key={i}
+                                            className="flex justify-between items-center border rounded-md p-3 bg-gray-50"
+                                        >
                                           <span className="text-gray-600">{item.title}</span>
                                           <span className="font-semibold text-gray-800">{item.value}</span>
                                         </div>
@@ -119,7 +132,11 @@ const BatchPage = () => {
                                     <button
                                         className={`py-2 px-4 rounded-lg border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white transition-all ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                                         disabled={isLoading}
-                                        onClick={() => handleViewDetails(batch)}
+
+                                        onClick={() => {
+                                          const studentsForBatch = groupedStudents.find(g => g.batchId === batch._id)?.students || [];
+                                          handleViewDetails(batch,studentsForBatch);
+                                        }}
                                     >
                                       View Details
                                     </button>
@@ -142,10 +159,9 @@ const BatchPage = () => {
             </div>
           </div>
 
-          {/* Modal: Create Batch */}
           {createBatches && (
               <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50" onClick={() => setCreateBatches(false)}>
-                <div onClick={e => e.stopPropagation()}>
+                <div onClick={(e) => e.stopPropagation()}>
                   <CreateEditBatch
                       onClose={() => setCreateBatches(false)}
                       handleBatchUpdated={handleBatchUpdated}
@@ -155,15 +171,14 @@ const BatchPage = () => {
               </div>
           )}
 
-          {/* Modal: Delete Confirmation */}
           {batchToDelete && (
               <ConfirmationModal
                   closeModal={() => setBatchToDelete(null)}
+                  setRerender={setRerender}
                   onClose={(shouldDeleteStudents) => handleDelete(batchToDelete, shouldDeleteStudents)}
               />
           )}
 
-          {/* Loader */}
           {isLoading && (
               <div className="absolute inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
                 <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>

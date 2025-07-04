@@ -4,23 +4,18 @@ import TodaysClasses from "./comps/FuturePhases/TodaysClasses.jsx";
 import Callendar from "./comps/P1/Callendar.jsx";
 import ClassStatusUpdates from "./comps/P1/ClassStatusUpdates.jsx";
 import Reminders from "./comps/P1/Reminders.jsx";
-import Card from "./comps/uii/Card.jsx";
-import useLogoutAdmin from "@/useLogoutAdmin.js";
 import {useEffect} from "react";
-import axiosInstance from "@/utilities/axiosInstance.jsx";
-import {useDispatch} from "react-redux";
-import {addBatches} from "@/utilities/redux/batchSlice.jsx";
 import useFetchBatches from "@/pages/useFetchBatches.js";
 import useFetchStudents from "@/pages/useFetchStudents.js";
 
 const Home = () => {
-  const getBatches =  useFetchBatches()
-  const getStudents = useFetchStudents()
-  useEffect(() => {
-    getBatches()
-    getStudents()
-  }, []);
+  const fetchBatches = useFetchBatches();
+  const fetchGroupedStudents = useFetchStudents();
 
+  useEffect(() => {
+    fetchBatches();
+    fetchGroupedStudents();
+  }, []);
 
   return (
     <div className="min-h-screen w-screen bg-[#d3a781] text-white flex justify-center items-start overflow-hidden">
