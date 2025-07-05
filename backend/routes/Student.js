@@ -6,35 +6,44 @@ const Batch = require("../models/Batch.js");
 const userAuth  =require("../middleware/userAuth.js");
 
 
-router.post("/add-new-student",userAuth, async (req, res) => {
+router.post("/add-new-student", userAuth, async (req, res) => {
     const { contact_info, batchId } = req.body;
     const adminId = req.user._id;
 
     try {
-        const existingStudent = await Student.findOne({
-            adminId:adminId,
-            batchId:batchId,
+        const duplicateQuery = {
+            adminId: adminId,
             $or: [
                 { "contact_info.emailIds.student": contact_info.emailIds.student },
                 { "contact_info.phoneNumbers.student": contact_info.phoneNumbers.student }
             ]
-        });
+        };
+
+        if (batchId) {
+            duplicateQuery.batchId = batchId;
+        }
+
+        const existingStudent = await Student.findOne(duplicateQuery);
 
         if (existingStudent) {
             return res.status(409).json({ message: "Student with same email or phone already exists" });
         }
 
-        const newStudent = new Student({
-            adminId:adminId,
-            batchId:batchId,
+        const studentData = {
+            adminId,
             ...req.body
-        });
+        };
+
+        if (!batchId) {
+            delete studentData.batchId;
+        }
+
+        const newStudent = new Student(studentData);
         await newStudent.save();
 
         return res.status(201).json({
-            message: "Student added and enrolled successfully",
-            student: newStudent,
-            newStudent
+            message: "Student added successfully",
+            student: newStudent
         });
 
     } catch (error) {
@@ -42,6 +51,7 @@ router.post("/add-new-student",userAuth, async (req, res) => {
         return res.status(500).json({ message: "Failed to add student", error: error.message });
     }
 });
+
 
 router.get("/get-all-students-of-institute", userAuth, async (req, res) => {
     try {
@@ -63,29 +73,61 @@ router.get("/get-students-grouped-by-batch", userAuth, async (req, res) => {
                 $match: { adminId: new mongoose.Types.ObjectId(adminId) }
             },
             {
-                $group: {
-                    _id: "$batchId",
-                    students: { $push: "$$ROOT" }
+                $facet: {
+                    withBatch: [
+                        { $match: { batchId: { $ne: null } } },
+                        {
+                            $group: {
+                                _id: "$batchId",
+                                students: { $push: "$$ROOT" }
+                            }
+                        },
+                        {
+                            $lookup: {
+                                from: "batches",
+                                localField: "_id",
+                                foreignField: "_id",
+                                as: "batchInfo"
+                            }
+                        },
+                        { $unwind: "$batchInfo" },
+                        {
+                            $project: {
+                                _id: 0,
+                                batchId: "$batchInfo._id",
+                                batchName: "$batchInfo.name",
+                                forStandard: "$batchInfo.forStandard",
+                                students: 1
+                            }
+                        }
+                    ],
+                    noBatch: [
+                        { $match: { batchId: null } },
+                        {
+                            $group: {
+                                _id: null,
+                                students: { $push: "$$ROOT" }
+                            }
+                        },
+                        {
+                            $project: {
+                                _id: 0,
+                                batchId: null,
+                                batchName: "No Batch",
+                                forStandard: "N/A",
+                                students: 1
+                            }
+                        }
+                    ]
                 }
             },
-            {
-                $lookup: {
-                    from: "batches",
-                    localField: "_id",
-                    foreignField: "_id",
-                    as: "batchInfo"
-                }
-            },
-            { $unwind: "$batchInfo" },
             {
                 $project: {
-                    _id: 0,
-                    batchId: "$batchInfo._id",
-                    batchName: "$batchInfo.name",
-                    forStandard: "$batchInfo.forStandard",
-                    students: 1
+                    allGroups: { $concatArrays: ["$withBatch", "$noBatch"] }
                 }
-            }
+            },
+            { $unwind: "$allGroups" },
+            { $replaceRoot: { newRoot: "$allGroups" } }
         ]);
 
         res.status(200).json(groupedStudents);
@@ -94,6 +136,7 @@ router.get("/get-students-grouped-by-batch", userAuth, async (req, res) => {
         res.status(500).json({ message: "Internal server error", error: error.message });
     }
 });
+
 
 
 router.delete("/delete-student/:id",userAuth, async (req, res) => {

@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const Student = new Schema({
     adminId:{type: Schema.Types.ObjectId, ref: 'Admin'},
-    batchId:{type: Schema.Types.ObjectId, ref: 'Batch'},
+    batchId:{type: Schema.Types.ObjectId, ref: 'Batch',required:false},
     subjectId:[{type: Schema.Types.ObjectId}],
     name: { type: String, required: true },
     address: { type: String, required: true },

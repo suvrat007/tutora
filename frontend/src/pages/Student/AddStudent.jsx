@@ -3,17 +3,18 @@ import axiosInstance from "../../utilities/axiosInstance.jsx";
 import { AiOutlineClose } from "react-icons/ai";
 import { useSelector } from "react-redux";
 import useFetchStudents from "@/pages/useFetchStudents.js";
+import useFetchBatches from "@/pages/useFetchBatches.js";
 
 const AddStudent = ({
-                        batchId: initialBatchId,
                         setEdit,
-                        onStudentAdded,setSeeStdDetails,
+                        onStudentAdded,
+                        setSeeStdDetails,
                         setShowAddStd,
                         existingStudentData = null,
                         isEditMode = false,
                     }) => {
     const batches = useSelector((state) => state.batches);
-    const [selectedBatchId, setSelectedBatchId] = useState(initialBatchId || "");
+    const [selectedBatchId, setSelectedBatchId] = useState(existingStudentData?.batchId || "");
     const [newStudent, setNewStudent] = useState({
         batchId: null,
         subjectId: [],
@@ -28,19 +29,23 @@ const AddStudent = ({
         fee_status: { amount: "" },
     });
     const [formErrors, setFormErrors] = useState({});
+    const fetchStudents = useFetchStudents();
+    const fetchBatches = useFetchBatches()
+
+    console.log("setSeeStdDetails:", setSeeStdDetails); // Debug prop
 
     useEffect(() => {
         if (isEditMode && existingStudentData) {
             setNewStudent(existingStudentData);
-            setSelectedBatchId(existingStudentData.batchId);
+            setSelectedBatchId(existingStudentData.batchId || "");
         }
     }, [isEditMode, existingStudentData]);
 
     const validateForm = () => {
         const errors = {};
+
         if (!newStudent.name) errors.name = "Student name is required";
         if (!newStudent.grade) errors.grade = "Grade is required";
-        if (!selectedBatchId) errors.batch = "Please select a batch";
 
         if (!isEditMode) {
             if (!newStudent.address) errors.address = "Address is required";
@@ -59,34 +64,40 @@ const AddStudent = ({
             if (selectedBatch && String(selectedBatch.forStandard) !== String(newStudent.grade)) {
                 errors.batchGradeMismatch = `Selected batch is for Class ${selectedBatch.forStandard}, but student is in Class ${newStudent.grade}.`;
             }
+            if (!newStudent.subjectId.length) {
+                errors.subjectId = "Please select at least one subject for the selected batch.";
+            }
         }
 
         setFormErrors(errors);
         return Object.keys(errors).length === 0;
     };
-    const fetchStudents = useFetchStudents()
 
     const handleSubmit = async () => {
+        console.log("handleSubmit called, setSeeStdDetails:", setSeeStdDetails); // Debug
         if (!validateForm()) return;
 
         try {
             const studentData = {
                 ...newStudent,
-                batchId: selectedBatchId,
+                batchId: selectedBatchId || null,
             };
+            console.log("Data sent to backend:", studentData); // Debug payload
 
             if (isEditMode && existingStudentData?._id) {
-                await axiosInstance.patch(`/api/student/update-student/${existingStudentData._id}`, studentData, { withCredentials: true });
-                fetchStudents()
-            } else {
-                await axiosInstance.post("/api/student/add-new-student", studentData, {
+                await axiosInstance.patch(`/api/student/update-student/${existingStudentData._id}`, studentData, {
                     withCredentials: true,
                 });
-                fetchStudents()
+                fetchStudents();
+                fetchBatches()
+            } else {
+                await axiosInstance.post("/api/student/add-new-student", studentData, { withCredentials: true });
+                fetchStudents();
+                fetchBatches()
             }
 
             onStudentAdded();
-            setSeeStdDetails(prev => !prev);
+            setSeeStdDetails((prev) => ({ ...prev, show: false }));
             isEditMode ? setEdit(false) : setShowAddStd(false);
         } catch (err) {
             console.error("Error submitting student data:", err);
@@ -123,10 +134,7 @@ const AddStudent = ({
         }
     };
 
-    const eligibleBatches = batches.filter(
-        (batch) => String(batch?.forStandard) === String(newStudent?.grade)
-    );
-
+    const eligibleBatches = batches.filter((batch) => String(batch?.forStandard) === String(newStudent?.grade));
     return (
         <div className="fixed text-black inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
             <div className="relative w-[50em] bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in">
@@ -152,26 +160,36 @@ const AddStudent = ({
                     )}
 
                     {[
-                        { title: "General Info", fields: [
+                        {
+                            title: "General Info",
+                            fields: [
                                 { label: "Student Name", key: "name", type: "text", value: newStudent.name },
                                 { label: "Grade", key: "grade", type: "number", value: newStudent.grade },
                                 { label: "School Name", key: "school_name", type: "text", value: newStudent.school_name },
                                 { label: "Address", key: "address", type: "text", value: newStudent.address },
-                            ]},
-                        { title: "Student's Contact", fields: [
+                            ],
+                        },
+                        {
+                            title: "Student's Contact",
+                            fields: [
                                 { label: "Student Email", key: "email_student", type: "email", value: newStudent.contact_info.emailIds.student },
                                 { label: "Student Phone", key: "phone_student", type: "text", value: newStudent.contact_info.phoneNumbers.student },
-                            ]},
-                        { title: "Parent's Contact", fields: [
+                            ],
+                        },
+                        {
+                            title: "Parent's Contact",
+                            fields: [
                                 { label: "Father Email", key: "email_dad", type: "email", value: newStudent.contact_info.emailIds.dad },
                                 { label: "Father Phone", key: "phone_dad", type: "text", value: newStudent.contact_info.phoneNumbers.dad },
                                 { label: "Mother Email", key: "email_mom", type: "email", value: newStudent.contact_info.emailIds.mom },
                                 { label: "Mother Phone", key: "phone_mom", type: "text", value: newStudent.contact_info.phoneNumbers.mom },
-                            ]},
-                        { title: "Fee Details", fields: [
-                                { label: "Fee Amount", key: "fee_amount", type: "number", value: newStudent.fee_status.amount },
-                            ]}
-                    ].map(section => (
+                            ],
+                        },
+                        {
+                            title: "Fee Details",
+                            fields: [{ label: "Fee Amount", key: "fee_amount", type: "number", value: newStudent.fee_status.amount }],
+                        },
+                    ].map((section) => (
                         <div key={section.title}>
                             <p className="font-semibold mb-2">{section.title}</p>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -192,13 +210,19 @@ const AddStudent = ({
                     ))}
 
                     <div>
-                        <p className="font-semibold mb-2">Choose Batch to add student in</p>
+                        <p className="font-semibold mb-2">Choose Batch to add student in (Optional)</p>
                         <select
                             value={selectedBatchId}
-                            onChange={(e) => setSelectedBatchId(e.target.value)}
+                            onChange={(e) => {
+                                setSelectedBatchId(e.target.value);
+                                setNewStudent((prev) => ({
+                                    ...prev,
+                                    subjectId: [],
+                                }));
+                            }}
                             className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
-                            <option value="">Select a batch</option>
+                            <option value="">No Batch / Deselect</option>
                             {eligibleBatches.map((batch) => (
                                 <option key={batch._id} value={batch._id}>
                                     {batch.name} (Class {batch.forStandard})
@@ -206,9 +230,7 @@ const AddStudent = ({
                             ))}
                         </select>
                         {formErrors.batch && <p className="text-red-500 text-sm">{formErrors.batch}</p>}
-                        {formErrors.batchGradeMismatch && (
-                            <p className="text-red-500 text-sm">{formErrors.batchGradeMismatch}</p>
-                        )}
+                        {formErrors.batchGradeMismatch && <p className="text-red-500 text-sm">{formErrors.batchGradeMismatch}</p>}
                     </div>
 
                     {selectedBatchId && (
@@ -229,9 +251,7 @@ const AddStudent = ({
                                                         const exists = prev.subjectId.includes(subjectId);
                                                         return {
                                                             ...prev,
-                                                            subjectId: exists
-                                                                ? prev.subjectId.filter((id) => id !== subjectId)
-                                                                : [...prev.subjectId, subjectId],
+                                                            subjectId: exists ? prev.subjectId.filter((id) => id !== subjectId) : [...prev.subjectId, subjectId],
                                                         };
                                                     });
                                                 }}
