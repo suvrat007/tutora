@@ -1,86 +1,131 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 const ClassLog = require("../models/ClassLogSchema.js");
-const Batch = require("../models/Batch.js");
-const userAuth  =require("../middleware/userAuth.js");
+const userAuth = require("../middleware/userAuth.js");
+const mongoose = require("mongoose");
 
-
-router.post('/add-class-update', userAuth, async (req, res) => {
+// Helper function to format date consistently
+const formatDateToYYYYMMDD = (dateInput) => {
     try {
-        const { batch_id, subject_id, date, hasHeld, note ,updated} = req.body;
+        const date = new Date(dateInput);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+    } catch (error) {
+        console.error("Error formatting date:", dateInput, error);
+        return null;
+    }
+};
+
+router.post("/add-class-updates", userAuth, async (req, res) => {
+    try {
         const adminId = req.user._id;
-        const isoDate = new Date(date).toISOString().split('T')[0];
+        const { updates } = req.body;
 
-        let classLog = await ClassLog.findOne({
-            adminId,
-            batch_id: batch_id,
-            subject_id: subject_id
-        });
-
-        if (!classLog) {
-            classLog = new ClassLog({
-                adminId: adminId,
-                batch_id: batch_id,
-                subject_id: subject_id,
-                classes: [{
-                    date: isoDate,
-                    hasHeld,
-                    note,
-                    updated: false,
-                    attendance: []
-                }]
-            });
-            await classLog.save();
-        } else {
-            const index = classLog.classes.findIndex(
-                cls => new Date(cls.date).toISOString().split('T')[0] === isoDate
-            );
-
-            if (index !== -1) {
-                // If class already exists, update it
-                classLog.classes[index].hasHeld = hasHeld;
-                classLog.classes[index].note = note;
-                classLog.classes[index].updated = updated;
-                await classLog.save();
-            } else {
-                // Add new class entry
-                classLog.classes.push({
-                    date: isoDate,
-                    hasHeld,
-                    note,
-                    updated: updated || false,
-                    attendance: []
-                });
-                await classLog.save();
-            }
+        if (!Array.isArray(updates) || updates.length === 0) {
+            return res.status(400).json({ message: "Updates array is required and cannot be empty" });
         }
 
-        const populatedLog = await ClassLog.findOne({
-            adminId,
-            batch_id: batch_id,
-            subject_id: subject_id
-        }).populate('batch_id');
+        for (const update of updates) {
+            if (
+                !mongoose.Types.ObjectId.isValid(update.batch_id) ||
+                !mongoose.Types.ObjectId.isValid(update.subject_id) ||
+                !update.date || isNaN(new Date(update.date).getTime())
+            ) {
+                return res.status(400).json({ message: `Invalid data in update: ${JSON.stringify(update)}` });
+            }
+            update.batch_id = new mongoose.Types.ObjectId(update.batch_id);
+            update.subject_id = new mongoose.Types.ObjectId(update.subject_id);
+        }
 
-        console.log("ClassLog added:", populatedLog);
-        return res.status(201).json({ message: "ClassLog added successfully", batch: populatedLog });
+        const session = await mongoose.startSession();
+        session.startTransaction();
 
+        const results = [];
+        try {
+            for (const { batch_id, subject_id, date, hasHeld, note, updated } of updates) {
+                // Use consistent date formatting
+                const formattedDate = formatDateToYYYYMMDD(date);
+
+                if (!formattedDate) {
+                    throw new Error(`Invalid date format: ${date}`);
+                }
+
+                let classLog = await ClassLog.findOne(
+                    { adminId, batch_id, subject_id },
+                    null,
+                    { session }
+                );
+
+                if (classLog) {
+                    const existingClass = classLog.classes.find(
+                        (cls) => formatDateToYYYYMMDD(cls.date) === formattedDate
+                    );
+
+                    if (existingClass) {
+                        // Update existing class
+                        existingClass.hasHeld = hasHeld !== undefined ? hasHeld : existingClass.hasHeld;
+                        existingClass.note = note || existingClass.note;
+                        existingClass.updated = updated !== undefined ? updated : existingClass.updated;
+                        await classLog.save({ session });
+                    } else {
+                        // Add new class
+                        classLog.classes.push({
+                            date: new Date(formattedDate),
+                            hasHeld: hasHeld || false,
+                            note: note || "No Data",
+                            attendance: [],
+                            updated: updated !== undefined ? updated : true,
+                        });
+                        await classLog.save({ session });
+                    }
+
+                    results.push(classLog);
+                } else {
+                    classLog = new ClassLog({
+                        adminId,
+                        batch_id,
+                        subject_id,
+                        classes: [
+                            {
+                                date: new Date(formattedDate),
+                                hasHeld: hasHeld || false,
+                                note: note || "No Data",
+                                attendance: [],
+                                updated: updated !== undefined ? updated : true,
+                            },
+                        ],
+                    });
+
+                    await classLog.save({ session });
+                    results.push(classLog);
+                }
+            }
+
+            const populatedResults = await ClassLog.find(
+                { _id: { $in: results.map((r) => r._id) } },
+                null,
+                { session }
+            ).populate("batch_id");
+
+            await session.commitTransaction();
+
+            return res.status(201).json({
+                message: "Class logs updated successfully",
+                batches: populatedResults,
+            });
+        } catch (error) {
+            await session.abortTransaction();
+            throw error;
+        } finally {
+            session.endSession();
+        }
     } catch (error) {
-        console.error("Error adding class log:", error.message);
-        return res.status(500).json({ message: "Internal server error" });
+        console.error("Error adding class logs:", error.message, error.stack);
+        return res.status(500).json({ message: "Internal server error", error: error.message });
     }
 });
-
-
-router.get('/get-class-by-batchId/:id',userAuth, async (req, res) => {
-    const {id}=req.params.id
-    try{
-        const populatedLog = await ClassLog.findById({batch_id:id}).populate('batch_id');
-
-    }catch (e){
-        console.log(e.message)
-    }
-})
-
 
 router.get('/getAllClasslogs', userAuth, async (req, res) => {
     try {
@@ -97,6 +142,4 @@ router.get('/getAllClasslogs', userAuth, async (req, res) => {
     }
 });
 
-
-
-module.exports=router
+module.exports = router;

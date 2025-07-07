@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import axiosInstance from "@/utilities/axiosInstance";
 import { CalendarDays, NotebookText } from "lucide-react";
@@ -8,7 +8,10 @@ const getTodayDay = () => {
     return days[new Date().getDay()];
 };
 
-const getTodayDate = () => new Date().toISOString().split("T")[0];
+const getTodayDate = () => {
+    const date = new Date();
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
 
 const getCurrentTime = () => {
     const now = new Date();
@@ -20,63 +23,81 @@ const getCurrentTime = () => {
 const processAllClasses = (batches) => {
     const today = getTodayDay();
     const todayDate = getTodayDate();
-    const currentTime = getCurrentTime();
+    const now = new Date();
+
+    const seen = new Set();
 
     return batches.flatMap(batch =>
         batch.subject
-            .filter(subject =>
-                subject.classSchedule?.days.includes(today) &&
-                subject.classSchedule?.time > currentTime
-            )
-            .map(subject => ({
-                batchName: batch.name,
-                normalizedBatchName: batch.name.replace(/\s+/g, "").toLowerCase(),
-                batchId: batch._id,
-                subjectId: subject._id,
-                subjectName: subject.name,
-                time: subject.classSchedule.time,
-                date: todayDate,
-                forStandard: batch.forStandard,
-            }))
+            .filter(subject => {
+                if (!subject.classSchedule?.days || !subject.classSchedule?.time) return false;
+
+                const classTime = subject.classSchedule.time;
+                const classDateTime = new Date(`${todayDate}T${classTime}:00`);
+
+                return (
+                    subject.classSchedule.days.includes(today) &&
+                    classDateTime > now
+                );
+            })
+            .map(subject => {
+                const key = `${batch._id}-${subject._id}`;
+                if (seen.has(key)) return null;
+                seen.add(key);
+                return {
+                    batchName: batch.name,
+                    normalizedBatchName: batch.name.replace(/\s+/g, "").toLowerCase(),
+                    batchId: batch._id,
+                    subjectId: subject._id,
+                    subjectName: subject.name,
+                    time: subject.classSchedule.time,
+                    date: todayDate,
+                    forStandard: batch.forStandard,
+                };
+            })
+            .filter(cls => cls !== null)
     );
 };
-
-
-
 
 const TodaysClasses = () => {
     const batches = useSelector((state) => state.batches);
     const [allClasses, setAllClasses] = useState([]);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
+    const hasLoggedRef = useRef(false);
 
     useEffect(() => {
+        if (!batches || batches.length === 0 || hasLoggedRef.current) {
+            setLoading(false);
+            return;
+        }
+
+        hasLoggedRef.current = true;
+
         const logClasses = async () => {
             try {
                 const processedClasses = processAllClasses(batches);
                 setAllClasses(processedClasses);
 
-                for (const cls of processedClasses) {
-                    try {
-                        await axiosInstance.post(
-                            "/api/classLog/add-class-update",
-                            {
-                                batch_id: cls.batchId,
-                                subject_id: cls.subjectId,
-                                date: cls.date,
-                                hasHeld: false,
-                                note: "Auto-added from schedule"
-                            },
-                            { withCredentials: true }
-                        );
-                    } catch (err) {
-                        console.error(`Error logging class [${cls.batchName} - ${cls.subjectName}]:`, err.message);
-                        setError("Some classes failed to log. Please try again.");
-                    }
+                if (processedClasses.length > 0) {
+                    const updatesToSend = processedClasses.map(cls => ({
+                        batch_id: cls.batchId,
+                        subject_id: cls.subjectId,
+                        date: cls.date,
+                        hasHeld: false,
+                        note: "No Data",
+                    }));
+
+                    const response = await axiosInstance.post(
+                        "/api/classLog/add-class-updates",
+                        { updates: updatesToSend },
+                        { withCredentials: true }
+                    );
+                    console.log("Class updates sent:", response.data);
                 }
             } catch (err) {
-                console.error("Error processing classes:", err.message);
-                setError("Something went wrong while loading today's classes.");
+                console.error("Error details:", err.response?.data || err.message);
+                setError("Failed to load or log classes. Please try again.");
             } finally {
                 setLoading(false);
             }
@@ -97,17 +118,16 @@ const TodaysClasses = () => {
                     <NotebookText className="w-8 h-8 text-blue-400 mb-2" />
                     <p>Loading today's schedule...</p>
                 </div>
+            ) : error ? (
+                <div className="text-red-500 text-sm font-medium mb-2 p-4">
+                    {error}
+                </div>
             ) : (
                 <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
-                    {error && (
-                        <div className="text-red-500 text-sm font-medium mb-2">
-                            {error}
-                        </div>
-                    )}
                     {allClasses.length > 0 ? (
                         allClasses.map((c, index) => (
                             <div
-                                key={index}
+                                key={`${c.batchId}-${c.subjectId}-${c.date}`}
                                 className="border border-gray-200 rounded-xl p-4 bg-gray-50 hover:shadow transition-all duration-200"
                             >
                                 <div className="mb-2 border-b pb-2">
