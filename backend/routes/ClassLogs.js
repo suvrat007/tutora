@@ -4,7 +4,6 @@ const ClassLog = require("../models/ClassLogSchema.js");
 const userAuth = require("../middleware/userAuth.js");
 const mongoose = require("mongoose");
 
-// Helper function to format date consistently
 const formatDateToYYYYMMDD = (dateInput) => {
     try {
         const date = new Date(dateInput);
@@ -76,7 +75,7 @@ router.post("/add-class-updates", userAuth, async (req, res) => {
                             hasHeld: hasHeld || false,
                             note: note || "No Data",
                             attendance: [],
-                            updated: updated !== undefined ? updated : true,
+                            updated: updated !== undefined ? updated : false,
                         });
                         await classLog.save({ session });
                     }
@@ -93,7 +92,7 @@ router.post("/add-class-updates", userAuth, async (req, res) => {
                                 hasHeld: hasHeld || false,
                                 note: note || "No Data",
                                 attendance: [],
-                                updated: updated !== undefined ? updated : true,
+                                updated: updated !== undefined ? updated : false,
                             },
                         ],
                     });

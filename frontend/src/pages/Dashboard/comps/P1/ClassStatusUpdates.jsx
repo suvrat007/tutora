@@ -32,7 +32,6 @@ const ClassStatusUpdates = () => {
         const payload = {
             batch_id: classInfo.batchId,
             subject_id: classInfo.subjectId,
-            // Use originalDate if available, otherwise use the formatted date
             date: classInfo.originalDate || classInfo.date,
             hasHeld: status.held,
             note: status.note || "No Data",
@@ -41,8 +40,9 @@ const ClassStatusUpdates = () => {
 
         try {
             setLoadingStates(prev => ({ ...prev, [index]: true }));
-            await axiosInstance.post("/api/classLog/add-class-updates", { updates: [payload] }, { withCredentials: true });
+            const response = await axiosInstance.post("/api/classLog/add-class-updates", { updates: [payload] }, { withCredentials: true });
             alert("Class updated!");
+            console.log(response.data)
             setOpenIndex(null);
             setRerender(prev => !prev);
             setStatusData(prev => { const p = { ...prev }; delete p[index]; return p; });

@@ -47,7 +47,7 @@ router.delete("/delete-batch/:id", userAuth, async (req, res) => {
 
         if (shouldDeleteStudents) {
             const studentDeleteResult = await Student.deleteMany({ batchId });
-            const classLogDeleteResult = await ClassLog.deleteMany({ batchId });
+            const classLogDeleteResult = await ClassLog.deleteMany({ batch_id:batchId });
             return res.status(200).json({
                 message: "Batch and associated students deleted successfully",
                 batchDeleteResult,
@@ -59,7 +59,7 @@ router.delete("/delete-batch/:id", userAuth, async (req, res) => {
                 { batchId },
                 { $set: { batchId: null } }
             );
-            const classLogUpdateResult = await ClassLog.deleteMany({ batchId });
+            const classLogUpdateResult = await ClassLog.deleteMany({ batch_id:batchId });
             return res.status(200).json({
                 message: "Batch deleted and students disassociated",
                 batchDeleteResult,

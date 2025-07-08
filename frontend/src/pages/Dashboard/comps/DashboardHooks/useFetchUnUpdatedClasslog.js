@@ -47,7 +47,7 @@ const useFetchUnUpdatedClasslog = (rerenderKey = false) => {
                 const allLogs = response.data;
                 const nowTime = getCurrentTimeString();
                 const todayDate = getTodayDate();
-
+                console.log(allLogs);
                 const result = [];
 
                 allLogs.forEach(log => {
@@ -72,7 +72,7 @@ const useFetchUnUpdatedClasslog = (rerenderKey = false) => {
                     log.classes.forEach(cls => {
                         // Convert the date string to YYYY-MM-DD format
                         const clsDateStr = formatDateToYYYYMMDD(cls.date);
-
+                        // console.log(clsDateStr)
                         if (!clsDateStr) {
                             console.warn("Invalid date format:", cls.date);
                             return;
@@ -82,7 +82,7 @@ const useFetchUnUpdatedClasslog = (rerenderKey = false) => {
                         const isPastOrToday = clsDateStr <= todayDate;
                         const isTimePassed = isPastOrToday && (!isToday || time <= nowTime);
 
-                        if (cls.updated === false && isTimePassed) {
+                        if (cls?.updated === false && isTimePassed) {
                             result.push({
                                 logId: log._id,
                                 classId: cls._id,
@@ -95,7 +95,7 @@ const useFetchUnUpdatedClasslog = (rerenderKey = false) => {
                                 attendance: cls.attendance || [],
                                 date: clsDateStr,
                                 scheduledTime: time,
-                                originalDate: cls.date // Keep original date for debugging
+                                originalDate: cls.date
                             });
                         }
                     });
