@@ -8,16 +8,19 @@ import {useEffect} from "react";
 import useFetchBatches from "@/pages/useFetchBatches.js";
 import useFetchStudents from "@/pages/useFetchStudents.js";
 import useFetchClassLogs from "@/pages/useFetchClassLogs.js";
+import useFetchAttendanceSummary from "@/pages/useFetchAttendanceSummary.js";
 
 const Home = () => {
   const fetchBatches = useFetchBatches();
   const fetchGroupedStudents = useFetchStudents();
   const fetchClassLogs = useFetchClassLogs();
+  const fetchAttendanceSummary = useFetchAttendanceSummary();
 
   useEffect(() => {
     fetchBatches();
     fetchGroupedStudents();
     fetchClassLogs()
+    fetchAttendanceSummary();
   }, []);
 
   return (

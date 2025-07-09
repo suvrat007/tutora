@@ -12,12 +12,8 @@ const LandingPage = () => {
         navigate("/main");
     }
 
-
-    const user = useSelector((state) => state.user);
-    console.log(user);
     return (
         <div>
-            {/*<Navbar/>*/}
             <ModeToggle />
             Landing Page
             {!user ? (<button onClick={goToLogin}>Login</button>) : (

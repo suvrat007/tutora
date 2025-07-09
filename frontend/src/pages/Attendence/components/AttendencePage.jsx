@@ -9,6 +9,8 @@ import {useAttendanceState} from "@/pages/Attendence/hooks/useAttendanceState.js
 import {useStudentFetcher} from "@/pages/Attendence/hooks/useStudentFetcher.js";
 import {useAttendanceSubmission} from "@/pages/Attendence/hooks/useAttendanceSubmission.js";
 import {useStudentActions} from "@/pages/Attendence/hooks/useStudentActions.js";
+import AttendancePercentages from "@/pages/Attendence/components/AttendancePercentages.jsx";
+import useFetchAttendanceSummary from "@/pages/useFetchAttendanceSummary.js";
 
 const AttendancePage = () => {
   const state = useAttendanceState();
@@ -20,8 +22,10 @@ const AttendancePage = () => {
   const batches = useSelector((state) => state.batches);
   const groupedStudents = useSelector((state) => state.students.groupedStudents);
   const classLogs = useSelector((state) => state.classlogs);
+  const attendanceSummary= useSelector((state)=>state.attendance.data)
 
   const fetchAllClassLogs = useFetchClassLogs();
+  const fetchAttendance = useFetchAttendanceSummary()
 
   const { isValidDateTime, errorMessage } = useAttendanceConstraints(
       batchName,
@@ -43,7 +47,7 @@ const AttendancePage = () => {
 
   const { submit } = useAttendanceSubmission(
       batches,
-      fetchAllClassLogs,
+      fetchAllClassLogs,fetchAttendance,
       state.setLoading,
       state.setError,
       state.setSuccess
@@ -72,20 +76,27 @@ const AttendancePage = () => {
     );
   };
 
-  // Auto-fetch when all required fields are filled
   useEffect(() => {
     if (batchName && subjectName && date && classLogs.length > 0) {
-      // Small delay to prevent rapid re-renders
       const timer = setTimeout(() => {
         fetchStudents(batchName, subjectName, date, isValidDateTime, errorMessage);
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [batchName, subjectName, date, classLogs.length, classLogs]); // Added classLogs to trigger refetch when data changes
+  }, [batchName, subjectName, date, classLogs.length, classLogs]);
 
   return (
       <div className="p-4 flex flex-col gap-4 flex-1 overflow-hidden">
         <div className="flex gap-4 h-auto">
+          <AttendancePercentages
+              attendance={attendanceSummary}
+              batchName={batchName}
+              setBatchName={state.setBatchName}
+              subjectName={subjectName}
+              setSubjectName={state.setSubjectName}
+              batches={batches}
+          />
+
           <AttendanceForm
               batchName={batchName}
               setBatchName={state.setBatchName}

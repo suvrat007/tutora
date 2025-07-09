@@ -3,7 +3,7 @@ import axiosInstance from "@/utilities/axiosInstance.jsx";
 
 export const useAttendanceSubmission = (
     batches,
-    fetchAllClassLogs,
+    fetchAllClassLogs,fetchAttendance,
     setLoading,
     setError,
     setSuccess
@@ -48,6 +48,7 @@ export const useAttendanceSubmission = (
 
             setSuccess(res.data.message || "Attendance marked successfully");
             await fetchAllClassLogs();
+            await fetchAttendance()
             refetchStudents();
         } catch (err) {
             console.error(err);
@@ -55,7 +56,7 @@ export const useAttendanceSubmission = (
         } finally {
             setLoading(false);
         }
-    }, [batches, fetchAllClassLogs, setLoading, setError, setSuccess]);
+    }, [batches, fetchAttendance,fetchAllClassLogs, setLoading, setError, setSuccess]);
 
     return { submit };
 };
