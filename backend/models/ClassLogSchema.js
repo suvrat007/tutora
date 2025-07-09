@@ -10,7 +10,10 @@ const ClassLogSchema = new Schema({
             date: { type: String, required: true },
             hasHeld: { type: Boolean, default: false, required: true },
             note: { type: String, default: "No Data", required: true },
-            attendance: [{ type: Schema.Types.ObjectId, ref: 'Student' }],
+            attendance: [{
+                studentIds: {type: Schema.Types.ObjectId, ref: 'Student'},
+                time: { type: String, required: true },
+            }],
             updated: { type: Boolean, default: false, required: true }
         }
     ]

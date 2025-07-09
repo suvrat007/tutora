@@ -4,7 +4,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import store from "./utilities/redux/store.jsx";
 import { Provider } from "react-redux";
 import Home from "./pages/Dashboard/Home.jsx";
-import AttendencePage from "./pages/Attendence/AttendencePage.jsx";
+import AttendencePage from "./pages/Attendence/components/AttendencePage.jsx";
 import StudentData from "./pages/Student/StudentData.jsx";
 import BatchPage from "./pages/BatchPage/BatchPage.jsx";
 import Landing from './pages/LandingPage/Landing';

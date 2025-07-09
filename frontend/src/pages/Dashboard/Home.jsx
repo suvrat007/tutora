@@ -7,14 +7,17 @@ import Reminders from "./comps/P1/Reminders.jsx";
 import {useEffect} from "react";
 import useFetchBatches from "@/pages/useFetchBatches.js";
 import useFetchStudents from "@/pages/useFetchStudents.js";
+import useFetchClassLogs from "@/pages/useFetchClassLogs.js";
 
 const Home = () => {
   const fetchBatches = useFetchBatches();
   const fetchGroupedStudents = useFetchStudents();
+  const fetchClassLogs = useFetchClassLogs();
 
   useEffect(() => {
     fetchBatches();
     fetchGroupedStudents();
+    fetchClassLogs()
   }, []);
 
   return (

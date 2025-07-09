@@ -126,12 +126,76 @@ router.post("/add-class-updates", userAuth, async (req, res) => {
     }
 });
 
+router.patch("/mark-attendance", userAuth, async (req, res) => {
+    try {
+        const adminId = req.user._id;
+        const { batch_id, subject_id, date, presentIds } = req.body;
+
+        if (
+            !mongoose.Types.ObjectId.isValid(batch_id) ||
+            !mongoose.Types.ObjectId.isValid(subject_id) ||
+            !Array.isArray(presentIds) ||
+            !date
+        ) {
+            return res.status(400).json({ message: "Invalid input data" });
+        }
+
+        const formattedDate = formatDateToYYYYMMDD(date);
+
+        if (!formattedDate) {
+            return res.status(400).json({ message: "Invalid date format" });
+        }
+
+        let classLog = await ClassLog.findOne({
+            adminId,
+            batch_id,
+            subject_id,
+        }).populate('classes.attendance.studentIds');
+
+        if (!classLog) {
+            return res.status(400).json({ message: "No Class Logs for the given data" });
+        }
+
+        let classEntry = classLog.classes.find((c) => formatDateToYYYYMMDD(c.date) === formattedDate);
+
+        if (!classEntry) {
+            return res.status(400).json({ message: "No Class Entry for the given date" });
+        }
+
+        const currentTime = new Date().toLocaleTimeString("en-IN", {
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+
+        // Replace existing attendance with new list
+        classEntry.attendance = presentIds.map((id) => ({
+            studentIds: new mongoose.Types.ObjectId(id),
+            time: currentTime,
+        }));
+
+        await classLog.save();
+
+        return res.status(200).json({
+            message: "Attendance updated successfully",
+            presentCount: classEntry.attendance.length,
+            date: formattedDate,
+        });
+    } catch (error) {
+        console.error("Error updating attendance:", error.message);
+        return res.status(500).json({
+            message: "Internal server error",
+            error: error.message,
+        });
+    }
+});
+
 router.get('/getAllClasslogs', userAuth, async (req, res) => {
     try {
         const adminId = req.user._id;
 
         const response = await ClassLog.find({ adminId })
-            .populate('batch_id');
+            .populate('batch_id')
+            .populate('classes.attendance.studentIds');
 
         res.status(200).json(response);
 
