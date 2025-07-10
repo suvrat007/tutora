@@ -126,7 +126,7 @@ router.post("/add-class-updates", userAuth, async (req, res) => {
     }
 });
 
-router.patch("/mark-attendance", userAuth, async (req, res) => {
+router.patch("/mark-attendance", userAuth, async (req, res) =>  {
     try {
         const adminId = req.user._id;
         const { batch_id, subject_id, date, presentIds } = req.body;

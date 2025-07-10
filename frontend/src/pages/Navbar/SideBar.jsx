@@ -1,4 +1,4 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import {
   AiFillHome,
@@ -18,123 +18,154 @@ import useLogoutAdmin from "@/useLogoutAdmin.js";
 const Sidebar = () => {
   const location = useLocation();
   const handleLogout = useLogoutAdmin();
-  const [isOpen, setIsOpen] = useState(true);
+  const [isHovered, setIsHovered] = useState(false);
   const [management, setManagement] = useState(false);
   const [register, setRegister] = useState(false);
 
-
   const linkClass = (path) =>
-      `cursor-pointer flex items-center justify-between gap-3 p-3 rounded-lg transition-all group ${
+      `cursor-pointer flex items-center justify-between gap-3 p-3 rounded-lg transition-all duration-200 group relative ${
           path && location.pathname.startsWith(path)
               ? "bg-[#f4e3d0] text-[#6b4c3b] font-semibold"
               : "hover:bg-gradient-to-r from-[#c5a37e] to-[#b98b65] hover:text-white text-[#4a3a2c]"
       }`;
 
+  const menuItems = [
+    { icon: AiFillHome, label: "Home", path: "/main" },
+    {
+      icon: MdManageAccounts,
+      label: "Management",
+      dropdown: true,
+      toggle: () => setManagement((prev) => !prev),
+      isOpen: management,
+      subItems: [
+        { label: "Attendance", path: "/main/attendance", icon: FaClipboardList },
+      ],
+    },
+    {
+      icon: BsFillPeopleFill,
+      label: "Registrations & Info",
+      dropdown: true,
+      toggle: () => setRegister((prev) => !prev),
+      isOpen: register,
+      subItems: [
+        { label: "Students", path: "/main/student-data", icon: AiOutlineTeam },
+        { label: "Batches", path: "/main/batches", icon: IoIosSchool },
+      ],
+    },
+    // { icon: FaClipboardList, label: "Class Status", path: "/main/class-status" },
+    { icon: MdInfoOutline, label: "Info Center", path: "/main/info" },
+  ];
+
   return (
       <div
-          className={`bg-[#e7c6a5] shadow-2xl rounded-3xl transition-all duration-300 ease-in-out
-        ml-4 my-4 px-4 py-6 h-screen flex flex-col justify-between
-        ${isOpen ? "w-[17.5em]" : "w-[4.5em]"}`}
-          onMouseLeave={() => setIsOpen(false)}
+          className={`bg-[#e7c6a5] shadow-2xl rounded-3xl transition-all duration-300 ease-in-out ml-4 my-4 px-4 py-6 flex flex-col justify-between ${
+              isHovered ? "w-[17.5em]" : "w-[4.5em]"
+          }`}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
       >
-        {/* Top Section */}
         <div className="flex flex-col gap-2 text-base font-medium">
-          {/* Collapse Button */}
-          <button
-              onMouseEnter={() => setIsOpen(true)}
-              onClick={() => setIsOpen((prev) => !prev)}
-              className={linkClass(null)}
-          >
-            <div className="flex items-center gap-3 w-full">
-              {isOpen ? (
-                  <AiOutlineLeft size={20} className="group-hover:scale-110 transition-transform" />
-              ) : (
-                  <AiOutlineRight size={20} className="group-hover:scale-110 transition-transform" />
-              )}
-              {isOpen && <span>Collapse</span>}
-            </div>
-          </button>
+          
 
-          {/* Home */}
-          <Link to="/main" className={linkClass("/main")}>
-            <AiFillHome size={20} className="group-hover:scale-110 transition-transform" />
-            {isOpen && <span>Home</span>}
-          </Link>
-
-          {/* Management Dropdown */}
-          <div>
-            <div
-                onClick={() => setManagement((prev) => !prev)}
-                className={linkClass(null)}
-            >
-              <div className="flex items-center gap-3">
-                <MdManageAccounts size={20} className="group-hover:scale-110 transition-transform" />
-                {isOpen && <span>Management</span>}
+          {menuItems.map((item, index) => (
+              <div key={index}>
+                {item.dropdown ? (
+                    <div>
+                      <div
+                          onClick={item.toggle}
+                          className={linkClass(null)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <item.icon
+                              size={20}
+                              className="group-hover:scale-110 transition-transform flex-shrink-0"
+                          />
+                          {isHovered && <span>{item.label}</span>}
+                          {!isHovered && (
+                              <div
+                                  className="
+                          absolute left-full ml-2 px-2 py-1 text-xs bg-[#e7c6a5]
+                          rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200
+                          pointer-events-none whitespace-nowrap z-50
+                        "
+                              >
+                                {item.label}
+                                <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-0 h-0"></div>
+                              </div>
+                          )}
+                        </div>
+                        {isHovered && (item.isOpen ? <AiOutlineUp /> : <AiOutlineDown />)}
+                      </div>
+                      {isHovered && (
+                          <div
+                              className={`flex flex-col pl-10 text-sm text-[#4a3a2c] transition-all duration-300 ease-in-out overflow-hidden ${
+                                  item.isOpen ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
+                              }`}
+                          >
+                            {item.subItems.map((subItem, subIndex) => (
+                                <Link
+                                    key={subIndex}
+                                    to={subItem.path}
+                                    className="py-2 hover:text-[#6b4c3b] transition-colors flex items-center"
+                                >
+                                  <subItem.icon className="inline mr-2" />
+                                  {subItem.label}
+                                </Link>
+                            ))}
+                          </div>
+                      )}
+                    </div>
+                ) : (
+                    <Link
+                        to={item.path}
+                        className={linkClass(item.path)}
+                    >
+                      <item.icon
+                          size={20}
+                          className="group-hover:scale-110 transition-transform flex-shrink-0"
+                      />
+                      {isHovered && <span>{item.label}</span>}
+                      {!isHovered && (
+                          <div
+                              className="
+                      absolute left-full ml-2 px-2 py-1 text-xs bg-[#e7c6a5]
+                      rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200
+                      pointer-events-none whitespace-nowrap z-50
+                    "
+                          >
+                            {item.label}
+                            <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-0 h-0"></div>
+                          </div>
+                      )}
+                    </Link>
+                )}
               </div>
-              {isOpen && (management ? <AiOutlineUp /> : <AiOutlineDown />)}
-            </div>
-            {isOpen && (
-                <div
-                    className={`flex flex-col pl-10 text-sm text-[#4a3a2c] transition-all duration-300 ease-in-out overflow-hidden ${
-                        management ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
-                    }`}
-                >
-                  <Link to="/main/attendance" className="py-2 hover:text-[#6b4c3b] transition-colors">
-                    <FaClipboardList className="inline mr-2" />
-                    Attendance
-                  </Link>
-                </div>
-            )}
-          </div>
-
-          {/* Registrations Dropdown */}
-          <div>
-            <div
-                onClick={() => setRegister((prev) => !prev)}
-                className={linkClass(null)}
-            >
-              <div className="flex items-center gap-3">
-                <BsFillPeopleFill size={20} className="group-hover:scale-110 transition-transform" />
-                {isOpen && <span>Registrations & Info</span>}
-              </div>
-              {isOpen && (register ? <AiOutlineUp /> : <AiOutlineDown />)}
-            </div>
-            {isOpen && (
-                <div
-                    className={`flex flex-col pl-10 text-sm text-[#4a3a2c] transition-all duration-300 ease-in-out overflow-hidden ${
-                        register ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
-                    }`}
-                >
-                  <Link to="/main/student-data" className="py-2 hover:text-[#6b4c3b] transition-colors">
-                    <AiOutlineTeam className="inline mr-2" />
-                    Students
-                  </Link>
-                  <Link to="/main/batches" className="py-2 hover:text-[#6b4c3b] transition-colors">
-                    <IoIosSchool className="inline mr-2" />
-                    Batches
-                  </Link>
-                </div>
-            )}
-          </div>
-
-          {/* Class Status */}
-          <Link to="/main/class-status" className={linkClass("/main/class-status")}>
-            <FaClipboardList size={20} className="group-hover:scale-110 transition-transform" />
-            {isOpen && <span>Class Status</span>}
-          </Link>
-
-          {/* Info Center */}
-          <Link to="/main/info" className={linkClass("/Info-Center")}>
-            <MdInfoOutline size={20} className="group-hover:scale-110 transition-transform" />
-            {isOpen && <span>Info Center</span>}
-          </Link>
+          ))}
         </div>
 
         {/* Bottom - Logout */}
         <div className="pt-4 border-t border-[#d4a97f]">
-          <button onClick={handleLogout} className={linkClass(null)}>
-            <FiLogOut size={20} className="group-hover:scale-110 transition-transform" />
-            {isOpen && <span>Logout</span>}
+          <button
+              onClick={handleLogout}
+              className={linkClass(null)}
+          >
+            <FiLogOut
+                size={20}
+                className="group-hover:scale-110 transition-transform flex-shrink-0"
+            />
+            {isHovered && <span>Logout</span>}
+            {!isHovered && (
+                <div
+                    className="
+                absolute left-full ml-2 px-2 py-1 text-xs bg-[#e7c6a5]
+                rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200
+                pointer-events-none whitespace-nowrap z-50
+              "
+                >
+                  Logout
+                  <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-0 h-0"></div>
+                </div>
+            )}
           </button>
         </div>
       </div>
