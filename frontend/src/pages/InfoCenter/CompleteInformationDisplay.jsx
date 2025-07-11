@@ -57,16 +57,15 @@ const CompleteInformationDisplay = () => {
     });
   };
 
-  // ✅ CONDITIONAL RENDER
   if (showStudentProfile.show) {
     return <StudentProfile student={showStudentProfile} setShowStudentProfile={setShowStudentProfile} />;
   }
 
   return (
       <div className="flex gap-6 p-6 flex-1 overflow-hidden">
-        <div className="flex flex-col gap-6 w-120">
+        <div className="flex flex-col gap-3 w-120">
           <WrapperCard>
-            <Card className="w-full h-[240px] bg-white text-gray-800 px-6 py-4 rounded-2xl flex flex-col gap-4">
+            <Card className="w-full h-[16em] bg-white text-gray-800 px-6 py-4 rounded-2xl flex flex-col gap-4">
               <p className="text-lg font-semibold">Batches Overview</p>
               <div className="flex-1 overflow-y-auto pr-1">
                 {batches.length > 0 ? (
@@ -114,10 +113,140 @@ const CompleteInformationDisplay = () => {
           </WrapperCard>
 
           <WrapperCard>
-            <Card className="w-full h-full bg-white text-gray-800 p-6 rounded-2xl flex items-start">
-              <p className="font-medium">Panel 2</p>
+            <Card className="w-full bg-white text-gray-800 p-4 rounded-2xl flex flex-col">
+              <div>
+
+                <div className="flex gap-3 mb-2 items-center justify-between">
+                  <h2 className="text-lg font-semibold mb-2">Average Attendance</h2>
+
+                  <select
+                      value={batchName}
+                      onChange={(e) => {
+                        setBatchName(e.target.value);
+                        setSubjectName('');
+                      }}
+                      className="border rounded px-2 py-1 text-sm text-gray-700"
+                      disabled={isLoadingBatches}
+                  >
+                    <option value="">All Batches</option>
+                    {batches.map((b) => (
+                        <option key={b._id} value={b.name}>{b.name}</option>
+                    ))}
+                  </select>
+
+                  <select
+                      value={subjectName}
+                      onChange={(e) => setSubjectName(e.target.value)}
+                      className="border rounded px-2 py-1 text-sm text-gray-700"
+                      disabled={!batchName || isLoadingBatches}
+                  >
+                    <option value="">All Subjects</option>
+                    {batches.find((b) => b.name === batchName)?.subject?.map((s) => (
+                        <option key={s._id} value={s.name}>{s.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="w-full flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                {isLoadingBatches ? (
+                    <div className="flex-1 flex items-center justify-center py-10 text-gray-500">
+                      <Loader2 className="animate-spin w-5 h-5 mr-2" /> Loading...
+                    </div>
+                ) : (
+                    <>
+                      {/* Left (Total + Filter) */}
+                      <div className="flex-1 flex flex-col gap-4 text-sm">
+                        <div className="bg-gray-100 p-3 rounded-lg text-center">
+                          <div className="font-semibold text-gray-700">Total Students</div>
+                          <div className="text-lg font-bold text-gray-900">{combinedData.length}</div>
+                        </div>
+                        <div className="bg-gray-100 p-3 rounded-lg text-center">
+                          <div className="font-semibold text-gray-700">Filter Applied</div>
+                          <div className="text-xs text-gray-600">
+                            {batchName || subjectName
+                                ? `${batchName ? batchName : 'All Batches'}${subjectName ? ` - ${subjectName}` : ''}`
+                                : 'All Data'}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Center (Circular Attendance) */}
+                      <div className="flex-1 flex flex-col items-center">
+                        <div className="relative inline-flex items-center justify-center">
+                          <svg width="120" height="120" className="transform -rotate-90">
+                            <circle cx="60" cy="60" r="56" stroke="#e5e7eb" strokeWidth="8" fill="none" />
+                            <circle
+                                cx="60"
+                                cy="60"
+                                r="56"
+                                stroke={
+                                  (() => {
+                                    const percentage = combinedData.length > 0
+                                        ? Math.round((combinedData.reduce((sum, student) => sum + student.percentage, 0) / combinedData.length) * 100) / 100
+                                        : 0;
+                                    if (percentage >= 75) return '#10b981';
+                                    if (percentage >= 50) return '#f59e0b';
+                                    return '#ef4444';
+                                  })()
+                                }
+                                strokeWidth="8"
+                                fill="none"
+                                strokeDasharray="351.858"
+                                strokeDashoffset={
+                                  (() => {
+                                    const percentage = combinedData.length > 0
+                                        ? Math.round((combinedData.reduce((sum, student) => sum + student.percentage, 0) / combinedData.length) * 100) / 100
+                                        : 0;
+                                    return 351.858 - (percentage / 100) * 351.858;
+                                  })()
+                                }
+                                strokeLinecap="round"
+                                className="transition-all duration-1000 ease-out"
+                            />
+                          </svg>
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="text-center">
+                              <div className="text-2xl font-bold text-gray-800">
+                                {combinedData.length > 0
+                                    ? Math.round((combinedData.reduce((sum, student) => sum + student.percentage, 0) / combinedData.length) * 100) / 100
+                                    : 0
+                                }%
+                              </div>
+                              <div className="text-xs text-gray-500">Attendance</div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-sm text-gray-600 mt-2">Overall Average Attendance</div>
+                      </div>
+
+                      {/* Right (Breakdown) */}
+                      <div className="flex-1 grid grid-cols-1 gap-2 text-xs">
+                        <div className="bg-red-50 p-2 rounded text-center">
+                          <div className="font-semibold text-red-700">Below 50%</div>
+                          <div className="text-red-900">
+                            {combinedData.filter(s => s.percentage < 50).length} students
+                          </div>
+                        </div>
+                        <div className="bg-yellow-50 p-2 rounded text-center">
+                          <div className="font-semibold text-yellow-700">50% - 75%</div>
+                          <div className="text-yellow-900">
+                            {combinedData.filter(s => s.percentage >= 50 && s.percentage < 75).length} students
+                          </div>
+                        </div>
+                        <div className="bg-green-50 p-2 rounded text-center">
+                          <div className="font-semibold text-green-700">75% & Above</div>
+                          <div className="text-green-900">
+                            {combinedData.filter(s => s.percentage >= 75).length} students
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                )}
+              </div>
             </Card>
           </WrapperCard>
+
         </div>
 
         <div className="flex gap-6 flex-1">

@@ -1,11 +1,24 @@
 import { useNavigate } from 'react-router-dom';
-import { FaUser, FaPhone, FaEnvelope, FaCalendarAlt, FaSchool, FaChevronLeft, FaFilter, FaCheckCircle, FaTimesCircle, FaMinusCircle, FaQuestionCircle } from 'react-icons/fa';
+import {
+    FaUser,
+    FaPhone,
+    FaEnvelope,
+    FaCalendarAlt,
+    FaSchool,
+    FaChevronLeft,
+    FaFilter,
+    FaCheckCircle,
+    FaTimesCircle,
+    FaMinusCircle,
+    FaQuestionCircle,
+    FaChevronRight
+} from 'react-icons/fa';
 import Card from "@/pages/Dashboard/comps/uii/Card.jsx";
 import { useSelector } from "react-redux";
 import { useState, useMemo } from 'react';
 
 const WrapperCard = ({ children, className = "" }) => (
-    <div className={`bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl shadow-lg p-3 ${className}`}>
+    <div className={`bg-[#f3d8b6] rounded-2xl shadow-lg p-3 ${className}`}>
         <div className="w-full h-full">{children}</div>
     </div>
 );
@@ -125,7 +138,6 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
             .sort();
     }, [student.subjectId, student.batchId, batches]);
 
-    // Process class logs with better error handling
     const attendanceData = useMemo(() => {
         if (!classlogs || !student.subjectId) return [];
 
@@ -174,7 +186,6 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
         return data;
     }, [classlogs, student.subjectId, student.studentId, batches]);
 
-    // Filter attendance data
     const filteredAttendanceData = useMemo(() => {
         return attendanceData.filter((entry) => {
             const matchesSubject = subjectFilter ? entry.subjectName === subjectFilter : true;
@@ -183,7 +194,6 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
         });
     }, [attendanceData, subjectFilter, statusFilter]);
 
-    // Calculate attendance statistics
     const attendanceStats = useMemo(() => {
         const validClasses = attendanceData.filter(entry => entry.status === 'Present' || entry.status === 'Absent');
         const presentCount = attendanceData.filter(entry => entry.status === 'Present').length;
@@ -203,25 +213,32 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
     };
 
     return (
-        <div className="flex flex-col gap-6 p-6 h-full overflow-hidden">
-            {/* Header */}
+        <div className="flex flex-col gap-6 p-6 h-full overflow-hidden ">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <button
                         onClick={handleGoBack}
                         className="p-2 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow"
                     >
-                        <FaChevronLeft className="w-5 h-5 text-gray-600" />
+                        <FaChevronLeft className="w-5 h-5 text-gray-600"/>
                     </button>
                     <h1 className="text-2xl font-bold text-gray-800">Student Profile</h1>
                 </div>
+                <div className="flex items-center gap-3">
+                    <h1 className="text-2xl font-bold text-gray-800">Edit Info</h1>
+                    <button
+                        onClick={()=>navigate('/main/student-data')}
+                        className="p-2 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow"
+                    >
+                        <FaChevronRight className="w-5 h-5 text-gray-600"/>
+                    </button>
+                </div>
             </div>
 
-            {/* Top Row */}
             <div className="overflow-y-auto">
                 <div className="flex gap-6 h-64 mb-4">
                     <WrapperCard className="flex-1">
-                        <Card className="w-full h-full p-6 flex flex-col justify-between">
+                        <div className="w-full h-full p-6 flex flex-col justify-between bg-white border-[#e0b890] rounded-2xl shadow-md">
                             <div>
                                 <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
                                     <FaUser className="w-5 h-5 mr-2 text-indigo-600"/>
@@ -246,12 +263,11 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
                                     </div>
                                 </div>
                             </div>
-                        </Card>
+                        </div>
                     </WrapperCard>
 
-                    {/* Personal Info */}
                     <WrapperCard className="flex-1">
-                        <Card className="w-full h-full p-6">
+                        <div className="w-full h-full p-6 bg-white border-[#e0b890] rounded-2xl shadow-md">
                             <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
                                 <FaSchool className="w-5 h-5 mr-2 text-indigo-600"/>
                                 Personal Information
@@ -291,12 +307,11 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
                                     </div>
                                 </div>
                             </div>
-                        </Card>
+                        </div>
                     </WrapperCard>
 
-                    {/* Attendance Summary */}
                     <WrapperCard className="flex-1">
-                        <Card className="w-full h-full p-6 flex flex-col items-center justify-center">
+                        <div className="w-full h-full p-6 flex flex-col items-center justify-center bg-white border-[#e0b890] rounded-2xl shadow-md">
                             <h2 className="text-xl font-semibold text-gray-800 mb-4">Attendance Summary</h2>
                             <AttendanceChart percentage={attendanceStats.percentage}/>
                             <div className="mt-4 text-center">
@@ -304,14 +319,13 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
                                     Present: {attendanceStats.present} / Total: {attendanceStats.total}
                                 </div>
                             </div>
-                        </Card>
+                        </div>
                     </WrapperCard>
                 </div>
 
-                {/* Bottom Row - Attendance Table */}
                 <div className="flex-1 overflow-auto max-h-[450px]">
                     <WrapperCard>
-                        <Card className="w-full p-4">
+                        <div className="w-full p-4 bg-white border-[#e0b890] rounded-2xl shadow-md">
                             <div className="flex justify-between items-center mb-4">
                                 <h2 className="text-xl font-semibold text-gray-800 flex items-center">
                                     <FaCalendarAlt className="text-indigo-600 mr-2"/>
@@ -385,7 +399,7 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
                                     </tbody>
                                 </table>
                             </div>
-                        </Card>
+                        </div>
                     </WrapperCard>
                 </div>
             </div>

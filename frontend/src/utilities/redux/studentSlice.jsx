@@ -9,8 +9,11 @@ const studentSlice = createSlice({
         setGroupedStudents: (state, action) => {
             state.groupedStudents = action.payload;
         },
+        clearGroupedStudents: (state) => {
+            state.groupedStudents = [];
+        }
     },
 });
 
-export const { setGroupedStudents } = studentSlice.actions;
+export const { setGroupedStudents,clearGroupedStudents } = studentSlice.actions;
 export default studentSlice.reducer;

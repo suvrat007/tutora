@@ -11,6 +11,7 @@ const LandingPage = () => {
     const goToHome = () => {
         navigate("/main");
     }
+    const user = useSelector((state) => state.user)
 
     return (
         <div>

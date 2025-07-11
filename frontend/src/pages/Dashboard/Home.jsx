@@ -12,11 +12,9 @@ const Home = () => {
 
   return (
       <div className="flex flex-col gap-4 p-4 flex-1 overflow-hidden">
-        <div className="flex gap-4 flex-1 overflow-y-auto">
+        <div className="flex gap-4 flex-1 h-[10em]">
           <div className="bg-[#f4d8bb] p-2 rounded-3xl shadow-md flex-1 min-w-[400px]">
-            <div className="bg-white rounded-2xl shadow p-4 h-full">
-              <TodaysClasses />
-            </div>
+            <TodaysClasses />
           </div>
 
           <div className="bg-[#f4d8bb] p-2 rounded-3xl shadow-md w-[28%] min-w-[280px]">
@@ -28,13 +26,11 @@ const Home = () => {
 
         <div className="flex gap-4 flex-1 overflow-hidden">
           <div className="bg-[#f4d8bb] p-2 rounded-3xl shadow-md flex-1 min-w-[400px]">
-            <div className="bg-white rounded-2xl shadow p-4 h-full">
-              <ClassStatusUpdates />
-            </div>
+            <ClassStatusUpdates />
           </div>
 
           <div className="bg-[#f4d8bb] p-2 rounded-3xl shadow-md flex-1 min-w-[400px]">
-            <div className="bg-white rounded-2xl shadow p-4 h-full">
+            <div className="bg-white rounded-2xl shadow p-2 h-full">
               <Reminders />
             </div>
           </div>

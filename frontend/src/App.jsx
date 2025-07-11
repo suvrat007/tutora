@@ -14,6 +14,7 @@ import Login from "@/pages/Auth/Login.jsx";
 import ProtectedRoute from "@/ProtectedRoute.jsx";
 import { ThemeProvider } from "./components/ui/ThemeProvider.jsx";
 import MainLayout from "./pages/MainLayout.jsx";
+import LandingPage from "@/pages/LandingPage.jsx";
 
 const appRouter = createBrowserRouter([
     {
@@ -22,7 +23,7 @@ const appRouter = createBrowserRouter([
         children: [
             {
                 index: true,
-                element: <Landing />,
+                element: <LandingPage />,
             },
             {
                 path: "login",

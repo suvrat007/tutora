@@ -6,9 +6,12 @@ const batchSlice = createSlice({
     reducers: {
         addBatches: (state, action) => {
             return action.payload;
+        },
+        clearBatches: () => {
+            return [];
         }
     },
 
 })
-export const {addBatches} = batchSlice.actions;
+export const {addBatches,clearBatches} = batchSlice.actions;
 export default batchSlice.reducer ;

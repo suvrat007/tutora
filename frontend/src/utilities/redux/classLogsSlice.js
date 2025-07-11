@@ -6,9 +6,12 @@ const classLogsSlice = createSlice({
     reducers: {
         addClassLogs: (state, action) => {
             return action.payload;
+        },
+        clearClassLogs: () => {
+            return [];
         }
     },
 
 })
-export const {addClassLogs} = classLogsSlice.actions;
+export const {addClassLogs,clearClassLogs} = classLogsSlice.actions;
 export default classLogsSlice.reducer ;

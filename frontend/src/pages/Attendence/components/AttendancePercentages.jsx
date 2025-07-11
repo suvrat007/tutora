@@ -7,8 +7,7 @@ const AttendancePercentages = ({attendance, batchName, setBatchName, subjectName
 
     return (
         <div className="bg-[#f4d8bb] p-2 rounded-3xl shadow-md flex-1">
-            <div className="bg-white rounded-2xl p-4 text-black flex flex-col
-             gap-3">
+            <div className="bg-white h-full rounded-2xl p-4 text-black flex flex-col gap-3">
                 <div className={'flex items-center justify-between'}>
                     <h2 className="font-bold text-lg">Attendance Summary</h2>
 

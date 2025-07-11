@@ -168,15 +168,22 @@ router.patch("/update-student/:id", userAuth, async (req, res) => {
     }
 });
 
-router.get('/attendance/summary', userAuth ,async (req, res) => {
+router.get('/attendance/summary', userAuth, async (req, res) => {
     try {
         if (!req.user || !req.user._id) {
             return res.status(401).json({ message: 'Unauthorized: User not authenticated' });
         }
         const adminId = req.user._id;
+        const studentId = req.query.studentId; // Accept studentId as query parameter
+
+        // Build match stage
+        const matchStage = { adminId };
+        if (studentId) {
+            matchStage._id = mongoose.Types.ObjectId(studentId);
+        }
 
         const summary = await Student.aggregate([
-            { $match: { adminId } },
+            { $match: matchStage },
             // Unwind subjectId to process each subject
             { $unwind: { path: '$subjectId', preserveNullAndEmptyArrays: true } },
 
@@ -238,6 +245,16 @@ router.get('/attendance/summary', userAuth ,async (req, res) => {
                             },
                         },
                         { $unwind: { path: '$classes', preserveNullAndEmptyArrays: true } },
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$classes.updated', true] },
+                                        { $eq: ['$classes.hasHeld', true] },
+                                    ],
+                                },
+                            },
+                        },
                         { $unwind: { path: '$classes.attendance', preserveNullAndEmptyArrays: true } },
                         {
                             $match: {
@@ -260,7 +277,7 @@ router.get('/attendance/summary', userAuth ,async (req, res) => {
                 $unwind: { path: '$attendance', preserveNullAndEmptyArrays: true },
             },
 
-            // Lookup total classes held (hasHeld: true)
+            // Lookup total classes held (updated: true, hasHeld: true)
             {
                 $lookup: {
                     from: 'classlogs',
@@ -278,7 +295,216 @@ router.get('/attendance/summary', userAuth ,async (req, res) => {
                             },
                         },
                         { $unwind: { path: '$classes', preserveNullAndEmptyArrays: true } },
-                        { $match: { 'classes.hasHeld': true } },
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$classes.updated', true] },
+                                        { $eq: ['$classes.hasHeld', true] },
+                                    ],
+                                },
+                            },
+                        },
+                        { $count: 'totalClasses' },
+                    ],
+                    as: 'tc',
+                },
+            },
+            {
+                $unwind: { path: '$tc', preserveNullAndEmptyArrays: true },
+            },
+
+            // Group by student to collect subjects
+            {
+                $group: {
+                    _id: '$_id',
+                    studentName: { $first: '$name' },
+                    subjects: {
+                        $push: {
+                            subjectId: '$subjectId',
+                            batchId: '$batchId',
+                            subjectName: { $ifNull: ['$subjectInfo.name', 'Unknown'] },
+                            attended: { $ifNull: ['$attendance.attendedClasses', 0] },
+                            total: { $ifNull: ['$tc.totalClasses', 0] },
+                            percentage: {
+                                $cond: {
+                                    if: { $eq: [{ $ifNull: ['$tc.totalClasses', 0] }, 0] },
+                                    then: 0,
+                                    else: {
+                                        $round: [
+                                            {
+                                                $multiply: [
+                                                    { $divide: [{ $ifNull: ['$attendance.attendedClasses', 0] }, '$tc.totalClasses'] },
+                                                    100,
+                                                ],
+                                            },
+                                            2,
+                                        ],
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+
+            // Final projection
+            {
+                $project: {
+                    _id: 0,
+                    studentId: '$_id',
+                    studentName: 1,
+                    subjects: 1,
+                },
+            },
+        ]);
+
+        if (!summary.length) {
+            return res.status(200).json({ message: 'No attendance data found', data: [] });
+        }
+
+        return res.status(200).json({ data: summary });
+    } catch (error) {
+        console.error('Attendance summary error:', error);
+        return res.status(500).json({ message: 'Failed to fetch attendance summary', error: error.message });
+    }
+});router.get('/attendance/summary', userAuth, async (req, res) => {
+    try {
+        if (!req.user || !req.user._id) {
+            return res.status(401).json({ message: 'Unauthorized: User not authenticated' });
+        }
+        const adminId = req.user._id;
+        const studentId = req.query.studentId; // Accept studentId as query parameter
+
+        // Build match stage
+        const matchStage = { adminId };
+        if (studentId) {
+            matchStage._id = mongoose.Types.ObjectId(studentId);
+        }
+
+        const summary = await Student.aggregate([
+            { $match: matchStage },
+            // Unwind subjectId to process each subject
+            { $unwind: { path: '$subjectId', preserveNullAndEmptyArrays: true } },
+
+            // Lookup batch details to get subject info
+            {
+                $lookup: {
+                    from: 'batches',
+                    localField: 'batchId',
+                    foreignField: '_id',
+                    as: 'batchInfo',
+                },
+            },
+            {
+                $unwind: { path: '$batchInfo', preserveNullAndEmptyArrays: true },
+            },
+            {
+                $addFields: {
+                    subjectInfo: {
+                        $arrayElemAt: [
+                            {
+                                $filter: {
+                                    input: { $ifNull: ['$batchInfo.subject', []] },
+                                    as: 'subj',
+                                    cond: { $eq: ['$$subj._id', '$subjectId'] },
+                                },
+                            },
+                            0,
+                        ],
+                    },
+                },
+            },
+
+            // Filter out students with invalid batch or subject
+            {
+                $match: {
+                    $and: [
+                        { batchId: { $ne: null } },
+                        { subjectId: { $ne: null } },
+                        { 'subjectInfo._id': { $exists: true } },
+                    ],
+                },
+            },
+
+            // Lookup attendance data from ClassLog
+            {
+                $lookup: {
+                    from: 'classlogs',
+                    let: { studentId: '$_id', batchId: '$batchId', subjectId: '$subjectId' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$adminId', adminId] },
+                                        { $eq: ['$batch_id', '$$batchId'] },
+                                        { $eq: ['$subject_id', '$$subjectId'] },
+                                    ],
+                                },
+                            },
+                        },
+                        { $unwind: { path: '$classes', preserveNullAndEmptyArrays: true } },
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$classes.updated', true] },
+                                        { $eq: ['$classes.hasHeld', true] },
+                                    ],
+                                },
+                            },
+                        },
+                        { $unwind: { path: '$classes.attendance', preserveNullAndEmptyArrays: true } },
+                        {
+                            $match: {
+                                $expr: {
+                                    $eq: ['$classes.attendance.studentIds', '$$studentId'],
+                                },
+                            },
+                        },
+                        {
+                            $group: {
+                                _id: null,
+                                attendedClasses: { $sum: 1 },
+                            },
+                        },
+                    ],
+                    as: 'attendance',
+                },
+            },
+            {
+                $unwind: { path: '$attendance', preserveNullAndEmptyArrays: true },
+            },
+
+            // Lookup total classes held (updated: true, hasHeld: true)
+            {
+                $lookup: {
+                    from: 'classlogs',
+                    let: { batchId: '$batchId', subjectId: '$subjectId' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$adminId', adminId] },
+                                        { $eq: ['$batch_id', '$$batchId'] },
+                                        { $eq: ['$subject_id', '$$subjectId'] },
+                                    ],
+                                },
+                            },
+                        },
+                        { $unwind: { path: '$classes', preserveNullAndEmptyArrays: true } },
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$classes.updated', true] },
+                                        { $eq: ['$classes.hasHeld', true] },
+                                    ],
+                                },
+                            },
+                        },
                         { $count: 'totalClasses' },
                     ],
                     as: 'tc',
@@ -343,5 +569,4 @@ router.get('/attendance/summary', userAuth ,async (req, res) => {
         return res.status(500).json({ message: 'Failed to fetch attendance summary', error: error.message });
     }
 });
-
 module.exports=router

@@ -6,9 +6,12 @@ const attendanceSlice = createSlice({
     reducers: {
         addAttendanceSummary: (state, action) => {
             return action.payload;
+        },
+        clearAttendanceSummary: () => {
+            return [];
         }
     },
 
 })
-export const {addAttendanceSummary} = attendanceSlice.actions;
+export const {addAttendanceSummary,clearAttendanceSummary} = attendanceSlice.actions;
 export default attendanceSlice.reducer ;
