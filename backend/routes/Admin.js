@@ -6,7 +6,7 @@ const userAuth  =require("../middleware/userAuth.js");
 router.get('/get',userAuth,async (req,res)=>{
     try{
         const userId = req.user._id
-        const admin = await Admin.findById(userId).select("-password")
+        const admin = await Admin.findById(userId).select("-password").populate('institute_info')
 
         if(!admin){
             return res.status(404).json('No user found');

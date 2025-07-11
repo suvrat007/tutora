@@ -1,11 +1,19 @@
-/** @type {import('tailwindcss').Config} */
-export default {
+const colors = require('tailwindcss/colors');
+
+module.exports = {
   content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    "./src/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: ['Outfit', 'sans-serif'], 
+      },
+      colors: {
+        primary: '#123456',
+        gray: colors.gray,
+      },
+    },
   },
   plugins: [],
-};
+}

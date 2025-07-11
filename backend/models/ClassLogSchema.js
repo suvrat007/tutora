@@ -1,19 +1,26 @@
 const mongoose = require('mongoose');
-const {ObjectId} = require("mongodb")
-const Schema = mongoose.Schema
+const { Schema } = mongoose;
 
 const ClassLogSchema = new Schema({
-    adminId: {type: ObjectId, ref: 'Admin'},
-    batch_id: {type: Schema.Types.ObjectId,required: true, ref: 'Batch'},
+    adminId: { type: Schema.Types.ObjectId, ref: 'Admin', required: true },
+    batch_id: { type: Schema.Types.ObjectId, ref: 'Batch', required: true },
+    subject_id: { type: Schema.Types.ObjectId, ref: 'Subject', required: true },
     classes: [
         {
-            subject_id: {type: String,required: true},
-            date: {type: Date, default: Date.now, required: true},
-            hasHeld: {type: Boolean, default: false},
-            note: {type: String, default: null, required: true},
-            attendance: [{type: Schema.Types.ObjectId, ref: 'Student'}],
+            date: { type: String, required: true },
+            hasHeld: { type: Boolean, default: false, required: true },
+            note: { type: String, default: "No Data", required: true },
+            attendance: [{
+                studentIds: {type: Schema.Types.ObjectId, ref: 'Student'},
+                time: { type: String, required: true },
+            }],
+            updated: { type: Boolean, default: false, required: true }
         }
     ]
+}, {
+    indexes: [
+        { key: { adminId: 1, batch_id: 1, subject_id: 1 }, unique: true }
+    ]
+});
 
-})
-module.exports= mongoose.model('ClassLog', ClassLogSchema);``
+module.exports = mongoose.model('ClassLog', ClassLogSchema);

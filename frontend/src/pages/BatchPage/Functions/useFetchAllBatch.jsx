@@ -1,4 +1,3 @@
-import axios from "axios";
 import axiosInstance from "../../../utilities/axiosInstance.jsx";
 
 const useFetchAllBatch = async () => {
@@ -12,14 +11,4 @@ const useFetchAllBatch = async () => {
 }
 export default useFetchAllBatch;
 
-const calculateFees = (stdData) => {
-    let total = 0;
-    for (let student of stdData) {
-        console.log(student);
-        if (student.fee_status && student.fee_status.amount) {
-            total += student.fee_status.amount;
-        }
-    }
-    return total;
-}
-export { calculateFees }
+

@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const userAuth  =require("../middleware/userAuth.js");
 const Batch = require("../models/Batch.js");
+const Student = require("../models/Student.js");
+const ClassLog = require("../models/ClassLogSchema.js");
 
 router.post("/add-new-batch",userAuth, async (req, res) => {
     const { name } = req.body;
@@ -25,7 +27,7 @@ router.post("/add-new-batch",userAuth, async (req, res) => {
 router.get("/get-all-batches",userAuth, async (req, res) => {
     try{
         const adminId = req.user._id
-        const response = await Batch.find({adminId:adminId}).populate('enrolledStudents admin');
+        const response = await Batch.find({adminId:adminId});
         console.log(response);
         return res.status(200).json(response);
 
@@ -34,17 +36,45 @@ router.get("/get-all-batches",userAuth, async (req, res) => {
         return res.status(500).json({ message: "Failed to fetch Batches", error: error.message });
     }
 })
-router.delete("/delete-batch/:id",userAuth, async (req, res) => {
+
+router.delete("/delete-batch/:id", userAuth, async (req, res) => {
     try {
-        const { id } = req.params;
-        const response = await Batch.deleteOne({ _id: id });
-        console.log(response);
-        return res.status(200).json(response);
-    }catch(error){
+        const batchId = req.params.id;
+        const adminId = req.user._id;
+        const { shouldDeleteStudents } = req.body;
+
+        const batchDeleteResult = await Batch.deleteOne({ adminId, _id: batchId });
+
+        if (shouldDeleteStudents) {
+            const studentDeleteResult = await Student.deleteMany({ batchId });
+            const classLogDeleteResult = await ClassLog.deleteMany({ batch_id:batchId });
+            return res.status(200).json({
+                message: "Batch and associated students deleted successfully",
+                batchDeleteResult,
+                studentDeleteResult,
+                classLogDeleteResult
+            });
+        } else {
+            const studentUpdateResult = await Student.updateMany(
+                { batchId },
+                { $set: { batchId: null } }
+            );
+            const classLogUpdateResult = await ClassLog.deleteMany({ batch_id:batchId });
+            return res.status(200).json({
+                message: "Batch deleted and students disassociated",
+                batchDeleteResult,
+                studentUpdateResult,
+                classLogUpdateResult
+            });
+        }
+    } catch (error) {
         console.error("Error deleting batch:", error.message);
+        return res.status(500).json({ message: "Internal server error", error: error.message });
     }
-})
-router.put("/update-batch/:id", userAuth,async (req, res) => {
+});
+
+
+router.patch("/update-batch/:id", userAuth,async (req, res) => {
     const { id } = req.params;
     const { name } = req.body;
 
@@ -66,6 +96,8 @@ router.put("/update-batch/:id", userAuth,async (req, res) => {
         res.status(500).json({ message: `Error updating ${name}, error: error.message `});
     }
 });
+
+
 router.get("/get-batch/:id", userAuth,async (req, res) => {
     const id = req.params.id;
     const adminId = req.user._id
@@ -78,20 +110,6 @@ router.get("/get-batch/:id", userAuth,async (req, res) => {
     } catch (error) {
         console.error("Error fetching batch:", error);
         return res.status(500).json({ message: "Internal Server Error" });
-    }
-});
-
-router.put('/update-batch-with-student/:id', userAuth,async (req, res) => {
-    try {
-        const { newStudentId } = req.body;
-        const batch = await Batch.findByIdAndUpdate(
-            req.params.id,
-            { $addToSet: { enrolledStudents: newStudentId } }, // avoids duplicates
-            { new: true }
-        );
-        res.status(200).json(batch);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
     }
 });
 

@@ -16,13 +16,13 @@ const ConfirmationModal = ({onClose,closeModal}) => {
                 <div className="flex justify-around py-6">
                     <button
                         className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
-                        onClick={() => onClose(true)}  // Yes → delete students
+                        onClick={() => onClose(true)}
                     >
                         Yes
                     </button>
                     <button
                         className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400"
-                        onClick={() => onClose(false)} // No → skip students
+                        onClick={() => onClose(false)}
                     >
                         No
                     </button>

@@ -7,9 +7,8 @@ const BatchSchema = new Schema({
         ref:"Admin"
     },
     name: {type: String, required: true},
-    normalized_name: { type: String, required: true, unique: true }, // internal use only
+    normalized_name: { type: String, required: true },
     forStandard: {type: String, required: true},
-    enrolledStudents: [{type: Schema.Types.ObjectId, ref: 'Student'}],
     subject: [
         {
             name: {type: String, required: true},
@@ -25,8 +24,7 @@ const BatchSchema = new Schema({
 
         }
     ]
-
-
-
 })
+BatchSchema.index({ adminId: 1, normalized_name: 1 }, { unique: true });
+
 module.exports= mongoose.model('Batch', BatchSchema);
