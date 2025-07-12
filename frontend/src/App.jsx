@@ -15,6 +15,7 @@ import ProtectedRoute from "@/ProtectedRoute.jsx";
 import { ThemeProvider } from "./components/ui/ThemeProvider.jsx";
 import MainLayout from "./pages/MainLayout.jsx";
 import LandingPage from "@/pages/LandingPage.jsx";
+import InstituteInfo from "@/pages/InstiInfo/InstituteInfo.jsx";
 
 const appRouter = createBrowserRouter([
     {
@@ -23,7 +24,7 @@ const appRouter = createBrowserRouter([
         children: [
             {
                 index: true,
-                element: <LandingPage />,
+                element: <Landing />,
             },
             {
                 path: "login",
@@ -54,8 +55,12 @@ const appRouter = createBrowserRouter([
                         element: <BatchPage />,
                     },
                     {
-                        path: "info",
+                        path: "info-students",
                         element: <CompleteInformationDisplay />,
+                    },
+                    {
+                        path: "info-institute",
+                        element: <InstituteInfo />,
                     },
                 ],
             },

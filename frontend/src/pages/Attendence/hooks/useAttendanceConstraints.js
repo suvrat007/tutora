@@ -15,13 +15,15 @@ const useAttendanceConstraints = (batchName, subjectName, date, batches) => {
 
         const selectedDate = new Date(date);
         const today = new Date();
-        today.setHours(0, 0, 0, 0);
 
         // Constraint 1: Prevent future dates
-        if (selectedDate > today) {
+        if (selectedDate >= today) {
             setErrorMessage("Cannot mark attendance for future dates");
             return false;
         }
+
+        today.setHours(0, 0, 0, 0);
+
 
         // Constraint 2: Check if class is scheduled on the selected day
         const day = selectedDate.toLocaleString("en-US", { weekday: "long" });

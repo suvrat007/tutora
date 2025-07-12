@@ -32,7 +32,7 @@ const OnboardingForm = ({ adminCreds }) => {
 
     const [uploading, setUploading] = useState(false);
     const [localPreview, setLocalPreview] = useState(null);
-    const [error, setError] = useState(null); // State for displaying errors
+    const [error, setError] = useState(null);
     const navigate = useNavigate();
 
     const cloudName = import.meta.env.VITE_CLOUD_NAME;
@@ -88,7 +88,6 @@ const OnboardingForm = ({ adminCreds }) => {
             navigate("/main");
         } catch (err) {
             console.error("Signup error:", err);
-            // Display a user-friendly error message
             const errorMessage = err.response?.data?.message || "An unexpected error occurred during signup.";
             setError(errorMessage);
         }

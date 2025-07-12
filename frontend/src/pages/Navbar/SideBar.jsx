@@ -52,7 +52,8 @@ const Sidebar = () => {
         { label: "Batches", path: "/main/batches", icon: IoIosSchool },
       ],
     },
-    { icon: MdInfoOutline, label: "Info Center", path: "/main/info" },
+    { icon: MdInfoOutline, label: "Student Center", path: "/main/info-students" },
+    { icon: MdInfoOutline, label: "Institute Center", path: "/main/info-institute" },
   ];
 
   return (

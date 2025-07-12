@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import axiosInstance from "@/utilities/axiosInstance.jsx";
 import useFetchUnUpdatedClasslog from "../DashboardHooks/useFetchUnUpdatedClasslog.js";
+import useFetchClassLogs from "@/pages/useFetchClassLogs.js";
 
 const ClassStatusUpdates = () => {
     const [rerender, setRerender] = useState(false);
@@ -23,6 +24,7 @@ const ClassStatusUpdates = () => {
         setStatusData(prev => ({ ...prev, [index]: { ...prev[index], note: value, error: null } }));
     };
 
+    const fetchClassLogs = useFetchClassLogs();
     const handleSubmit = async (classInfo, index) => {
         const status = statusData[index];
 
@@ -42,7 +44,8 @@ const ClassStatusUpdates = () => {
             setLoadingStates(prev => ({ ...prev, [index]: true }));
             const response = await axiosInstance.post("/api/classLog/add-class-updates", { updates: [payload] }, { withCredentials: true });
             alert("Class updated!");
-            console.log(response.data)
+            // console.log(response.data)
+            fetchClassLogs();
             setOpenIndex(null);
             setRerender(prev => !prev);
             setStatusData(prev => { const p = { ...prev }; delete p[index]; return p; });
