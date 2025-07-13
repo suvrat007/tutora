@@ -3,18 +3,22 @@ import {
     Calendar, Users, DollarSign, FileText, Clock,
     BookOpen, Shield, Heart, Zap
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
     Card, CardContent, CardDescription, CardHeader, CardTitle
 } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import Hero from "@/pages/LandingPage/Hero.jsx";
 import { useSelector } from "react-redux";
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger
+} from "@/components/ui/accordion";
 
 const Landing = () => {
     const [currentWord, setCurrentWord] = useState(0);
     const rotatingWords = ["Assistant", "Anchor", "Automator", "Admin", "Ally"];
-    const navigate = useNavigate();
     const user = useSelector((state) => state.user);
 
     useEffect(() => {
@@ -106,7 +110,8 @@ const Landing = () => {
                 <p className="text-lg text-[#6b594c] mb-8">
                     Everything you need to know before getting started
                 </p>
-                <div className="space-y-6 text-left">
+
+                <Accordion type="multiple" collapsible className="w-full text-left">
                     {[
                         {
                             question: "Is Tutora really free?",
@@ -125,14 +130,16 @@ const Landing = () => {
                             answer: "100%. We never access or sell your data.",
                         },
                     ].map((faq, i) => (
-                        <Card key={i} className="bg-white border border-[#e6d7c2] rounded-xl">
-                            <CardContent className="p-6">
-                                <h3 className="text-lg font-semibold text-[#3e2f23] mb-2">{faq.question}</h3>
-                                <p className="text-[#6b594c]">{faq.answer}</p>
-                            </CardContent>
-                        </Card>
+                        <AccordionItem key={i} value={`item-${i}`}>
+                            <AccordionTrigger className="text-lg font-semibold text-[#3e2f23] hover:no-underline">
+                                {faq.question}
+                            </AccordionTrigger>
+                            <AccordionContent className="text-[#6b594c] text-sm">
+                                {faq.answer}
+                            </AccordionContent>
+                        </AccordionItem>
                     ))}
-                </div>
+                </Accordion>
             </div>
         </section>
     );

@@ -1,19 +1,12 @@
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import axiosInstance from "@/utilities/axiosInstance";
-import SideBar from "../Navbar/SideBar.jsx";
-import Navbar from "../Navbar/Navbar.jsx";
 import CreateEditBatch from "./CreateEditBatch.jsx";
 import ViewBatchDetails from "./ViewBatchDetails.jsx";
 import ConfirmationModal from "./ConfirmationModal.jsx";
 import useFetchBatches from "@/pages/useFetchBatches.js";
 import { addBatches } from "@/utilities/redux/batchSlice.jsx";
-
-const WrapperCard = ({ children }) => (
-    <div className="relative bg-[#f3d8b6] rounded-3xl shadow-lg p-2 flex flex-1 justify-center items-center">
-      <div className="w-full h-full">{children}</div>
-    </div>
-);
+import WrapperCard from "@/utilities/WrapperCard.jsx";
 
 const BatchPage = () => {
   const [createBatches, setCreateBatches] = useState(false);
@@ -30,10 +23,7 @@ const BatchPage = () => {
   const fetchBatches = useFetchBatches();
 
   useEffect(() => {
-    const getAllBatches = async () => {
-      await fetchBatches();
-    };
-    getAllBatches();
+    fetchBatches();
   }, [rerender]);
 
   const handleDelete = async (id, shouldDeleteStudents) => {
@@ -50,124 +40,174 @@ const BatchPage = () => {
       alert("Batch successfully deleted.");
       await fetchBatches();
     } catch (error) {
-      console.error(error);
       alert(error?.response?.data?.message || "Something went wrong during deletion.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleViewDetails = (batch,studentsForBatch) => {
-    setViewDetails({ display: true, batch ,studentsForBatch});
+  const handleViewDetails = (batch, studentsForBatch) => {
+    setViewDetails({ display: true, batch, studentsForBatch });
   };
 
   const handleBatchUpdated = (updatedBatch) => {
-    dispatch(
-        addBatches(batches.map((b) => (b._id === updatedBatch._id ? updatedBatch : b)))
+    dispatch(addBatches(batches.map((b) => (b._id === updatedBatch._id ? updatedBatch : b))));
+  };
+
+  const closeViewDetails = () => {
+    setViewDetails({ display: false, batch: null });
+  };
+
+  // Loading Spinner Component
+  const LoadingSpinner = () => (
+      <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+  );
+
+  // Create Batch Card Component
+  const CreateBatchCard = () => (
+      <div
+          onClick={() => !isLoading && setCreateBatches(true)}
+          className={`h-72 flex flex-col justify-center items-center rounded-xl border-2 border-dashed border-gray-300 bg-white hover:bg-gray-50 transition-colors cursor-pointer ${
+              isLoading ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+      >
+        <div className="text-4xl text-gray-400 mb-2">+</div>
+        <span className="text-xl text-gray-500 font-medium">Create New Batch</span>
+      </div>
+  );
+
+  // Batch Card Component
+  const BatchCard = ({ batch }) => {
+    const studentCount = groupedStudents.find((g) => g.batchId === batch._id)?.students?.length || 0;
+
+    const infoSections = [
+      { title: "Grade", value: batch.forStandard ?? "N/A" },
+      { title: "Total Students", value: studentCount },
+      { title: "Total Subjects", value: batch.subject?.length ?? 0 },
+    ];
+
+    return (
+        <div className="h-72 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow flex flex-col">
+          {/* Header */}
+          <div className="border-b px-4 py-3 bg-gray-50 rounded-t-xl">
+            <h3 className="text-center font-semibold text-lg text-gray-800 truncate" title={batch.name}>
+              {batch.name}
+            </h3>
+          </div>
+
+          {/* Body */}
+          <div className="flex-1 p-4 flex flex-col justify-between">
+            {/* Info Sections */}
+            <div className="space-y-3">
+              {infoSections.map((item, i) => (
+                  <div
+                      key={i}
+                      className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
+                  >
+                    <span className="text-sm text-gray-600">{item.title}</span>
+                    <span className="font-semibold text-gray-800">{item.value}</span>
+                  </div>
+              ))}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-2 mt-4">
+              <button
+                  disabled={isLoading}
+                  onClick={() => {
+                    const studentsForBatch = groupedStudents.find((g) => g.batchId === batch._id)?.students || [];
+                    handleViewDetails(batch, studentsForBatch);
+                  }}
+                  className="flex-1 py-2 px-3 text-sm border border-blue-500 text-blue-500 rounded-md hover:bg-blue-500 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                View Details
+              </button>
+              <button
+                  disabled={isLoading}
+                  onClick={() => setBatchToDelete(batch._id)}
+                  className="flex-1 py-2 px-3 text-sm border border-red-500 text-red-500 rounded-md hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
     );
   };
 
-  return (
-      <>
-        <>
-          <div className="flex flex-col gap-6 p-6 flex-1 overflow-hidden">
-            {viewDetails.display ? (
-                <div onClick={() => setViewDetails({display: false, batch: null})}>
-                  <div onClick={(e) => e.stopPropagation()}>
-                    <ViewBatchDetails
-                        viewDetails={viewDetails}
-                        setViewDetails={setViewDetails}
-                        setRerender={setRerender}
-                    />
-                  </div>
-                </div>
-            ) : (
-                <WrapperCard>
-                  <div className="w-full p-4 bg-white rounded-2xl shadow-md">
-                    <h1 className="text-3xl font-semibold text-gray-800 mb-6 text-center">
-                      All Batches in {adminData?.institute_info?.name}
-                    </h1>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                      <div
-                          onClick={() => !isLoading && setCreateBatches(true)}
-                          className={`h-80 cursor-pointer rounded-lg shadow hover:shadow-lg transition-shadow flex flex-col justify-center items-center border-2 border-dashed border-gray-300 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                      >
-                        <span className="text-xl text-gray-500">+ Create New Batch</span>
-                      </div>
+  // Modal Backdrop Component
+  const ModalBackdrop = ({ onClose, children }) => (
+      <div
+          className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
+          onClick={onClose}
+      >
+        <div onClick={(e) => e.stopPropagation()}>
+          {children}
+        </div>
+      </div>
+  );
 
-                      {batches.map((batch) => {
-                        const studentCount =
-                            groupedStudents.find((g) => g.batchId === batch._id)?.students?.length || 0;
+  // Main Content Component
+  const MainContent = () => (
+      <div className="p-6">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+            Batch Management
+          </h1>
+          <p className="text-gray-600">
+            {adminData?.institute_info?.name || "Institute"}
+          </p>
+        </div>
 
-                        const infoSections = [
-                          {title: "Grade", value: batch.forStandard ?? "N/A"},
-                          {title: "Total Students", value: studentCount},
-                          {title: "Total Subjects", value: batch.subject?.length ?? 0},
-                        ];
+        {/* Batches Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <CreateBatchCard />
+          {batches.map((batch) => (
+              <BatchCard key={batch._id} batch={batch} />
+          ))}
+        </div>
 
-                        return (
-                            <div
-                                key={batch._id}
-                                className="h-80 rounded-lg shadow hover:shadow-lg transition-shadow flex flex-col border border-gray-200"
-                            >
-                              <div className="border-b border-gray-200 py-4 flex justify-center items-center">
-                                <h2 className="text-xl font-medium text-gray-800">{batch.name}</h2>
-                              </div>
-                              <div className="flex-1 flex flex-col justify-between p-4">
-                                <div className="space-y-2">
-                                  {infoSections.map((item, i) => (
-                                      <div
-                                          key={i}
-                                          className="flex justify-between items-center border rounded-md p-3 bg-gray-50"
-                                      >
-                                        <span className="text-gray-600">{item.title}</span>
-                                        <span className="font-semibold text-gray-800">{item.value}</span>
-                                      </div>
-                                  ))}
-                                </div>
-                                <div className="mt-4 flex justify-center gap-3">
-                                  <button
-                                      className={`py-2 px-4 rounded-lg border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white transition-all ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                                      disabled={isLoading}
-
-                                      onClick={() => {
-                                        const studentsForBatch = groupedStudents.find(g => g.batchId === batch._id)?.students || [];
-                                        handleViewDetails(batch, studentsForBatch);
-                                      }}
-                                  >
-                                    View Details
-                                  </button>
-                                  <button
-                                      onClick={() => setBatchToDelete(batch._id)}
-                                      disabled={isLoading}
-                                      className={`py-2 px-4 rounded-lg border-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition-all ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                                  >
-                                    Delete Batch
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </WrapperCard>
-            )}
-          </div>
-        </>
-        {createBatches && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
-                 onClick={() => setCreateBatches(false)}>
-              <div onClick={(e) => e.stopPropagation()}>
-                <CreateEditBatch
-                    onClose={() => setCreateBatches(false)}
-                    handleBatchUpdated={handleBatchUpdated}
-                    batchToEdit={null}
-                />
-              </div>
+        {/* Empty State */}
+        {batches.length === 0 && (
+            <div className="text-center py-12">
+              <div className="text-gray-400 text-6xl mb-4">📚</div>
+              <h3 className="text-xl font-semibold text-gray-600 mb-2">No batches yet</h3>
+              <p className="text-gray-500">Create your first batch to get started</p>
             </div>
         )}
+      </div>
+  );
 
+  return (
+      <div className="relative h-full overflow-y-auto">
+        <WrapperCard>
+          {viewDetails.display ? (
+              <ViewBatchDetails
+                  viewDetails={viewDetails}
+                  setViewDetails={setViewDetails}
+                  setRerender={setRerender}
+                  onClose={closeViewDetails}
+              />
+          ) : (
+              <MainContent />
+          )}
+        </WrapperCard>
+
+        {/* Create Batch Modal */}
+        {createBatches && (
+            <ModalBackdrop onClose={() => setCreateBatches(false)}>
+              <CreateEditBatch
+                  onClose={() => setCreateBatches(false)}
+                  handleBatchUpdated={handleBatchUpdated}
+                  batchToEdit={null}
+              />
+            </ModalBackdrop>
+        )}
+
+        {/* Delete Confirmation Modal */}
         {batchToDelete && (
             <ConfirmationModal
                 closeModal={() => setBatchToDelete(null)}
@@ -176,16 +216,9 @@ const BatchPage = () => {
             />
         )}
 
-        {isLoading && (
-            <div className="absolute inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
-              <div
-                  className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-        )}
-
-      </>
-
-
+        {/* Loading Spinner */}
+        {isLoading && <LoadingSpinner />}
+      </div>
   );
 };
 

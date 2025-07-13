@@ -7,15 +7,15 @@ const Hero = ({ currentWord, rotatingWords, user }) => {
     const navigate = useNavigate();
 
     return (
-        <section className="py-24 px-6 bg-[#f4e9d8] text-center">
-            <h1 className="text-5xl sm:text-6xl font-bold text-[#3e2f23] mb-6 leading-tight">
+        <section className=" bg-[#f4e9d8] flex flex-col text-center justify-center h-[90vh]">
+            <h1 className="text-5xl sm:text-6xl font-bold text-[#3e2f23] mb-6 ">
                 Your personal{" "}
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#a8855c] to-[#4a3a2c]">
-          Tutor
-        </span>{" "}
+                    Tutor
+                </span>
                 <span className="ml-2 bg-clip-text text-transparent bg-gradient-to-r from-[#4a3a2c] to-[#cba175]">
-          {rotatingWords[currentWord]}
-        </span>
+                    {rotatingWords[currentWord]}
+                </span>
             </h1>
             <p className="text-lg text-[#6b594c] max-w-2xl mx-auto mt-4">
                 All-in-one partner built for solo educators. Manage students, classes,
@@ -29,8 +29,14 @@ const Hero = ({ currentWord, rotatingWords, user }) => {
                 >
                     {user ? "Go to Dashboard" : "Try Now"}
                 </Button>
-                <Button variant="outline" size="lg" className="border-[#b49c80] text-[#4a3a2c]">
-                    Learn More <ArrowRight className="ml-2 h-5 w-5" />
+                <Button
+                    variant="outline"
+                    size="lg"
+                    className="border-[#b49c80] text-[#4a3a2c]"
+                    onClick={() => navigate(user ? "/main/info-institute" : "/login")}
+                >
+                    <span>{user ? "Profile" : "Login"}</span>
+                    <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
             </div>
         </section>

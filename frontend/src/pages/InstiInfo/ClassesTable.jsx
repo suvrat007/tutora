@@ -23,23 +23,17 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
 
     const getStatusIcon = (status) => {
         switch (status) {
-            case 'Conducted':
-                return <CheckCircle className="w-4 h-4 text-green-600" />;
-            case 'Cancelled':
-                return <XCircle className="w-4 h-4 text-red-500" />;
-            default:
-                return <AlertCircle className="w-4 h-4 text-yellow-500" />;
+            case 'Conducted': return <CheckCircle className="w-4 h-4 text-green-600" />;
+            case 'Cancelled': return <XCircle className="w-4 h-4 text-red-500" />;
+            default: return <AlertCircle className="w-4 h-4 text-yellow-500" />;
         }
     };
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'Conducted':
-                return 'bg-green-50 text-green-700 border-green-200';
-            case 'Cancelled':
-                return 'bg-red-50 text-red-700 border-red-200';
-            default:
-                return 'bg-yellow-50 text-yellow-700 border-yellow-200';
+            case 'Conducted': return 'bg-green-50 text-green-700 border-green-200';
+            case 'Cancelled': return 'bg-red-50 text-red-700 border-red-200';
+            default: return 'bg-yellow-50 text-yellow-700 border-yellow-200';
         }
     };
 
@@ -51,29 +45,19 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
     };
 
     const toggleNote = (classId) => {
-        setExpandedNotes((prev) => ({
-            ...prev,
-            [classId]: !prev[classId],
-        }));
+        setExpandedNotes(prev => ({ ...prev, [classId]: !prev[classId] }));
     };
 
     const filterOptions = useMemo(() => {
         const batches = [...new Set(newClassLogs.map(log => log.batch_id.name))];
-        const subjects = [
-            ...new Set(
-                newClassLogs.flatMap(log =>
-                    log.batch_id.subject.map(s => s.name)
-                )
-            )
-        ];
+        const subjects = [...new Set(newClassLogs.flatMap(log => log.batch_id.subject.map(s => s.name)))];
         const grades = [...new Set(newClassLogs.map(log => log.batch_id.forStandard))];
         const statuses = ['All', 'Conducted', 'Cancelled', 'No data recorded'];
-
         return { batches: ['All', ...batches], subjects: ['All', ...subjects], grades: ['All', ...grades], statuses };
     }, [newClassLogs]);
 
     const filteredLogs = useMemo(() => {
-        const logs = newClassLogs.map(log => ({
+        return newClassLogs.map(log => ({
             ...log,
             classes: log.classes.filter(cls => {
                 const batchMatch = batchFilter === 'All' || log.batch_id.name === batchFilter;
@@ -83,10 +67,6 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
                 return batchMatch && subjectMatch && gradeMatch && statusMatch;
             })
         })).filter(log => log.classes.length > 0);
-
-        // Debug: Log filtered logs to verify today's classes
-        console.log('Filtered logs:', logs);
-        return logs;
     }, [newClassLogs, batchFilter, subjectFilter, gradeFilter, statusFilter]);
 
     const handleEditClass = (log, cls) => {
@@ -103,63 +83,30 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
         setModalOpen(true);
     };
 
-    // Check if a class is scheduled for today (July 13, 2025)
-    const isToday = (date) => {
-        return moment(date).isSame(moment('2025-07-13'), 'day');
-    };
-
     return (
         <div className="h-full overflow-hidden">
-            {/* Filter Dropdowns */}
+            {/* Filters */}
             <div className="flex flex-wrap gap-4 p-4 bg-gray-50 border-b border-gray-200">
-                <div className="flex-1 min-w-[150px]">
-                    <label className="block text-xs font-medium text-gray-500 uppercase mb-1">Batch</label>
-                    <select
-                        value={batchFilter}
-                        onChange={(e) => setBatchFilter(e.target.value)}
-                        className="w-full p-2 rounded-lg border border-gray-300 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                        {filterOptions.batches.map(batch => (
-                            <option key={batch} value={batch}>{batch}</option>
-                        ))}
-                    </select>
-                </div>
-                <div className="flex-1 min-w-[150px]">
-                    <label className="block text-xs font-medium text-gray-500 uppercase mb-1">Subject</label>
-                    <select
-                        value={subjectFilter}
-                        onChange={(e) => setSubjectFilter(e.target.value)}
-                        className="w-full p-2 rounded-lg border border-gray-300 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                        {filterOptions.subjects.map(subject => (
-                            <option key={subject} value={subject}>{subject}</option>
-                        ))}
-                    </select>
-                </div>
-                <div className="flex-1 min-w-[150px]">
-                    <label className="block text-xs font-medium text-gray-500 uppercase mb-1">Grade</label>
-                    <select
-                        value={gradeFilter}
-                        onChange={(e) => setGradeFilter(e.target.value)}
-                        className="w-full p-2 rounded-lg border border-gray-300 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                        {filterOptions.grades.map(grade => (
-                            <option key={grade} value={grade}>{grade}</option>
-                        ))}
-                    </select>
-                </div>
-                <div className="flex-1 min-w-[150px]">
-                    <label className="block text-xs font-medium text-gray-500 uppercase mb-1">Status</label>
-                    <select
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
-                        className="w-full p-2 rounded-lg border border-gray-300 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                        {filterOptions.statuses.map(status => (
-                            <option key={status} value={status}>{status}</option>
-                        ))}
-                    </select>
-                </div>
+                {[{
+                    label: 'Batch', value: batchFilter, onChange: setBatchFilter, options: filterOptions.batches
+                }, {
+                    label: 'Subject', value: subjectFilter, onChange: setSubjectFilter, options: filterOptions.subjects
+                }, {
+                    label: 'Grade', value: gradeFilter, onChange: setGradeFilter, options: filterOptions.grades
+                }, {
+                    label: 'Status', value: statusFilter, onChange: setStatusFilter, options: filterOptions.statuses
+                }].map((filter, i) => (
+                    <div key={i} className="flex-1 min-w-[150px]">
+                        <label className="block text-xs font-medium text-gray-500 uppercase mb-1">{filter.label}</label>
+                        <select
+                            value={filter.value}
+                            onChange={(e) => filter.onChange(e.target.value)}
+                            className="w-full p-2 rounded-lg border border-gray-300 text-sm"
+                        >
+                            {filter.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                        </select>
+                    </div>
+                ))}
             </div>
 
             {/* Table */}
@@ -168,12 +115,7 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
                     <thead className="bg-gray-50 sticky top-0 z-10">
                     <tr>
                         {['S.No.', 'Batch', 'Subject', 'Date', 'Status', 'Note', 'Attendance', ''].map((label, i) => (
-                            <th
-                                key={i}
-                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                            >
-                                {label}
-                            </th>
+                            <th key={i} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{label}</th>
                         ))}
                     </tr>
                     </thead>
@@ -188,108 +130,89 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
                                 </div>
                             </td>
                         </tr>
-                    ) : (
-                        filteredLogs.flatMap(log =>
-                            log.classes.map((cls, index) => {
-                                const { text, needsReadMore } = truncateNote(cls.note);
-                                const isExpanded = expandedNotes[cls._id];
-                                const isZeroAttendance = cls.status === 'Conducted' && cls.attendance.length === 0;
+                    ) : (() => {
+                        let serial = 1;
+                        return filteredLogs.flatMap(log =>
+                                log.classes.map(cls => {
+                                    const { text, needsReadMore } = truncateNote(cls.note);
+                                    const isExpanded = expandedNotes[cls._id];
+                                    const isZeroAttendance = cls.status === 'Conducted' && cls.attendance.length === 0;
 
-                                return (
-                                    <tr key={cls._id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4">
-                                            <p className="text-sm text-gray-700">{index + 1}</p>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-semibold text-gray-600">
-                                                    {log.batch_id.name.charAt(0)}
-                                                </div>
-                                                <div>
-                                                    <p className="font-medium">{log.batch_id.name}</p>
-                                                    <p className="text-xs text-gray-500">Grade {log.batch_id.forStandard}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-2">
-                                                <BookOpen className="w-4 h-4 text-gray-500" />
-                                                {getSubjectName(log.subject_id, log.batch_id)}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div>
-                                                <p>{moment(cls.date).format('MMM DD, YYYY')}</p>
-                                                <p className="text-xs text-gray-500">{moment(cls.date).format('dddd')}</p>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                                <span
-                                                    className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(cls.status)}`}
-                                                >
-                                                    {getStatusIcon(cls.status)}
-                                                    {cls.status}
-                                                </span>
-                                        </td>
-                                        <td className="px-6 py-4 max-w-xs">
-                                            <div className="flex items-center gap-2">
-                                                <p
-                                                    className={`${isExpanded ? '' : 'truncate'} text-sm text-gray-700`}
-                                                    title={isExpanded ? '' : cls.note}
-                                                >
-                                                    {isExpanded ? cls.note || '—' : text}
-                                                </p>
-                                                {needsReadMore && (
-                                                    <button
-                                                        onClick={() => toggleNote(cls._id)}
-                                                        className="text-xs text-blue-600 hover:text-blue-800 font-medium"
-                                                    >
-                                                        {isExpanded ? 'Read Less' : 'Read More'}
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="group relative flex items-center gap-2">
-                                                <div
-                                                    className={`flex items-center gap-2 ${isZeroAttendance ? 'bg-red-100 px-3 py-1 rounded-lg' : ''}`}
-                                                    onClick={() => isZeroAttendance && navigate('/main/attendance')}
-                                                >
-                                                    <Users className="w-4 h-4 text-gray-500" />
+                                    return (
+                                        <tr key={cls._id} className="hover:bg-gray-50">
+                                            <td className="px-6 py-4">{serial++}</td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-semibold text-gray-600">
+                                                        {log.batch_id.name.charAt(0)}
+                                                    </div>
                                                     <div>
-                                                        <p className={`font-semibold ${isZeroAttendance ? 'text-red-700' : ''}`}>
-                                                            {cls.attendance.length}
-                                                        </p>
-                                                        <p className="text-xs text-gray-500">Present</p>
+                                                        <p className="font-medium">{log.batch_id.name}</p>
+                                                        <p className="text-xs text-gray-500">Grade {log.batch_id.forStandard}</p>
                                                     </div>
                                                 </div>
-                                                {isZeroAttendance && (
-                                                    <span className="absolute left-0 -top-10 hidden group-hover:block bg-gray-800 text-white text-xs rounded-lg py-1 px-2 shadow-lg">
-                                                            Please Click to Mark Attendance
-                                                        </span>
+                                            </td>
+                                            <td className="px-6 py-4 flex items-center gap-2">
+                                                <BookOpen className="w-4 h-4 text-gray-500" />
+                                                {getSubjectName(log.subject_id, log.batch_id)}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <p>{moment(cls.date).format('MMM DD, YYYY')}</p>
+                                                <p className="text-xs text-gray-500">{moment(cls.date).format('dddd')}</p>
+                                            </td>
+                                            <td className="px-6 py-4">
+                        <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(cls.status)}`}>
+                          {getStatusIcon(cls.status)} {cls.status}
+                        </span>
+                                            </td>
+                                            <td className="px-6 py-4 max-w-xs">
+                                                <div className="flex items-center gap-2">
+                                                    <p className={`${isExpanded ? '' : 'truncate'} text-sm`} title={cls.note}>
+                                                        {isExpanded ? cls.note || '—' : text}
+                                                    </p>
+                                                    {needsReadMore && (
+                                                        <button onClick={() => toggleNote(cls._id)} className="text-xs text-blue-600 hover:text-blue-800 font-medium">
+                                                            {isExpanded ? 'Read Less' : 'Read More'}
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="group relative flex items-center gap-2">
+                                                    <div
+                                                        className={`flex items-center gap-2 ${isZeroAttendance ? 'bg-red-100 px-3 py-1 rounded-lg' : ''}`}
+                                                        onClick={() => isZeroAttendance && navigate('/main/attendance')}
+                                                    >
+                                                        <Users className="w-4 h-4 text-gray-500" />
+                                                        <div>
+                                                            <p className={`font-semibold ${isZeroAttendance ? 'text-red-700' : ''}`}>{cls.attendance.length}</p>
+                                                            <p className="text-xs text-gray-500">Present</p>
+                                                        </div>
+                                                    </div>
+                                                    {isZeroAttendance && (
+                                                        <span className="absolute left-0 -top-10 hidden group-hover:block bg-gray-800 text-white text-xs rounded-lg py-1 px-2 shadow-lg">
+                              Please Click to Mark Attendance
+                            </span>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                {cls.status === 'No data recorded' && !moment(cls.date).isSame(moment('2025-07-13'), 'day') && (
+                                                    <button onClick={() => handleEditClass(log, cls)} className="text-[#4a3a2c] hover:text-[#2f231a]">
+                                                        <PencilIcon className="w-5 h-5" />
+                                                    </button>
                                                 )}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            {cls.status === 'No data recorded' && !moment(cls.date).isSame(moment('2025-07-13'), 'day') && (
-                                                <button
-                                                    onClick={() => handleEditClass(log, cls)}
-                                                    className="text-[#4a3a2c] hover:text-[#2f231a]"
-                                                >
-                                                    <PencilIcon className="w-5 h-5" />
-                                                </button>
-                                            )}
-                                        </td>
-                                    </tr>
-                                );
-                            })
-                        )
-                    )}
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                        );
+                    })()}
                     </tbody>
                 </table>
             </div>
 
-            {/* Edit Class Modal */}
+            {/* Modal */}
             <EditClassModal
                 isOpen={modalOpen}
                 onClose={() => setModalOpen(false)}
