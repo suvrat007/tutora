@@ -1,7 +1,7 @@
-import {useEffect, useState} from "react";
-import {useSelector} from "react-redux";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 
-const useFilterStudentsBySubject = (batches, selectedSubject) => {
+const useFilterStudentsBySubject = (batches, selectedSubject, selectedBatch) => {
     const [filteredStudents, setFilteredStudents] = useState([]);
     const groupedStudents = useSelector((state) => state.students.groupedStudents);
 
@@ -12,25 +12,28 @@ const useFilterStudentsBySubject = (batches, selectedSubject) => {
         }
 
         const studentsWithSubject = [];
-        groupedStudents.forEach((group) => {
-            const batch = batches.find((b) => b._id === group.batchId);
-            if (batch) {
-                const subject = batch.subject.find(
-                    (subj) => subj.name.toLowerCase() === selectedSubject.toLowerCase()
-                );
-                if (subject) {
-                    const students = group.students.filter((student) =>
-                        student.subjectId?.includes(subject._id)
+        groupedStudents
+            .filter((group) => !selectedBatch || group.batchId === selectedBatch)
+            .forEach((group) => {
+                const batch = batches.find((b) => b._id === group.batchId);
+                if (batch) {
+                    const subject = batch.subject.find(
+                        (subj) => subj.name.toLowerCase() === selectedSubject.toLowerCase()
                     );
-                    studentsWithSubject.push(
-                        ...students.map((student) => ({ ...student, batchName: batch.name }))
-                    );
+                    if (subject) {
+                        const students = group.students.filter((student) =>
+                            student.subjectId?.includes(subject._id)
+                        );
+                        studentsWithSubject.push(
+                            ...students.map((student) => ({ ...student, batchName: batch.name }))
+                        );
+                    }
                 }
-            }
-        });
+            });
         setFilteredStudents(studentsWithSubject);
-    }, [selectedSubject, groupedStudents, batches]);
+    }, [selectedSubject, selectedBatch, groupedStudents, batches]);
 
     return filteredStudents;
 };
-export default useFilterStudentsBySubject
+
+export default useFilterStudentsBySubject;
