@@ -163,7 +163,6 @@ router.patch("/update-student/:id", userAuth, async (req, res) => {
             return res.status(404).json({ message: "Student not found or unauthorized" });
         }
 
-        // Prepare update object with defaults for required fields if not provided
         const updatedFields = {
             ...updateData,
             name: updateData.name ?? student.name,
@@ -190,14 +189,12 @@ router.patch("/update-student/:id", userAuth, async (req, res) => {
             }
         };
 
-        // If batchId is explicitly set to null or undefined, remove it
         if (updateData.batchId === null || updateData.batchId === undefined) {
             updatedFields.batchId = null;
         } else if (updateData.batchId) {
             updatedFields.batchId = updateData.batchId;
         }
 
-        // Ensure subjectId is an array
         if (updateData.subjectId !== undefined) {
             updatedFields.subjectId = Array.isArray(updateData.subjectId) ? updateData.subjectId : student.subjectId;
         }
@@ -407,31 +404,86 @@ router.get('/attendance/summary', userAuth, async (req, res) => {
     }
 });
 
-
-router.post("/bulk-update-fee-status",userAuth, async (req, res) => {
+router.post("/bulk-update-fee-status", userAuth, async (req, res) => {
     const { studentIds, paid, date } = req.body;
+
     try {
         const students = await Student.find({ _id: { $in: studentIds } });
+
         if (students.length !== studentIds.length) {
             return res.status(400).json({ error: "Some student IDs are invalid" });
         }
 
+        const targetMonth = new Date(date).getMonth();
+        const targetYear = new Date(date).getFullYear();
+
         await Promise.all(
             students.map(async (student) => {
-                student.fee_status.feeStatus = [
-                    { date, paid, _id: new mongoose.Types.ObjectId() },
-                    ...student.fee_status.feeStatus.filter(
-                        (status) =>
-                            new Date(status.date).getMonth() !== new Date(date).getMonth() ||
-                            new Date(status.date).getFullYear() !== new Date(date).getFullYear()
-                    )
-                ];
+                student.fee_status.feeStatus = student.fee_status.feeStatus.filter((status) => {
+                    const statusDate = new Date(status.date);
+                    return (
+                        statusDate.getMonth() !== targetMonth ||
+                        statusDate.getFullYear() !== targetYear
+                    );
+                });
+
+                student.fee_status.feeStatus.push({
+                    date,
+                    paid,
+                });
+
                 await student.save();
             })
         );
+
         res.status(200).json({ message: "Fee statuses updated successfully" });
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: "Failed to update fee statuses" });
     }
 });
+
+router.post("/ensure-current-month-fee-status", userAuth, async (req, res) => {
+    try {
+        const adminId = req.user._id;
+        const currentDate = new Date();
+        const currentMonth = currentDate.getMonth();
+        const currentYear = currentDate.getFullYear();
+
+        const students = await Student.find({ adminId });
+
+        const updatedStudents = await Promise.all(
+            students.map(async (student) => {
+                const latestFeeStatus = student.fee_status?.feeStatus?.length > 0
+                    ? student.fee_status.feeStatus.sort((a, b) => new Date(b.date) - new Date(a.date))[0]
+                    : null;
+
+                const latestMonth = latestFeeStatus ? new Date(latestFeeStatus.date).getMonth() : null;
+                const latestYear = latestFeeStatus ? new Date(latestFeeStatus.date).getFullYear() : null;
+
+                // If the latest fee status is not from the current month, add a new one
+                if (!latestFeeStatus || latestMonth !== currentMonth || latestYear !== currentYear) {
+                    student.fee_status.feeStatus.push({
+                        date: currentDate,
+                        paid: false // Default to unpaid for the new month
+                    });
+                    await student.save();
+                    return student;
+                }
+                return null; // No update needed
+            })
+        );
+
+        const updatedCount = updatedStudents.filter(student => student !== null).length;
+
+        res.status(200).json({
+            message: `Fee statuses updated for ${updatedCount} students`,
+            updatedCount
+        });
+    } catch (error) {
+        console.error("Error ensuring current month fee status:", error);
+        res.status(500).json({ message: "Failed to ensure current month fee status", error: error.message });
+    }
+});
+
 module.exports = router;

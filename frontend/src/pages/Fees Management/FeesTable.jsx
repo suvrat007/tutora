@@ -18,12 +18,12 @@ const FeesTable = ({ batches, students, fetchStudents }) => {
         ? (batches.find((batch) => batch.batchId === batchFilter)?.students || [])
             .flatMap((student) => student.subjects || [])
             .filter((subject) => subject && subject !== "Unknown Subject")
-            .filter((subject, index, array) => array.indexOf(subject) === index) // Remove duplicates
+            .filter((subject, index, array) => array.indexOf(subject) === index)
             .sort()
         : students
             .flatMap((student) => student.subjects || [])
             .filter((subject) => subject && subject !== "Unknown Subject")
-            .filter((subject, index, array) => array.indexOf(subject) === index) // Remove duplicates
+            .filter((subject, index, array) => array.indexOf(subject) === index)
             .sort();
 
     const filteredStudents = students.filter((student) => {
@@ -86,6 +86,15 @@ const FeesTable = ({ batches, students, fetchStudents }) => {
             : <XCircle className="w-4 h-4 text-red-500" />;
     };
 
+    // Get the most recent paid date for a student
+    const getLastPaidDate = (feeStatus) => {
+        if (!feeStatus || feeStatus.length === 0) return null;
+        const paidStatus = feeStatus
+            .filter((status) => status.paid)
+            .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+        return paidStatus ? new Date(paidStatus.date) : null;
+    };
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -123,7 +132,6 @@ const FeesTable = ({ batches, students, fetchStudents }) => {
                         </div>
                     </div>
 
-                    {/* Filters */}
                     <div className="flex flex-wrap gap-4 p-4 bg-gray-50 border-b border-gray-200">
                         <div className="flex-1 min-w-[150px]">
                             <label className="block text-xs font-medium text-gray-500 uppercase mb-1">Batch</label>
@@ -173,7 +181,6 @@ const FeesTable = ({ batches, students, fetchStudents }) => {
                         </div>
                     </div>
 
-                    {/* Table */}
                     <div className="flex-1 overflow-y-auto">
                         <table className="min-w-full divide-y divide-gray-100">
                             <thead className="bg-gray-50 sticky top-0 z-10">
@@ -253,15 +260,14 @@ const FeesTable = ({ batches, students, fetchStudents }) => {
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-2">
-                                                <DollarSign className="w-4 h-4 text-gray-500" />
                                                 <span className="font-semibold">₹{student.amount.toLocaleString()}</span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                                <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(student.isPaidThisMonth)}`}>
-                                                    {getStatusIcon(student.isPaidThisMonth)}
-                                                    {student.isPaidThisMonth ? "Paid" : "Unpaid"}
-                                                </span>
+                                            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(student.isPaidThisMonth)}`}>
+                                                {getStatusIcon(student.isPaidThisMonth)}
+                                                {student.isPaidThisMonth ? "Paid" : "Unpaid"}
+                                            </span>
                                         </td>
                                         <td className="px-6 py-4">
                                             {student.feeStatus && student.feeStatus.length > 0 ? (
@@ -273,16 +279,15 @@ const FeesTable = ({ batches, students, fetchStudents }) => {
                                                             <div key={index} className="flex items-center gap-2 text-xs">
                                                                 <Calendar className="w-3 h-3 text-gray-400" />
                                                                 <span className="text-gray-500">
-                                                                        {new Date(status.date).toLocaleDateString()}
-                                                                    </span>
-                                                                <span className={`px-2 py-1 rounded text-xs ${status.paid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                                                        {status.paid ? "Paid" : "Unpaid"}
-                                                                    </span>
+                                                                    {status.paid
+                                                                        ? `Given on ${new Date(status.date).toLocaleDateString()}`
+                                                                        : `Last paid on ${getLastPaidDate(student.feeStatus)?.toLocaleDateString() || 'No payment history'}`}
+                                                                </span>
                                                             </div>
                                                         ))}
                                                 </div>
                                             ) : (
-                                                <span className="text-gray-400 text-xs">No updates</span>
+                                                <span className="text-gray-400 text-xs">No payment history</span>
                                             )}
                                         </td>
                                     </tr>

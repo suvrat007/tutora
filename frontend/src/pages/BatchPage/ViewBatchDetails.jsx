@@ -38,8 +38,8 @@ const ViewBatchDetails = ({ viewDetails, setViewDetails, setRerender }) => {
     };
 
     return (
-        <div className="p-4 text-black">
-            <div className="rounded-2xl border border-gray-200 shadow bg-white flex flex-col">
+        <>
+            <div className="rounded-2xl shadow bg-white flex flex-col">
                 <div className="flex justify-between items-center px-6 py-4 border-b bg-gray-50">
                     <h1 className="text-xl font-bold text-gray-900">{batch.name}</h1>
                     <div className="flex gap-2">
@@ -105,7 +105,6 @@ const ViewBatchDetails = ({ viewDetails, setViewDetails, setRerender }) => {
                     </div>
                 </div>
 
-                {/* Student Table */}
                 <div className="border rounded-xl shadow-sm bg-white m-6 mt-0 h-60 overflow-y-auto">
                     <div className="sticky top-0 bg-gray-50 p-4 border-b flex justify-between">
                         <div className="w-1/2 flex gap-3">
@@ -158,7 +157,7 @@ const ViewBatchDetails = ({ viewDetails, setViewDetails, setRerender }) => {
                     refreshStudents={refreshStudents}
                 />
             )}
-        </div>
+        </>
     );
 };
 

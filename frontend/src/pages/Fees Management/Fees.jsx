@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useSelector } from "react-redux";
 import { motion } from 'framer-motion';
 import {
@@ -17,6 +16,11 @@ const Fees = () => {
     const { batches, students, totalInstituteFees } = useSelector((state) => state.fees);
     const isLoading = !batches || batches.length === 0;
     const fetchStudents = useFetchStudents();
+
+    // Calculate total paid amount
+    const totalPaidAmount = students.reduce((sum, student) => {
+        return student.isPaidThisMonth ? sum + (student.amount || 0) : sum;
+    }, 0);
 
     if (isLoading) {
         return (
@@ -57,14 +61,17 @@ const Fees = () => {
                                             className="w-16 h-16 bg-[#4a3a2c] rounded-full flex items-center justify-center mx-auto mb-4">
                                             <DollarSign className="w-8 h-8 text-white"/>
                                         </div>
-                                        <h2 className="text-lg font-semibold text-[#4a3a2c] mb-2">Total Fees</h2>
+                                        <h2 className="text-lg font-semibold text-[#4a3a2c] mb-2">Fee Summary</h2>
                                     </div>
-
                                     <div className={'flex flex-col justify-center items-center'}>
                                         <p className="text-2xl font-bold text-[#4a3a2c]">
                                             ₹{totalInstituteFees.toLocaleString()}
                                         </p>
                                         <p className="text-sm text-[#9b8778] mt-1">To Collect</p>
+                                        <p className="text-2xl font-bold text-[#4a3a2c] mt-2">
+                                            ₹{totalPaidAmount.toLocaleString()}
+                                        </p>
+                                        <p className="text-sm text-[#9b8778] mt-1">Collected</p>
                                     </div>
                                 </div>
                             </div>

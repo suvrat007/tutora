@@ -58,18 +58,16 @@ const BatchPage = () => {
     setViewDetails({ display: false, batch: null });
   };
 
-  // Loading Spinner Component
   const LoadingSpinner = () => (
       <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center">
         <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
       </div>
   );
 
-  // Create Batch Card Component
   const CreateBatchCard = () => (
       <div
           onClick={() => !isLoading && setCreateBatches(true)}
-          className={`h-72 flex flex-col justify-center items-center rounded-xl border-2 border-dashed border-gray-300 bg-white hover:bg-gray-50 transition-colors cursor-pointer ${
+          className={` flex flex-col justify-center items-center rounded-xl border-2 border-dashed border-gray-300 bg-white hover:bg-gray-50 transition-colors cursor-pointer ${
               isLoading ? "opacity-50 cursor-not-allowed" : ""
           }`}
       >
@@ -78,7 +76,6 @@ const BatchPage = () => {
       </div>
   );
 
-  // Batch Card Component
   const BatchCard = ({ batch }) => {
     const studentCount = groupedStudents.find((g) => g.batchId === batch._id)?.students?.length || 0;
 
@@ -89,17 +86,14 @@ const BatchPage = () => {
     ];
 
     return (
-        <div className="h-72 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow flex flex-col">
-          {/* Header */}
+        <div className=" rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow flex flex-col">
           <div className="border-b px-4 py-3 bg-gray-50 rounded-t-xl">
             <h3 className="text-center font-semibold text-lg text-gray-800 truncate" title={batch.name}>
               {batch.name}
             </h3>
           </div>
 
-          {/* Body */}
           <div className="flex-1 p-4 flex flex-col justify-between">
-            {/* Info Sections */}
             <div className="space-y-3">
               {infoSections.map((item, i) => (
                   <div
@@ -112,7 +106,6 @@ const BatchPage = () => {
               ))}
             </div>
 
-            {/* Action Buttons */}
             <div className="flex gap-2 mt-4">
               <button
                   disabled={isLoading}
@@ -137,7 +130,6 @@ const BatchPage = () => {
     );
   };
 
-  // Modal Backdrop Component
   const ModalBackdrop = ({ onClose, children }) => (
       <div
           className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
@@ -149,10 +141,8 @@ const BatchPage = () => {
       </div>
   );
 
-  // Main Content Component
   const MainContent = () => (
-      <div className="p-6">
-        {/* Header */}
+      <div className="p-6 bg-white h-full overflow-y-auto rounded-2xl">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
             Batch Management
@@ -162,7 +152,6 @@ const BatchPage = () => {
           </p>
         </div>
 
-        {/* Batches Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           <CreateBatchCard />
           {batches.map((batch) => (
@@ -170,7 +159,6 @@ const BatchPage = () => {
           ))}
         </div>
 
-        {/* Empty State */}
         {batches.length === 0 && (
             <div className="text-center py-12">
               <div className="text-gray-400 text-6xl mb-4">📚</div>
@@ -182,7 +170,7 @@ const BatchPage = () => {
   );
 
   return (
-      <div className="relative h-full overflow-y-auto">
+      <div className="relative h-full overflow-y-auto p-5">
         <WrapperCard>
           {viewDetails.display ? (
               <ViewBatchDetails
@@ -196,7 +184,6 @@ const BatchPage = () => {
           )}
         </WrapperCard>
 
-        {/* Create Batch Modal */}
         {createBatches && (
             <ModalBackdrop onClose={() => setCreateBatches(false)}>
               <CreateEditBatch
@@ -207,7 +194,6 @@ const BatchPage = () => {
             </ModalBackdrop>
         )}
 
-        {/* Delete Confirmation Modal */}
         {batchToDelete && (
             <ConfirmationModal
                 closeModal={() => setBatchToDelete(null)}
@@ -216,7 +202,6 @@ const BatchPage = () => {
             />
         )}
 
-        {/* Loading Spinner */}
         {isLoading && <LoadingSpinner />}
       </div>
   );

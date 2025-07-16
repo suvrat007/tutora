@@ -16,7 +16,7 @@ const Navbar = () => {
                         <img
                             src={adminData.institute_info.logo_URL}
                             alt="Institute Logo"
-                            className="h-20 w-20 object-contain rounded-xl border border-gray-300"
+                            className="h-20 w-20 object-contain rounded-xl "
                         />
                     </div>
                 ) : (
