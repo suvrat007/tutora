@@ -39,6 +39,7 @@ const Sidebar = () => {
       isOpen: management,
       subItems: [
         { label: "Attendance", path: "/main/attendance", icon: FaClipboardList },
+        { label: "Fee Management", path: "/main/fees", icon: FaClipboardList },
       ],
     },
     {

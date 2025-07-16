@@ -1,6 +1,6 @@
 import {useDispatch} from "react-redux";
 import axiosInstance from "@/utilities/axiosInstance.jsx";
-import {addBatches} from "@/utilities/redux/batchSlice.jsx";
+import {addBatches} from "@/utilities/redux/batchSlice.js";
 
 const useFetchBatches =  () => {
     const dispatch = useDispatch();

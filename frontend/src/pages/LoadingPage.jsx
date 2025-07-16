@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import useFetchBatches from "@/pages/useFetchBatches.js";
 import useFetchStudents from "@/pages/useFetchStudents.js";
@@ -13,6 +14,11 @@ const LoadingPage = ({ onDone }) => {
 
     const [currentStep, setCurrentStep] = useState(0);
 
+    const classLogs = useSelector((state) => state.classlogs);
+    const batches = useSelector((state) => state.batches);
+    const students = useSelector((state) => state.students);
+    const attendanceSummary = useSelector((state) => state.attendanceSummary);
+
     const steps = [
         { name: "Batches", icon: "📚" },
         { name: "Students", icon: "👨‍🎓" },
@@ -22,21 +28,35 @@ const LoadingPage = ({ onDone }) => {
 
     useEffect(() => {
         const fetchData = async () => {
+            const hasData =
+                batches?.length > 0 &&
+                students?.length > 0 &&
+                classLogs?.length > 0 &&
+                attendanceSummary;
+
+            if (hasData) {
+                setCurrentStep(4);
+                setTimeout(() => onDone(), 500);
+                return;
+            }
+
             try {
                 const operations = [
-                    fetchBatches,
-                    fetchGroupedStudents,
-                    fetchClassLogs,
-                    fetchAttendanceSummary,
+                    { fetch: fetchBatches, shouldRun: !batches?.length },
+                    { fetch: fetchGroupedStudents, shouldRun: !students?.length },
+                    { fetch: fetchClassLogs, shouldRun: !classLogs?.length },
+                    { fetch: fetchAttendanceSummary, shouldRun: !attendanceSummary },
                 ];
 
                 for (let i = 0; i < operations.length; i++) {
-                    setCurrentStep(i);
-                    await operations[i]();
-                    await new Promise(resolve => setTimeout(resolve, 300));
+                    if (operations[i].shouldRun) {
+                        setCurrentStep(i);
+                        await operations[i].fetch();
+                        await new Promise((resolve) => setTimeout(resolve, 300));
+                    }
                 }
 
-                setCurrentStep(4); // All done
+                setCurrentStep(4);
                 setTimeout(() => onDone(), 500);
             } catch (err) {
                 console.error("Error while loading data:", err);
@@ -48,6 +68,7 @@ const LoadingPage = ({ onDone }) => {
 
     return (
         <div className="flex items-center justify-center h-full w-full relative overflow-hidden">
+            {/* Glowing Background Effects */}
             <div className="absolute inset-0 opacity-5">
                 <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-orange-300 rounded-full blur-3xl animate-pulse"></div>
                 <div className="absolute bottom-1/4 right-1/4 w-24 h-24 bg-orange-400 rounded-full blur-2xl animate-pulse delay-1000"></div>
@@ -55,6 +76,7 @@ const LoadingPage = ({ onDone }) => {
 
             <div className="relative z-10 text-center max-w-md mx-auto px-8">
                 <div className="mb-8">
+                    {/* Spinning Loaders */}
                     <div className="relative w-16 h-16 mx-auto mb-6">
                         <motion.div
                             animate={{ rotate: 360 }}
@@ -82,6 +104,7 @@ const LoadingPage = ({ onDone }) => {
                         Loading your dashboard
                     </motion.h2>
 
+                    {/* Dot Bounce */}
                     <div className="flex justify-center space-x-1 mb-8">
                         {[0, 1, 2].map((i) => (
                             <motion.div
@@ -101,6 +124,7 @@ const LoadingPage = ({ onDone }) => {
                     </div>
                 </div>
 
+                {/* Step Progress */}
                 <div className="space-y-3">
                     {steps.map((step, index) => (
                         <motion.div
@@ -109,31 +133,40 @@ const LoadingPage = ({ onDone }) => {
                             animate={{
                                 opacity: index <= currentStep ? 1 : 0.3,
                                 x: 0,
-                                scale: index === currentStep ? 1.05 : 1
+                                scale: index === currentStep ? 1.05 : 1,
                             }}
                             transition={{ duration: 0.3, delay: index * 0.1 }}
                             className={`flex items-center space-x-3 px-4 py-2 rounded-lg transition-all duration-300 ${
                                 index <= currentStep
-                                    ? 'bg-orange-50 border border-orange-200'
-                                    : 'bg-transparent'
+                                    ? "bg-orange-50 border border-orange-200"
+                                    : "bg-transparent"
                             }`}
                         >
                             <motion.div
-                                animate={index === currentStep ? { rotate: [0, 10, -10, 0] } : {}}
-                                transition={{ duration: 0.5, repeat: index === currentStep ? Infinity : 0 }}
+                                animate={
+                                    index === currentStep
+                                        ? { rotate: [0, 10, -10, 0] }
+                                        : {}
+                                }
+                                transition={{
+                                    duration: 0.5,
+                                    repeat: index === currentStep ? Infinity : 0,
+                                }}
                                 className="text-lg"
                             >
                                 {step.icon}
                             </motion.div>
 
                             <div className="flex-1 text-left">
-                                <span className={`text-sm font-medium ${
-                                    index < currentStep
-                                        ? 'text-orange-600'
-                                        : index === currentStep
-                                            ? 'text-orange-700'
-                                            : 'text-orange-400'
-                                }`}>
+                                <span
+                                    className={`text-sm font-medium ${
+                                        index < currentStep
+                                            ? "text-orange-600"
+                                            : index === currentStep
+                                                ? "text-orange-700"
+                                                : "text-orange-400"
+                                    }`}
+                                >
                                     {step.name}
                                 </span>
                             </div>
@@ -145,8 +178,16 @@ const LoadingPage = ({ onDone }) => {
                                     transition={{ duration: 0.3 }}
                                     className="w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center"
                                 >
-                                    <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                    <svg
+                                        className="w-2 h-2 text-white"
+                                        fill="currentColor"
+                                        viewBox="0 0 20 20"
+                                    >
+                                        <path
+                                            fillRule="evenodd"
+                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                            clipRule="evenodd"
+                                        />
                                     </svg>
                                 </motion.div>
                             )}
@@ -154,15 +195,17 @@ const LoadingPage = ({ onDone }) => {
                             {index === currentStep && (
                                 <motion.div
                                     animate={{ rotate: 360 }}
-                                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                    transition={{
+                                        duration: 1,
+                                        repeat: Infinity,
+                                        ease: "linear",
+                                    }}
                                     className="w-4 h-4 border-2 border-orange-200 border-t-orange-500 rounded-full"
                                 />
                             )}
                         </motion.div>
                     ))}
                 </div>
-
-
             </div>
         </div>
     );

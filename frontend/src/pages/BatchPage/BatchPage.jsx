@@ -5,7 +5,7 @@ import CreateEditBatch from "./CreateEditBatch.jsx";
 import ViewBatchDetails from "./ViewBatchDetails.jsx";
 import ConfirmationModal from "./ConfirmationModal.jsx";
 import useFetchBatches from "@/pages/useFetchBatches.js";
-import { addBatches } from "@/utilities/redux/batchSlice.jsx";
+import { addBatches } from "@/utilities/redux/batchSlice.js";
 import WrapperCard from "@/utilities/WrapperCard.jsx";
 
 const BatchPage = () => {

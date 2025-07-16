@@ -26,17 +26,26 @@ const AddStudent = ({
             emailIds: { student: "", mom: "", dad: "" },
             phoneNumbers: { student: "", mom: "", dad: "" },
         },
-        fee_status: { amount: "" },
+        fee_status: {
+            amount: "",
+            feeStatus: [{ date: new Date(), paid: false }]
+        },
     });
     const [formErrors, setFormErrors] = useState({});
     const fetchStudents = useFetchStudents();
-    const fetchBatches = useFetchBatches()
-
-    console.log("setSeeStdDetails:", setSeeStdDetails); // Debug prop
+    const fetchBatches = useFetchBatches();
 
     useEffect(() => {
         if (isEditMode && existingStudentData) {
-            setNewStudent(existingStudentData);
+            setNewStudent({
+                ...existingStudentData,
+                fee_status: {
+                    amount: existingStudentData.fee_status?.amount || "",
+                    feeStatus: existingStudentData.fee_status?.feeStatus?.length > 0
+                        ? existingStudentData.fee_status.feeStatus
+                        : [{ date: new Date(existingStudentData.admission_date), paid: false }]
+                }
+            });
             setSelectedBatchId(existingStudentData.batchId || "");
         }
     }, [isEditMode, existingStudentData]);
@@ -74,7 +83,6 @@ const AddStudent = ({
     };
 
     const handleSubmit = async () => {
-        console.log("handleSubmit called, setSeeStdDetails:", setSeeStdDetails); // Debug
         if (!validateForm()) return;
 
         try {
@@ -82,18 +90,17 @@ const AddStudent = ({
                 ...newStudent,
                 batchId: selectedBatchId || null,
             };
-            console.log("Data sent to backend:", studentData); // Debug payload
 
             if (isEditMode && existingStudentData?._id) {
                 await axiosInstance.patch(`/api/student/update-student/${existingStudentData._id}`, studentData, {
                     withCredentials: true,
                 });
                 fetchStudents();
-                fetchBatches()
+                fetchBatches();
             } else {
                 await axiosInstance.post("/api/student/add-new-student", studentData, { withCredentials: true });
                 fetchStudents();
-                fetchBatches()
+                fetchBatches();
             }
 
             onStudentAdded();

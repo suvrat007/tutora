@@ -1,37 +1,54 @@
 import { useSelector } from 'react-redux';
-import useClassLogProcessor from './useClassLogProcessor';
-import ClassesTable from './ClassesTable';
+import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import {
     Building2, Phone, Mail, GraduationCap, Calendar, Users, PencilIcon
 } from 'lucide-react';
-import WrapperCard from "@/utilities/WrapperCard.jsx";
-import { motion } from 'framer-motion';
-import { useState } from "react";
-import EditInfoModal from "@/pages/InstiInfo/EditInfoModal.jsx";
-import useFetchClassLogs from "@/pages/useFetchClassLogs.js";
+
+import useClassLogProcessor from './useClassLogProcessor';
+import useFetchClassLogs from '@/pages/useFetchClassLogs.js';
+import useFetchBatches from '@/pages/useFetchBatches.js';
+import useFetchStudents from '@/pages/useFetchStudents.js';
+import useFetchAttendanceSummary from '@/pages/useFetchAttendanceSummary.js';
+
+import ClassesTable from './ClassesTable';
+import WrapperCard from '@/utilities/WrapperCard.jsx';
+import EditInfoModal from '@/pages/InstiInfo/EditInfoModal.jsx';
+import LoadingPage from '@/pages/LoadingPage.jsx';
 
 const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } }
+    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
 };
 
 const InstituteInfo = () => {
-    const classLogs = useSelector(store => store.classlogs);
-    const batches = useSelector(store => store.batches);
-    const userData = useSelector(state => state.user);
+    const classLogs = useSelector((state) => state.classlogs);
+    const batches = useSelector((state) => state.batches);
+    const userData = useSelector((state) => state.user);
     const instiData = userData?.institute_info || { contact_info: {} };
+
     const [showEditModal, setShowEditModal] = useState(false);
+
+    const fetchClassLogs = useFetchClassLogs();
+
     const newClassLogs = useClassLogProcessor(classLogs, batches);
 
-    const fetchClassLogs = useFetchClassLogs()
     const onUpdate = async () => {
         await fetchClassLogs();
-    }
+    };
+
+    const [loaded, setLoaded] = useState(false);
+
+    if (!loaded) return <LoadingPage onDone={() => setLoaded(true)} />;
 
     return (
         <div className="h-screen p-6 overflow-y-auto">
             {showEditModal && (
-                <EditInfoModal onClose={() => setShowEditModal(false)} isOpen={showEditModal} initialData={userData} />
+                <EditInfoModal
+                    onClose={() => setShowEditModal(false)}
+                    isOpen={showEditModal}
+                    initialData={userData}
+                />
             )}
 
             <div className="max-w-7xl mx-auto space-y-6">
@@ -42,7 +59,7 @@ const InstituteInfo = () => {
                             onClick={() => setShowEditModal(true)}
                             className="p-2 bg-[#fdf5ec] rounded-lg shadow border border-[#e7c6a5] hover:shadow-md transition"
                         >
-                            <PencilIcon className="w-5 h-5 text-[#4a3a2c]"/>
+                            <PencilIcon className="w-5 h-5 text-[#4a3a2c]" />
                         </button>
                     </div>
                 </div>
@@ -53,10 +70,11 @@ const InstituteInfo = () => {
                     animate="show"
                     variants={{ show: { transition: { staggerChildren: 0.1 } } }}
                 >
-                    <motion.div className="h-full " variants={fadeInUp}>
+                    {/* Admin Info */}
+                    <motion.div variants={fadeInUp}>
                         <WrapperCard>
-                            <div className="flex gap-10 bg-[#fdf5ec] rounded-xl h-full items-center justify-center text-center p-4 space-y-4">
-                                <div className=" rounded-2xl bg-[#e7c6a5] p-1 shadow-inner">
+                            <div className="flex gap-10 bg-[#fdf5ec] rounded-xl h-full items-center justify-center text-center p-4">
+                                <div className="rounded-2xl bg-[#e7c6a5] p-1 shadow-inner">
                                     <img
                                         src={userData.adminPicURL}
                                         alt="User Avatar"
@@ -66,11 +84,11 @@ const InstituteInfo = () => {
                                 <div className="space-y-1">
                                     <h2 className="text-lg font-semibold text-[#4a3a2c]">Admin</h2>
                                     <p className="text-sm text-[#9b8778] flex items-center justify-center gap-2">
-                                        <Users className="w-4 h-4"/>
+                                        <Users className="w-4 h-4" />
                                         {userData.name}
                                     </p>
                                     <p className="text-sm text-[#9b8778] flex items-center justify-center gap-2">
-                                        <Mail className="w-4 h-4"/>
+                                        <Mail className="w-4 h-4" />
                                         {userData.emailId}
                                     </p>
                                 </div>
@@ -78,11 +96,12 @@ const InstituteInfo = () => {
                         </WrapperCard>
                     </motion.div>
 
-                    <motion.div className="h-full" variants={fadeInUp}>
+                    {/* Logo Display */}
+                    <motion.div variants={fadeInUp}>
                         <WrapperCard>
                             <div className="flex justify-center items-center bg-[#fdf5ec] rounded-xl h-full p-6">
                                 <div className="relative w-[90%] h-[90%]">
-                                    <div className="rounded-xl  shadow-inner w-full h-full flex items-center justify-center">
+                                    <div className="rounded-xl shadow-inner w-full h-full flex items-center justify-center">
                                         {instiData?.logo_URL ? (
                                             <img
                                                 src={instiData.logo_URL}
@@ -108,7 +127,8 @@ const InstituteInfo = () => {
                         </WrapperCard>
                     </motion.div>
 
-                    <motion.div className="h-full" variants={fadeInUp}>
+                    {/* Institute Info */}
+                    <motion.div variants={fadeInUp}>
                         <WrapperCard>
                             <div className="bg-[#fdf5ec] rounded-xl h-full p-4 flex flex-col justify-between">
                                 <div>
@@ -145,6 +165,7 @@ const InstituteInfo = () => {
                     </motion.div>
                 </motion.div>
 
+                {/* Classes Table */}
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -160,7 +181,7 @@ const InstituteInfo = () => {
                                 <p className="text-sm text-[#9b8778]">Overview of all scheduled classes</p>
                             </div>
                             <div className="flex-1 overflow-y-auto">
-                                <ClassesTable newClassLogs={newClassLogs} onUpdate={onUpdate}/>
+                                <ClassesTable newClassLogs={newClassLogs} onUpdate={onUpdate} />
                             </div>
                         </div>
                     </WrapperCard>

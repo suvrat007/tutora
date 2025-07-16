@@ -1,6 +1,6 @@
 import axiosInstance from "@/utilities/axiosInstance.jsx";
 import {useDispatch} from "react-redux";
-import {setUser} from "@/utilities/redux/userSlice.jsx";
+import {setUser} from "@/utilities/redux/userSlice.js";
 
 const useFetchUser = () => {
     const dispatch = useDispatch();
