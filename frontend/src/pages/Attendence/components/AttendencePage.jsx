@@ -3,16 +3,16 @@ import { useSelector } from "react-redux";
 import useFetchClassLogs from "@/pages/useFetchClassLogs.js";
 import useAttendanceConstraints from "../hooks/useAttendanceConstraints.js";
 import MarkedPresentList from "@/pages/Attendence/components/MarkedPresentList.jsx";
-import {AttendanceForm} from "@/pages/Attendence/components/AttendanceForm.jsx";
-import {StudentList} from "@/pages/Attendence/components/StudentList.jsx";
-import {useAttendanceState} from "@/pages/Attendence/hooks/useAttendanceState.js";
-import {useStudentFetcher} from "@/pages/Attendence/hooks/useStudentFetcher.js";
-import {useAttendanceSubmission} from "@/pages/Attendence/hooks/useAttendanceSubmission.js";
-import {useStudentActions} from "@/pages/Attendence/hooks/useStudentActions.js";
+import { AttendanceForm } from "@/pages/Attendence/components/AttendanceForm.jsx";
+import { useAttendanceState } from "@/pages/Attendence/hooks/useAttendanceState.js";
+import { useStudentFetcher } from "@/pages/Attendence/hooks/useStudentFetcher.js";
+import { useStudentActions } from "@/pages/Attendence/hooks/useStudentActions.js";
 import AttendancePercentages from "@/pages/Attendence/components/AttendancePercentages.jsx";
 import useFetchAttendanceSummary from "@/pages/useFetchAttendanceSummary.js";
+import {StudentList} from "@/pages/Attendence/components/StudentList.jsx";
+import {useAttendanceSubmission} from "@/pages/Attendence/hooks/useAttendanceSubmission.js";
 
-const AttendancePage = () => {
+export const AttendancePage = () => {
   const state = useAttendanceState();
   const {
     batchName, subjectName, date, students, presentIds, error, loading,
@@ -22,10 +22,10 @@ const AttendancePage = () => {
   const batches = useSelector((state) => state.batches);
   const groupedStudents = useSelector((state) => state.students.groupedStudents);
   const classLogs = useSelector((state) => state.classlogs);
-  const attendanceSummary= useSelector((state)=>state.attendance.data)
+  const attendanceSummary = useSelector((state) => state.attendance.data);
 
   const fetchAllClassLogs = useFetchClassLogs();
-  const fetchAttendance = useFetchAttendanceSummary()
+  const fetchAttendance = useFetchAttendanceSummary();
 
   const { isValidDateTime, errorMessage } = useAttendanceConstraints(
       batchName,
@@ -47,7 +47,8 @@ const AttendancePage = () => {
 
   const { submit } = useAttendanceSubmission(
       batches,
-      fetchAllClassLogs,fetchAttendance,
+      fetchAllClassLogs,
+      fetchAttendance,
       state.setLoading,
       state.setError,
       state.setSuccess
@@ -86,7 +87,7 @@ const AttendancePage = () => {
   }, [batchName, subjectName, date, classLogs.length, classLogs]);
 
   return (
-      <div className="p-4 flex flex-col gap-4 flex-1 overflow-hidden">
+      <div className="p-4 flex flex-col gap-4 flex-1 overflow-hidden ">
         <div className="flex gap-4 h-auto">
           <AttendancePercentages
               attendance={attendanceSummary}
@@ -96,7 +97,6 @@ const AttendancePage = () => {
               setSubjectName={state.setSubjectName}
               batches={batches}
           />
-
           <AttendanceForm
               batchName={batchName}
               setBatchName={state.setBatchName}
@@ -113,8 +113,7 @@ const AttendancePage = () => {
               handleSearch={handleSearch}
           />
         </div>
-
-        <div className="bg-[#f4d8bb] p-2 rounded-3xl shadow-md flex-1 overflow-hidden">
+        <div className="bg-[#f4e3d0] p-2 rounded-3xl shadow-md flex-1 overflow-hidden border border-[#ddb892]">
           <div className="flex gap-4 h-full">
             <StudentList
                 students={students}
@@ -143,4 +142,6 @@ const AttendancePage = () => {
   );
 };
 
-export default AttendancePage
+
+
+export default AttendancePage;

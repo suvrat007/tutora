@@ -216,6 +216,7 @@ router.patch("/update-student/:id", userAuth, async (req, res) => {
     }
 });
 
+
 router.get('/attendance/summary', userAuth, async (req, res) => {
     try {
         if (!req.user || !req.user._id) {
@@ -231,6 +232,16 @@ router.get('/attendance/summary', userAuth, async (req, res) => {
 
         const summary = await Student.aggregate([
             { $match: matchStage },
+            // Include admission_date in the projection
+            {
+                $project: {
+                    adminId: 1,
+                    batchId: 1,
+                    subjectId: 1,
+                    name: 1,
+                    admission_date: 1
+                }
+            },
             { $unwind: { path: '$subjectId', preserveNullAndEmptyArrays: true } },
             {
                 $lookup: {
@@ -271,7 +282,7 @@ router.get('/attendance/summary', userAuth, async (req, res) => {
             {
                 $lookup: {
                     from: 'classlogs',
-                    let: { studentId: '$_id', batchId: '$batchId', subjectId: '$subjectId' },
+                    let: { studentId: '$_id', batchId: '$batchId', subjectId: '$subjectId', admissionDate: '$admission_date' },
                     pipeline: [
                         {
                             $match: {
@@ -291,6 +302,8 @@ router.get('/attendance/summary', userAuth, async (req, res) => {
                                     $and: [
                                         { $eq: ['$classes.updated', true] },
                                         { $eq: ['$classes.hasHeld', true] },
+                                        // Filter classes on or after admission_date
+                                        { $gte: ['$classes.date', { $dateToString: { format: '%Y-%m-%d', date: '$$admissionDate' } }] },
                                     ],
                                 },
                             },
@@ -319,7 +332,7 @@ router.get('/attendance/summary', userAuth, async (req, res) => {
             {
                 $lookup: {
                     from: 'classlogs',
-                    let: { batchId: '$batchId', subjectId: '$subjectId' },
+                    let: { batchId: '$batchId', subjectId: '$subjectId', admissionDate: '$admission_date' },
                     pipeline: [
                         {
                             $match: {
@@ -339,6 +352,8 @@ router.get('/attendance/summary', userAuth, async (req, res) => {
                                     $and: [
                                         { $eq: ['$classes.updated', true] },
                                         { $eq: ['$classes.hasHeld', true] },
+                                        // Filter classes on or after admission_date
+                                        { $gte: ['$classes.date', { $dateToString: { format: '%Y-%m-%d', date: '$$admissionDate' } }] },
                                     ],
                                 },
                             },
