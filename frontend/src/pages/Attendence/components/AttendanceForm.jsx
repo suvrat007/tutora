@@ -1,86 +1,112 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import toast from "react-hot-toast";
 
 export const AttendanceForm = ({
-                            batchName, setBatchName,
-                            subjectName, setSubjectName,
-                            date, setDate,
-                            batches,
-                            error, success,
-                            loading,
-                            resetStudentData,
-                            clearForm,
-                            handleSearch
-                        }) => {
+    batchName, setBatchName,
+    subjectName, setSubjectName,
+    date, setDate,
+    batches,
+    error, success,
+    loading,
+    resetStudentData,
+    clearForm,
+    handleSearch
+}) => {
     const selectedBatch = batches.find((b) => b.name === batchName);
 
+    useEffect(() => {
+        if (error) toast.error(error);
+    }, [error]);
+
+    useEffect(() => {
+        if (success) toast.success(success);
+    }, [success]);
+
+    const inputStyles = "w-full border p-2 rounded-md bg-background border-border placeholder-text-light text-text focus:ring-primary focus:border-primary";
+
     return (
-        <div className="bg-[#f4d8bb] p-2 rounded-3xl shadow-md flex-1">
-            <div className="bg-white rounded-2xl p-4 text-black flex flex-col gap-3">
-                <select
-                    value={batchName}
-                    onChange={(e) => {
-                        setBatchName(e.target.value);
-                        setSubjectName("");
-                        setDate("");
-                        resetStudentData();
-                    }}
-                    className="border p-2 rounded-md"
-                >
-                    <option value="">Select Batch</option>
-                    {batches.map((b, i) => (
-                        <option key={i} value={b.name}>
-                            {b.name}
-                        </option>
-                    ))}
-                </select>
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="bg-white p-6 rounded-2xl shadow-soft border border-border flex-1"
+        >
+            <div className="flex flex-col gap-4">
+                <div>
+                    <label className="block text-sm font-medium text-text-light mb-1">Batch</label>
+                    <select
+                        value={batchName}
+                        onChange={(e) => {
+                            setBatchName(e.target.value);
+                            setSubjectName("");
+                            setDate("");
+                            resetStudentData();
+                        }}
+                        className={inputStyles}
+                    >
+                        <option value="">Select Batch</option>
+                        {batches.map((b, i) => (
+                            <option key={i} value={b.name}>
+                                {b.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
 
-                <select
-                    value={subjectName}
-                    onChange={(e) => {
-                        setSubjectName(e.target.value);
-                        setDate("");
-                        resetStudentData();
-                    }}
-                    className="border p-2 rounded-md"
-                    disabled={!batchName}
-                >
-                    <option value="">Select Subject</option>
-                    {selectedBatch?.subject.map((s, i) => (
-                        <option key={i} value={s.name}>
-                            {s.name}
-                        </option>
-                    ))}
-                </select>
+                <div>
+                    <label className="block text-sm font-medium text-text-light mb-1">Subject</label>
+                    <select
+                        value={subjectName}
+                        onChange={(e) => {
+                            setSubjectName(e.target.value);
+                            setDate("");
+                            resetStudentData();
+                        }}
+                        className={inputStyles}
+                        disabled={!batchName}
+                    >
+                        <option value="">Select Subject</option>
+                        {selectedBatch?.subject.map((s, i) => (
+                            <option key={i} value={s.name}>
+                                {s.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
 
-                <input
-                    type="date"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    className="border p-2 rounded-md"
-                    disabled={!batchName || !subjectName}
-                    max={new Date().toISOString().split("T")[0]}
-                />
+                <div>
+                    <label className="block text-sm font-medium text-text-light mb-1">Date</label>
+                    <Input
+                        type="date"
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
+                        className={inputStyles}
+                        disabled={!batchName || !subjectName}
+                        max={new Date().toISOString().split("T")[0]}
+                    />
+                </div>
 
-                {error && <p className="text-red-600 text-sm">{error}</p>}
-                {success && <p className="text-green-600 text-sm">{success}</p>}
-
-                <div className="flex gap-2">
-                    <button
+                <div className="flex gap-2 mt-2">
+                    <Button
                         onClick={handleSearch}
-                        className="bg-blue-500 text-white p-2 rounded-md w-1/2 hover:bg-blue-600 transition-colors"
+                        className="w-1/2"
                         disabled={loading || !batchName || !subjectName || !date}
                     >
                         {loading ? "Searching..." : "Search"}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         onClick={clearForm}
-                        className="bg-gray-500 text-white p-2 rounded-md w-1/2 hover:bg-gray-600 transition-colors"
+                        variant="outline"
+                        className="w-1/2"
                         disabled={loading}
                     >
                         Clear
-                    </button>
+                    </Button>
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 };

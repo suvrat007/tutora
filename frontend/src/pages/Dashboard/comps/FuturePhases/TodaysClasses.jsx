@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import axiosInstance from "@/utilities/axiosInstance";
 import { CalendarDays, NotebookText } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import toast from "react-hot-toast";
 
 const getTodayDay = () => {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -51,7 +53,6 @@ const processAllClasses = (batches) => {
 const TodaysClasses = () => {
     const batches = useSelector((state) => state.batches);
     const [allClasses, setAllClasses] = useState([]);
-    const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     const hasLoggedRef = useRef(false);
 
@@ -77,16 +78,14 @@ const TodaysClasses = () => {
                         note: "No Data",
                     }));
 
-                    const response = await axiosInstance.post(
+                    await axiosInstance.post(
                         "/api/classLog/add-class-updates",
                         { updates: updatesToSend },
                         { withCredentials: true }
                     );
-                    console.log("Class updates sent:", response.data);
                 }
             } catch (err) {
-                console.error("Error details:", err.response?.data || err.message);
-                setError("Failed to load or log classes. Please try again.");
+                toast.error("Failed to load today's classes.");
             } finally {
                 setLoading(false);
             }
@@ -96,47 +95,68 @@ const TodaysClasses = () => {
     }, [batches]);
 
     return (
-        <div className="bg-white rounded-2xl shadow p-4 h-full flex flex-col overflow-hidden">
-            {/* Header */}
-            <div className="sticky top-0 z-10 bg-white pb-2">
-                <h1 className="text-lg font-semibold text-gray-800 border-b pb-2 flex items-center gap-2">
-                    <CalendarDays className="w-5 h-5 text-blue-600" />
+        <div className="p-6 bg-gradient-to-br from-[#fef5e7] to-[#e7c6a5] rounded-xl border border-[#ddb892] shadow-lg h-full flex flex-col">
+            <div className="mb-6">
+                <h2 className="text-xl font-semibold text-[#4a3a2c] mb-2 flex items-center gap-2">
+                    <CalendarDays className="w-5 h-5 text-[#f7c7a3]"/>
                     Today's Classes
-                </h1>
+                </h2>
+                <div className="h-1 w-16 bg-gradient-to-r from-[#f4e3d0] to-[#e7c6a5] rounded-full"></div>
             </div>
 
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto mt-2 space-y-3 pr-1">
-                {loading ? (
-                    <div className="flex flex-col items-center justify-center h-full text-gray-400 animate-pulse">
-                        <NotebookText className="w-8 h-8 text-blue-400 mb-2" />
-                        <p className="text-sm">Loading today's schedule...</p>
-                    </div>
-                ) : error ? (
-                    <div className="text-red-500 text-sm font-medium p-4">{error}</div>
-                ) : allClasses.length > 0 ? (
-                    allClasses.map((c) => (
-                        <div
-                            key={`${c.batchId}-${c.subjectId}-${c.date}`}
-                            className="border border-gray-200 rounded-xl p-4 bg-gray-50 hover:shadow transition-all duration-200"
+            <div className="flex-1 overflow-y-auto pr-2 space-y-4">
+                <AnimatePresence>
+                    {loading ? (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="flex flex-col items-center justify-center h-full text-[#f7c7a3]"
                         >
-                            <div className="mb-2 border-b pb-2">
-                                <p className="text-base font-semibold text-blue-600">{c.batchName}</p>
-                            </div>
-                            <div className="grid grid-cols-3 gap-2 text-sm text-gray-700 font-medium">
-                                <p><span className="text-gray-500">Class:</span> {c.forStandard}</p>
-                                <p><span className="text-gray-500">Subject:</span> {c.subjectName}</p>
-                                <p><span className="text-gray-500">Time:</span> {c.time}</p>
-                            </div>
-                        </div>
-                    ))
-                ) : (
-                    <div className="flex flex-col items-center justify-center text-gray-500 animate-pulse mt-12">
-                        <NotebookText className="w-10 h-10 mb-2 text-blue-400" />
-                        <p className="text-md font-medium">Yay! No classes scheduled for today.</p>
-                        <p className="text-sm text-gray-400 mt-1">Take a break or plan ahead 📘</p>
-                    </div>
-                )}
+                            <NotebookText className="w-8 h-8 text-[#f7c7a3] mb-3 animate-pulse" />
+                            <p className="text-sm font-medium text-[#4a3a2c]">Loading today's schedule...</p>
+                        </motion.div>
+                    ) : allClasses.length > 0 ? (
+                        allClasses.map((c, index) => (
+                            <motion.div
+                                key={`${c.batchId}-${c.subjectId}-${c.date}`}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: index * 0.1 }}
+                                className="bg-[#f4e3d0]/80 backdrop-blur-sm rounded-xl border border-[#ddb892] p-4 shadow-md hover:shadow-lg transition-all duration-300"
+                            >
+                                <div className="mb-3 pb-2 border-b border-[#ddb892]">
+                                    <p className="text-base font-semibold text-[#4a3a2c]">{c.batchName}</p>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+                                    <div className="flex flex-col">
+                                        <span className="text-[#f7c7a3] font-medium text-xs uppercase tracking-wide">Class</span>
+                                        <span className="text-[#4a3a2c] font-medium">{c.forStandard}</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[#f7c7a3] font-medium text-xs uppercase tracking-wide">Subject</span>
+                                        <span className="text-[#4a3a2c] font-medium">{c.subjectName}</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[#f7c7a3] font-medium text-xs uppercase tracking-wide">Time</span>
+                                        <span className="text-[#4a3a2c] font-medium">{c.time}</span>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        ))
+                    ) : (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="flex flex-col items-center justify-center h-full text-[#6b4c3b]"
+                        >
+                            <div className="text-4xl mb-3">📚</div>
+                            <p className="text-lg font-medium text-[#4a3a2c]">No classes scheduled for today.</p>
+                            <p className="text-sm text-[#a08a6e] mt-1">Enjoy your day!</p>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
         </div>
     );

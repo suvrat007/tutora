@@ -4,38 +4,71 @@ import TodaysClasses from "./comps/FuturePhases/TodaysClasses.jsx";
 import Callendar from "./comps/P1/Callendar.jsx";
 import ClassStatusUpdates from "./comps/P1/ClassStatusUpdates.jsx";
 import Reminders from "./comps/P1/Reminders.jsx";
+import { motion } from "framer-motion";
 
 const Home = () => {
   const [loaded, setLoaded] = useState(false);
 
   if (!loaded) return <LoadingPage onDone={() => setLoaded(true)} />;
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.2 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.5, ease: "easeOut" },
+    },
+  };
+
   return (
-      <div className="flex flex-col gap-4 p-4 flex-1 overflow-hidden">
-        <div className="flex gap-4 flex-1 h-[10em]">
-          <div className="bg-[#f4d8bb] p-2 rounded-3xl shadow-md flex-1 min-w-[400px]">
+      <motion.div
+          className="flex flex-col min-h-screen p-4 gap-4 lg:gap-6 lg:p-6"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+      >
+        {/* Top Row - TodaysClasses & Calendar */}
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 flex-1 min-h-0">
+          <motion.div
+              variants={itemVariants}
+              className="flex-1 bg-[#f4e3d0]/80 backdrop-blur-sm p-4 lg:p-6 rounded-2xl shadow-lg border border-[#ddb892] overflow-hidden min-h-[200px] lg:min-h-[300px]"
+          >
             <TodaysClasses />
-          </div>
+          </motion.div>
 
-          <div className="bg-[#f4d8bb] p-2 rounded-3xl shadow-md w-[28%] min-w-[280px]">
-            <div className="bg-white rounded-2xl shadow p-4 h-full">
-              <Callendar />
-            </div>
-          </div>
+          <motion.div
+              variants={itemVariants}
+              className="w-full lg:w-1/3 bg-[#f4e3d0]/80 backdrop-blur-sm p-4 lg:p-6 rounded-2xl shadow-lg border border-[#ddb892] overflow-hidden min-h-[200px] lg:min-h-[300px]"
+          >
+            <Callendar />
+          </motion.div>
         </div>
 
-        <div className="flex gap-4 flex-1 overflow-hidden">
-          <div className="bg-[#f4d8bb] p-2 rounded-3xl shadow-md flex-1 min-w-[400px]">
+        {/* Bottom Row - Class Status & Reminders */}
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 flex-1 min-h-0">
+          <motion.div
+              variants={itemVariants}
+              className="flex-1 bg-[#f4e3d0]/80 backdrop-blur-sm p-4 lg:p-6 rounded-2xl shadow-lg border border-[#ddb892] overflow-hidden min-h-[200px] lg:min-h-[300px]"
+          >
             <ClassStatusUpdates />
-          </div>
+          </motion.div>
 
-          <div className="bg-[#f4d8bb] p-2 rounded-3xl shadow-md flex-1 min-w-[400px]">
-            <div className="bg-white rounded-2xl shadow p-2 h-full">
-              <Reminders />
-            </div>
-          </div>
+          <motion.div
+              variants={itemVariants}
+              className="w-full lg:w-1/2 bg-[#f4e3d0]/80 backdrop-blur-sm p-4 lg:p-6 rounded-2xl shadow-lg border border-[#ddb892] overflow-hidden min-h-[200px] lg:min-h-[300px]"
+          >
+            <Reminders />
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
   );
 };
 

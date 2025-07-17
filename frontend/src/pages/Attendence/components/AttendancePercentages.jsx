@@ -1,134 +1,105 @@
 import React from "react";
 import useAttendanceSummary from "@/pages/Attendence/hooks/useAttendanceSummary.js";
+import { motion, AnimatePresence } from "framer-motion";
 
-const AttendancePercentages = ({attendance, batchName, setBatchName, subjectName, setSubjectName, batches}) => {
+const AttendancePercentages = ({ batchName, setBatchName, subjectName, setSubjectName, batches }) => {
     const { summary, loading, error } = useAttendanceSummary(batchName, subjectName, batches);
     const selectedBatch = batches.find((b) => b.name === batchName);
 
-    return (
-        <div className="bg-[#f4d8bb] p-2 rounded-3xl shadow-md flex-1 h-[16em]">
-            <div className="bg-white h-full rounded-2xl p-4 text-black flex flex-col gap-3">
-                <div className={'flex items-center justify-between'}>
-                    <h2 className="font-bold text-lg">Attendance Summary</h2>
+    const inputStyles = "w-full border p-2 rounded-md bg-background border-border placeholder-text-light text-text focus:ring-primary focus:border-primary";
 
-                    <div>
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="bg-white p-6 rounded-2xl shadow-soft border border-border flex-1 h-auto"
+        >
+            <div className="flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                    <h2 className="font-bold text-lg">Attendance Summary</h2>
+                    <div className="flex gap-2">
                         <select
                             value={batchName}
                             onChange={(e) => {
                                 setBatchName(e.target.value);
                                 setSubjectName('');
                             }}
-                            className="border p-2 rounded-md "
+                            className={inputStyles}
                         >
                             <option value="">Select Batch</option>
                             {batches.map((b) => (
-                                <option key={b._id} value={b.name}>
-                                    {b.name}
-                                </option>
+                                <option key={b._id} value={b.name}>{b.name}</option>
                             ))}
                         </select>
                         <select
                             value={subjectName}
                             onChange={(e) => setSubjectName(e.target.value)}
-                            className="border p-2 rounded-md"
+                            className={inputStyles}
                             disabled={!batchName}
                         >
                             <option value="">Select Subject</option>
                             {selectedBatch?.subject.map((s) => (
-                                <option key={s._id} value={s.name}>
-                                    {s.name}
-                                </option>
+                                <option key={s._id} value={s.name}>{s.name}</option>
                             ))}
                         </select>
                     </div>
-
                 </div>
 
-                <div>
-                    {batchName && subjectName && !loading && !error && (
-                        <div className="mt-2 overflow-x-auto">
-                            {summary.length > 0 ? (
-                                <div className="flex flex-wrap justify-center gap-4  h-[8.5em] overflow-y-auto ">
+                <div className="mt-2 overflow-y-auto h-[10em]">
+                    <AnimatePresence>
+                        {loading ? (
+                            <p className="text-text-light text-center mt-4">Loading summary...</p>
+                        ) : error ? (
+                            <p className="text-error text-center mt-4">{error}</p>
+                        ) : batchName && subjectName ? (
+                            summary.length > 0 ? (
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                                     {summary.map((student) =>
                                         student.subjects.map((subj) => {
                                             const percentage = subj.percentage;
                                             const strokeDasharray = 113;
                                             const strokeDashoffset = ((100 - percentage) / 100) * strokeDasharray;
-
                                             return (
-                                                <div
+                                                <motion.div
                                                     key={`${student.studentId}-${subj.subjectId}`}
-                                                    className="bg-[#fff4ea] h-[7em] p-2 rounded-xl shadow-md w-[8.5rem] flex flex-col items-center"
+                                                    initial={{ opacity: 0, scale: 0.9 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    className="bg-background p-3 rounded-xl shadow-soft flex flex-col items-center"
                                                 >
                                                     <h3 className="text-sm font-semibold text-center mb-2">{student.studentName}</h3>
-
-                                                    <div className={'flex gap-2'}>
-                                                        <svg className="w-16 h-16" viewBox="0 0 40 40">
-                                                            <circle
-                                                                cx="20"
-                                                                cy="20"
-                                                                r="18"
-                                                                fill="none"
-                                                                stroke="#e0e0e0"
-                                                                strokeWidth="4"
-                                                            />
-                                                            <circle
-                                                                cx="20"
-                                                                cy="20"
-                                                                r="18"
-                                                                fill="none"
-                                                                stroke="#f7a400"
-                                                                strokeWidth="4"
-                                                                strokeDasharray={strokeDasharray}
-                                                                strokeDashoffset={strokeDashoffset}
-                                                                transform="rotate(-90 20 20)"
-                                                            />
-                                                            <text
-                                                                x="50%"
-                                                                y="50%"
-                                                                dominantBaseline="middle"
-                                                                textAnchor="middle"
-                                                                className="text-[.6em]"
-                                                                fill="#000"
-                                                            >
-                                                                {percentage}%
-                                                            </text>
-                                                        </svg>
-
-                                                        <div className="text-[.7em] text-gray-700 mt-2 text-center">
-                                                            <p><strong>Attended:</strong> {subj.attended}</p>
-                                                            <p><strong>Total:</strong> {subj.total}</p>
-                                                        </div>
+                                                    <svg className="w-16 h-16" viewBox="0 0 40 40">
+                                                        <circle cx="20" cy="20" r="18" fill="none" stroke="#eee" strokeWidth="4" />
+                                                        <motion.circle
+                                                            cx="20" cy="20" r="18" fill="none" stroke="var(--primary)" strokeWidth="4"
+                                                            strokeDasharray={strokeDasharray}
+                                                            strokeDashoffset={strokeDashoffset}
+                                                            transform="rotate(-90 20 20)"
+                                                            initial={{ strokeDashoffset: strokeDasharray }}
+                                                            animate={{ strokeDashoffset }}
+                                                            transition={{ duration: 1, ease: "easeOut" }}
+                                                        />
+                                                        <text x="50%" y="50%" dominantBaseline="middle" textAnchor="middle" className="text-xs font-bold" fill="var(--text)">{percentage}%</text>
+                                                    </svg>
+                                                    <div className="text-xs text-text-light mt-2 text-center">
+                                                        <p><strong>Attended:</strong> {subj.attended}</p>
+                                                        <p><strong>Total:</strong> {subj.total}</p>
                                                     </div>
-
-                                                </div>
+                                                </motion.div>
                                             );
                                         })
                                     )}
                                 </div>
                             ) : (
-                                <p className="text-gray-500 text-center mt-4">
-                                    No attendance data found for selected batch and subject
-                                </p>
-                            )}
-
-                        </div>
-                    )}
+                                <p className="text-text-light text-center mt-4">No attendance data found.</p>
+                            )
+                        ) : (
+                            <p className="text-text-light text-center mt-4">Please select a batch and subject.</p>
+                        )}
+                    </AnimatePresence>
                 </div>
-                {/* Error and Loading States */}
-                {error && <p className="text-red-600 text-sm">{error}</p>}
-                {loading && <p className="text-gray-600">Loading attendance summary...</p>}
-
-                {/* Attendance Table */}
-
-
-                {!batchName && !subjectName && (
-                    <p className="text-gray-500 text-center mt-4">
-                        Please select a batch and subject to view attendance summary
-                    </p>
-                )}
             </div>
-        </div>
+        </motion.div>
     );
 }
 export default AttendancePercentages

@@ -2,6 +2,10 @@ import { AiOutlineClose, AiOutlinePlus, AiOutlineMinus } from "react-icons/ai";
 import { useState, useEffect } from "react";
 import axiosInstance from "../../utilities/axiosInstance.jsx";
 import useFetchBatches from "@/pages/useFetchBatches.js";
+import { motion } from "framer-motion";
+import toast from "react-hot-toast";
+import { Button } from "@/components/ui/button.jsx";
+import { Input } from "@/components/ui/input.jsx";
 
 const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -23,8 +27,7 @@ const CreateEditBatch = ({ onClose, onBatchCreated, onBatchUpdated, setRerender,
     useEffect(() => {
         if (isEditMode) {
             setBatchData({
-                name: batchToEdit.name,
-                forStandard: batchToEdit.forStandard,
+                ...batchToEdit,
                 subject: batchToEdit.subject.length
                     ? batchToEdit.subject.map(sub => ({
                         ...sub,
@@ -87,31 +90,31 @@ const CreateEditBatch = ({ onClose, onBatchCreated, onBatchUpdated, setRerender,
     };
 
     const handleSubmit = async () => {
-        if (!isValid()) return alert("Please fill in all required fields.");
+        if (!isValid()) return toast.error("Please fill in all required fields.");
         try {
             let response;
             if (isEditMode) {
                 response = await axiosInstance.patch(`/api/batch/update-batch/${batchToEdit._id}`, batchData, { withCredentials: true });
-                onBatchUpdated?.();
+                toast.success("Batch updated successfully!");
             } else {
                 response = await axiosInstance.post('/api/batch/add-new-batch', batchData, { withCredentials: true });
-                onBatchCreated?.();
+                toast.success("Batch created successfully!");
             }
             setRerender?.(prev => !prev);
             await getBatches();
             onClose();
         } catch (err) {
             console.error("Error during batch handling:", err);
-            alert(`Failed to ${isEditMode ? 'update' : 'create'} batch.`);
+            toast.error(`Failed to ${isEditMode ? 'update' : 'create'} batch.`);
         }
     };
 
     return (
-        <div className="fixed text-black inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div className="relative w-full max-w-3xl bg-white rounded-2xl shadow-xl overflow-hidden">
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed text-text inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }} className="relative w-full max-w-3xl bg-white rounded-2xl shadow-xl overflow-hidden border border-border">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-background">
                     <h2 className="text-lg font-bold">{isEditMode ? 'Edit Batch' : 'Create New Batch'}</h2>
-                    <button onClick={onClose} className="text-gray-500 hover:text-red-500">
+                    <button onClick={onClose} className="text-text-light hover:text-error">
                         <AiOutlineClose size={24} />
                     </button>
                 </div>
@@ -119,71 +122,40 @@ const CreateEditBatch = ({ onClose, onBatchCreated, onBatchUpdated, setRerender,
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium mb-1">Batch Name *</label>
-                            <input
-                                type="text"
-                                name="name"
-                                value={batchData.name}
-                                onChange={handleChange}
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                            />
+                            <Input type="text" name="name" value={batchData.name} onChange={handleChange} />
                         </div>
                         <div>
                             <label className="block text-sm font-medium mb-1">Standard / Grade *</label>
-                            <input
-                                type="text"
-                                name="forStandard"
-                                value={batchData.forStandard}
-                                onChange={handleChange}
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                            />
+                            <Input type="text" name="forStandard" value={batchData.forStandard} onChange={handleChange} />
                         </div>
                     </div>
                     <div>
                         <div className="flex justify-between items-center mb-2">
                             <h3 className="text-md font-semibold">Subjects</h3>
-                            <button onClick={addSubject} className="flex items-center text-blue-600 text-sm font-medium">
-                                <AiOutlinePlus className="mr-1" /> Add Subject
-                            </button>
+                            <Button onClick={addSubject} size="sm" variant="outline"><AiOutlinePlus className="mr-1" /> Add Subject</Button>
                         </div>
                         {batchData.subject.map((subj, i) => (
-                            <div key={i} className="border p-4 rounded-xl mb-4 relative">
-                                <button
-                                    onClick={() => removeSubject(i)}
-                                    className="absolute top-2 right-2 text-red-500"
-                                    disabled={batchData.subject.length === 1}
-                                >
+                            <div key={i} className="border border-border p-4 rounded-xl mb-4 relative bg-background">
+                                <button onClick={() => removeSubject(i)} className="absolute top-2 right-2 text-error" disabled={batchData.subject.length === 1}>
                                     <AiOutlineMinus size={20} />
                                 </button>
                                 <div>
                                     <label className="block text-sm font-medium mb-1">Subject Name *</label>
-                                    <input
-                                        type="text"
-                                        name="name"
-                                        value={subj.name}
-                                        onChange={(e) => handleSubjectChange(i, e)}
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                                    />
+                                    <Input type="text" name="name" value={subj.name} onChange={(e) => handleSubjectChange(i, e)} />
                                 </div>
                                 <div className="pt-4">
                                     <label className="block text-sm font-medium mb-1">Class Time *</label>
-                                    <input
-                                        type="time"
-                                        name="time"
-                                        value={subj.classSchedule.time}
-                                        onChange={(e) => handleScheduleChange(i, e)}
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-3"
-                                    />
+                                    <Input type="time" name="time" value={subj.classSchedule.time} onChange={(e) => handleScheduleChange(i, e)} className="mb-3" />
                                     <label className="block text-sm font-medium mb-1">Days *</label>
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                                         {daysOfWeek.map(day => (
                                             <label key={day} className="flex items-center space-x-2">
                                                 <input
                                                     type="checkbox"
-                                                    name="days"
                                                     value={day}
                                                     checked={subj.classSchedule.days.includes(day)}
                                                     onChange={(e) => handleScheduleChange(i, e)}
-                                                    className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                                                    className="h-4 w-4 text-primary"
                                                 />
                                                 <span className="text-sm">{day}</span>
                                             </label>
@@ -194,16 +166,11 @@ const CreateEditBatch = ({ onClose, onBatchCreated, onBatchUpdated, setRerender,
                         ))}
                     </div>
                 </div>
-                <div className="flex justify-end px-6 py-4 border-t border-gray-200 bg-gray-50">
-                    <button
-                        onClick={handleSubmit}
-                        className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
-                    >
-                        {isEditMode ? 'Update Batch' : 'Create Batch'}
-                    </button>
+                <div className="flex justify-end px-6 py-4 border-t border-border bg-background">
+                    <Button onClick={handleSubmit}>{isEditMode ? 'Update Batch' : 'Create Batch'}</Button>
                 </div>
-            </div>
-        </div>
+            </motion.div>
+        </motion.div>
     );
 };
 

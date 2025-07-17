@@ -4,6 +4,10 @@ import { AiOutlineClose } from "react-icons/ai";
 import { useSelector } from "react-redux";
 import useFetchStudents from "@/pages/useFetchStudents.js";
 import useFetchBatches from "@/pages/useFetchBatches.js";
+import { motion } from "framer-motion";
+import toast from "react-hot-toast";
+import { Button } from "@/components/ui/button.jsx";
+import { Input } from "@/components/ui/input.jsx";
 
 const AddStudent = ({
                         setEdit,
@@ -83,7 +87,10 @@ const AddStudent = ({
     };
 
     const handleSubmit = async () => {
-        if (!validateForm()) return;
+        if (!validateForm()) {
+            Object.values(formErrors).forEach(err => toast.error(err));
+            return;
+        }
 
         try {
             const studentData = {
@@ -95,20 +102,17 @@ const AddStudent = ({
                 await axiosInstance.patch(`/api/student/update-student/${existingStudentData._id}`, studentData, {
                     withCredentials: true,
                 });
-                fetchStudents();
-                fetchBatches();
+                toast.success("Student updated successfully!");
             } else {
                 await axiosInstance.post("/api/student/add-new-student", studentData, { withCredentials: true });
-                fetchStudents();
-                fetchBatches();
+                toast.success("Student added successfully!");
             }
 
             onStudentAdded();
             setSeeStdDetails((prev) => ({ ...prev, show: false }));
             isEditMode ? setEdit(false) : setShowAddStd(false);
         } catch (err) {
-            console.error("Error submitting student data:", err);
-            alert("Failed to submit student data.");
+            toast.error("Failed to submit student data.");
         }
     };
 
@@ -142,15 +146,14 @@ const AddStudent = ({
     };
 
     const eligibleBatches = batches.filter((batch) => String(batch?.forStandard) === String(newStudent?.grade));
+    const inputClass = "w-full border border-border rounded-lg px-3 py-2 bg-background text-text focus:outline-none focus:ring-2 focus:ring-primary";
+
     return (
-        <div className="fixed text-black inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div className="relative w-[50em] bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in">
-                <div className="flex items-center justify-between p-4 border-b">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed text-text inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }} className="relative w-[50em] bg-white rounded-2xl shadow-xl overflow-hidden border border-border">
+                <div className="flex items-center justify-between p-4 border-b border-border bg-background">
                     <h2 className="text-lg font-semibold">{isEditMode ? "Edit Student" : "Add New Student"}</h2>
-                    <button
-                        onClick={() => (isEditMode ? setEdit(false) : setShowAddStd(false))}
-                        className="text-gray-500 hover:text-red-500 transition"
-                    >
+                    <button onClick={() => (isEditMode ? setEdit(false) : setShowAddStd(false))} className="text-text-light hover:text-error transition">
                         <AiOutlineClose size={24} />
                     </button>
                 </div>
@@ -161,7 +164,7 @@ const AddStudent = ({
                             <img
                                 src="https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png"
                                 alt="Student Avatar"
-                                className="w-40 rounded-full border"
+                                className="w-40 rounded-full border border-border"
                             />
                         </div>
                     )}
@@ -198,18 +201,18 @@ const AddStudent = ({
                         },
                     ].map((section) => (
                         <div key={section.title}>
-                            <p className="font-semibold mb-2">{section.title}</p>
+                            <p className="font-semibold mb-2 text-text">{section.title}</p>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {section.fields.map(({ label, key, type, value }) => (
                                     <div key={key} className="flex flex-col">
-                                        <input
+                                        <Input
                                             type={type}
                                             placeholder={label}
                                             value={value}
                                             onChange={(e) => handleChange(key, e.target.value)}
-                                            className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            className={inputClass}
                                         />
-                                        {formErrors[key] && <p className="text-red-500 text-sm">{formErrors[key]}</p>}
+                                        {formErrors[key] && <p className="text-error text-sm">{formErrors[key]}</p>}
                                     </div>
                                 ))}
                             </div>
@@ -217,7 +220,7 @@ const AddStudent = ({
                     ))}
 
                     <div>
-                        <p className="font-semibold mb-2">Choose Batch to add student in (Optional)</p>
+                        <p className="font-semibold mb-2 text-text">Choose Batch to add student in (Optional)</p>
                         <select
                             value={selectedBatchId}
                             onChange={(e) => {
@@ -227,7 +230,7 @@ const AddStudent = ({
                                     subjectId: [],
                                 }));
                             }}
-                            className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className={inputClass}
                         >
                             <option value="">No Batch / Deselect</option>
                             {eligibleBatches.map((batch) => (
@@ -236,18 +239,18 @@ const AddStudent = ({
                                 </option>
                             ))}
                         </select>
-                        {formErrors.batch && <p className="text-red-500 text-sm">{formErrors.batch}</p>}
-                        {formErrors.batchGradeMismatch && <p className="text-red-500 text-sm">{formErrors.batchGradeMismatch}</p>}
+                        {formErrors.batch && <p className="text-error text-sm">{formErrors.batch}</p>}
+                        {formErrors.batchGradeMismatch && <p className="text-error text-sm">{formErrors.batchGradeMismatch}</p>}
                     </div>
 
                     {selectedBatchId && (
                         <div className="mt-4">
-                            <p className="font-semibold mb-2">Select Subjects for this student</p>
+                            <p className="font-semibold mb-2 text-text">Select Subjects for this student</p>
                             <div className="grid grid-cols-2 gap-3">
                                 {batches
                                     .find((batch) => batch._id === selectedBatchId)
                                     ?.subject?.map((subject) => (
-                                        <label key={subject._id} className="flex items-center space-x-2 text-gray-700">
+                                        <label key={subject._id} className="flex items-center space-x-2 text-text">
                                             <input
                                                 type="checkbox"
                                                 value={subject._id}
@@ -262,27 +265,24 @@ const AddStudent = ({
                                                         };
                                                     });
                                                 }}
-                                                className="form-checkbox h-4 w-4 text-blue-500"
+                                                className="form-checkbox h-4 w-4 text-primary"
                                             />
                                             <span>{subject.name}</span>
                                         </label>
                                     ))}
                             </div>
-                            {formErrors.subjectId && <p className="text-red-500 text-sm">{formErrors.subjectId}</p>}
+                            {formErrors.subjectId && <p className="text-error text-sm">{formErrors.subjectId}</p>}
                         </div>
                     )}
 
                     <div className="flex justify-end">
-                        <button
-                            onClick={handleSubmit}
-                            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
-                        >
+                        <Button onClick={handleSubmit}>
                             {isEditMode ? "Update Student" : "Add Student"}
-                        </button>
+                        </Button>
                     </div>
                 </div>
-            </div>
-        </div>
+            </motion.div>
+        </motion.div>
     );
 };
 

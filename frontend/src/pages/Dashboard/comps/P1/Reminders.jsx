@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "@/utilities/axiosInstance";
 import { AnimatePresence, motion } from "framer-motion";
+import { Bell, Loader2 } from "lucide-react";
+import toast from "react-hot-toast";
 
 const Reminders = () => {
     const [reminders, setReminders] = useState([]);
@@ -32,10 +34,7 @@ const Reminders = () => {
                     }
 
                     const reminderDateTime = new Date(reminderDate);
-                    reminderDateTime.setHours(hours);
-                    reminderDateTime.setMinutes(minutes);
-                    reminderDateTime.setSeconds(0);
-                    reminderDateTime.setMilliseconds(0);
+                    reminderDateTime.setHours(hours, minutes, 0, 0);
 
                     return (
                         reminderDateTime.toDateString() === now.toDateString() &&
@@ -45,8 +44,7 @@ const Reminders = () => {
 
                 setReminders(filtered);
             } catch (err) {
-                console.error(err);
-                setError("Failed to load reminders.");
+                toast.error("Failed to load reminders.");
             } finally {
                 setLoading(false);
             }
@@ -65,109 +63,107 @@ const Reminders = () => {
         if (markedDoneIds.length === 0) return;
         setIsSaving(true);
         try {
-            for (let id of markedDoneIds) {
-                await axiosInstance.delete(`/api/reminder/delete-reminder/${id}`, {
-                    withCredentials: true,
-                });
-            }
-            setReminders((prev) =>
-                prev.filter((rem) => !markedDoneIds.includes(rem._id))
-            );
+            await Promise.all(markedDoneIds.map(id =>
+                axiosInstance.delete(`/api/reminder/delete-reminder/${id}`, { withCredentials: true })
+            ));
+            setReminders((prev) => prev.filter((rem) => !markedDoneIds.includes(rem._id)));
             setMarkedDoneIds([]);
+            toast.success("Reminders updated!");
         } catch (err) {
-            console.error("Failed to delete reminders", err);
-            alert("Some deletions failed.");
+            toast.error("Failed to update some reminders.");
         } finally {
             setIsSaving(false);
         }
     };
 
     return (
-        <>
-            {/* Header */}
-            <div className="px-6 py-3 border-b border-gray-200 flex justify-between items-center">
-                <h1 className="text-lg font-semibold text-gray-800">
-                    📅 Reminders for Today
-                </h1>
+        <div className="p-6 bg-gradient-to-br from-[#fef5e7] to-[#e7c6a5] rounded-xl border border-[#ddb892] shadow-lg h-full flex flex-col">
+            <div className="mb-6 flex justify-between items-center">
+                <div>
+                    <h2 className="text-xl font-semibold text-[#4a3a2c] mb-2 flex items-center gap-2">
+                        <Bell className="w-5 h-5 text-[#f7c7a3]" />
+                        Today's Reminders
+                    </h2>
+                    <div className="h-1 w-16 bg-gradient-to-r from-[#f4e3d0] to-[#e7c6a5] rounded-full"></div>
+                </div>
                 <button
                     onClick={handleSaveChanges}
-                    disabled={isSaving || loading}
-                    className={`px-4 py-2 text-sm rounded-md font-medium shadow-sm transition-colors duration-150 ${
-                        isSaving || loading
-                            ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                            : "bg-blue-600 text-white hover:bg-blue-700"
+                    disabled={isSaving || loading || markedDoneIds.length === 0}
+                    className={`px-4 py-2 text-sm rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
+                        isSaving || loading || markedDoneIds.length === 0
+                            ? "bg-[#a08a6e] text-[#fef5e7] cursor-not-allowed"
+                            : "bg-[#d97706] text-white hover:bg-[#d97706]/80 shadow-md hover:shadow-lg"
                     }`}
                 >
-                    {isSaving ? "Deleting..." : "Save Changes"}
+                    {isSaving && <Loader2 className="animate-spin w-4 h-4" />}
+                    {isSaving ? "Saving..." : "Save Changes"}
                 </button>
             </div>
 
-            {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+            <div className="flex-1 overflow-y-auto pr-2 space-y-4">
                 {loading ? (
-                    <p className="text-sm text-gray-500">Loading reminders...</p>
-                ) : error ? (
-                    <div className="text-red-600 bg-red-100 px-4 py-2 rounded-md text-sm">
-                        {error}
+                    <div className="flex items-center justify-center py-8 text-[#f7c7a3]">
+                        <Loader2 className="animate-spin w-5 h-5 mr-2" />
+                        <span>Loading reminders...</span>
                     </div>
                 ) : reminders.length === 0 ? (
-                    <div className="text-center text-gray-500 py-6">
-                        <p className="text-sm">You have no reminders for today 🎉</p>
+                    <div className="text-center py-8">
+                        <div className="text-4xl mb-2">🎉</div>
+                        <p className="text-[#4a3a2c]">You have no reminders for today.</p>
                     </div>
                 ) : (
                     <AnimatePresence>
-                        {reminders.map(({ _id, reminder, batchName, subjectName }) => {
+                        {reminders.map(({ _id, reminder, batchName, subjectName }, index) => {
                             const isDone = markedDoneIds.includes(_id);
                             return (
                                 <motion.div
                                     key={_id}
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    exit={{
-                                        opacity: 0,
-                                        scale: 0.95,
-                                        transition: { duration: 0.3 },
-                                    }}
-                                    className={`flex flex-col sm:flex-row justify-between items-start sm:items-center border border-gray-200 rounded-xl px-4 py-3 bg-white shadow-sm hover:shadow-md transition duration-150 ${
-                                        isDone ? "bg-green-50" : ""
+                                    exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.3 } }}
+                                    transition={{ delay: index * 0.05 }}
+                                    className={`rounded-xl border p-4 shadow-sm hover:shadow-md transition-all duration-300 ${
+                                        isDone
+                                            ? "bg-[#f9f0e5] border-[#e8d4bd]"
+                                            : "bg-[#f4e3d0] border-[#ddb892]"
                                     }`}
                                 >
-                                    <div className="flex-1 w-full space-y-1">
-                                        <div className="flex flex-wrap items-center gap-2 border-b pb-1 text-sm">
-                      <span className="font-semibold text-indigo-600">
-                        {batchName || "No Batch"}
-                      </span>
-                                            <span className="text-gray-500 pl-2 border-l border-gray-300">
-                        {subjectName || "No Subject"}
-                      </span>
-                                        </div>
-                                        <p
-                                            className={`text-[15px] ${
+                                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                        <div className="flex-1 space-y-3">
+                                            <div className="flex flex-wrap items-center gap-3 pb-2 border-b border-[#ecd9c4]">
+                        <span className="text-sm font-semibold text-[#7a5e45] bg-[#f4e2ce] px-2 py-1 rounded-md">
+                            {batchName || "No Batch"}
+                        </span>
+                                                <span className="text-sm text-[#856f5b] bg-[#fff4ea] px-2 py-1 rounded-md">
+                            {subjectName || "No Subject"}
+                        </span>
+                                            </div>
+                                            <p className={`text-sm ${
                                                 isDone
-                                                    ? "line-through text-gray-400 italic"
-                                                    : "text-gray-700"
+                                                    ? "line-through text-[#b09a85] italic"
+                                                    : "text-[#6e4f3a]"
+                                            }`}>
+                                                {reminder}
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={() => toggleReminderDone(_id)}
+                                            className={`px-4 py-2 text-sm rounded-lg font-medium transition-all duration-200 whitespace-nowrap ${
+                                                isDone
+                                                    ? "bg-[#e4c9aa] text-[#5e4430] hover:bg-[#d8bda0]"
+                                                    : "bg-[#f1d1a6] text-[#5e4430] hover:bg-[#e7c89c]"
                                             }`}
                                         >
-                                            {reminder}
-                                        </p>
+                                            {isDone ? "Mark Undone" : "Mark Done"}
+                                        </button>
                                     </div>
-                                    <button
-                                        onClick={() => toggleReminderDone(_id)}
-                                        className={`mt-3 sm:mt-0 sm:ml-6 px-4 py-2 text-sm rounded-md font-medium shadow-sm transition-colors duration-150 ${
-                                            isDone
-                                                ? "bg-emerald-500 text-white hover:bg-emerald-600"
-                                                : "bg-sky-500 text-white hover:bg-sky-600"
-                                        }`}
-                                    >
-                                        {isDone ? "Mark Undone" : "Mark Done"}
-                                    </button>
                                 </motion.div>
                             );
                         })}
                     </AnimatePresence>
                 )}
             </div>
-        </>
+        </div>
     );
 };
 

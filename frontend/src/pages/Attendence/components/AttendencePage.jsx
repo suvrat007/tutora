@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
-import useFetchClassLogs from "@/pages/useFetchClassLogs.js";
+import useFetchClassLogs from "../../useFetchClassLogs.js";
 import useAttendanceConstraints from "../hooks/useAttendanceConstraints.js";
 import MarkedPresentList from "@/pages/Attendence/components/MarkedPresentList.jsx";
 import {AttendanceForm} from "@/pages/Attendence/components/AttendanceForm.jsx";
@@ -11,6 +11,7 @@ import {useAttendanceSubmission} from "@/pages/Attendence/hooks/useAttendanceSub
 import {useStudentActions} from "@/pages/Attendence/hooks/useStudentActions.js";
 import AttendancePercentages from "@/pages/Attendence/components/AttendancePercentages.jsx";
 import useFetchAttendanceSummary from "@/pages/useFetchAttendanceSummary.js";
+import { motion } from "framer-motion";
 
 const AttendancePage = () => {
   const state = useAttendanceState();
@@ -86,36 +87,45 @@ const AttendancePage = () => {
   }, [batchName, subjectName, date, classLogs.length, classLogs]);
 
   return (
-      <div className="p-4 flex flex-col gap-4 flex-1 overflow-hidden">
-        <div className="flex gap-4 h-auto">
-          <AttendancePercentages
-              attendance={attendanceSummary}
-              batchName={batchName}
-              setBatchName={state.setBatchName}
-              subjectName={subjectName}
-              setSubjectName={state.setSubjectName}
-              batches={batches}
-          />
+      <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="p-4 flex flex-col gap-4 flex-1 overflow-hidden bg-background"
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-1">
+            <AttendancePercentages
+                attendance={attendanceSummary}
+                batchName={batchName}
+                setBatchName={state.setBatchName}
+                subjectName={subjectName}
+                setSubjectName={state.setSubjectName}
+                batches={batches}
+            />
+          </div>
 
-          <AttendanceForm
-              batchName={batchName}
-              setBatchName={state.setBatchName}
-              subjectName={subjectName}
-              setSubjectName={state.setSubjectName}
-              date={date}
-              setDate={state.setDate}
-              batches={batches}
-              error={error}
-              success={success}
-              loading={loading}
-              resetStudentData={resetStudentData}
-              clearForm={clearForm}
-              handleSearch={handleSearch}
-          />
+          <div className="lg:col-span-2">
+            <AttendanceForm
+                batchName={batchName}
+                setBatchName={state.setBatchName}
+                subjectName={subjectName}
+                setSubjectName={state.setSubjectName}
+                date={date}
+                setDate={state.setDate}
+                batches={batches}
+                error={error}
+                success={success}
+                loading={loading}
+                resetStudentData={resetStudentData}
+                clearForm={clearForm}
+                handleSearch={handleSearch}
+            />
+          </div>
         </div>
 
-        <div className="bg-[#f4d8bb] p-2 rounded-3xl shadow-md flex-1 overflow-hidden">
-          <div className="flex gap-4 h-full">
+        <div className="bg-white p-2 rounded-3xl shadow-medium flex-1 overflow-hidden border border-border">
+          <div className="flex flex-col lg:flex-row gap-4 h-full">
             <StudentList
                 students={students}
                 presentIds={presentIds}
@@ -139,7 +149,7 @@ const AttendancePage = () => {
             />
           </div>
         </div>
-      </div>
+      </motion.div>
   );
 };
 

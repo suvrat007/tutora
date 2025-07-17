@@ -71,8 +71,8 @@ const GridLineHorizontal = ({
     <div
       style={
         {
-          "--background": "#ffffff",
-          "--color": "rgba(0, 0, 0, 0.2)",
+          "--background": "#FDFBF6",
+          "--color": "#DDDDDD",
           "--height": "1px",
           "--width": "5px",
           "--fade-stop": "90%",
@@ -80,7 +80,7 @@ const GridLineHorizontal = ({
           //-100px if you want to keep the line inside
           "--offset": offset || "200px",
 
-          "--color-dark": "rgba(255, 255, 255, 0.2)",
+          "--color-dark": "#555555",
           maskComposite: "exclude"
         }
       }
@@ -105,8 +105,8 @@ const GridLineVertical = ({
     <div
       style={
         {
-          "--background": "#ffffff",
-          "--color": "rgba(0, 0, 0, 0.2)",
+          "--background": "#FDFBF6",
+          "--color": "#DDDDDD",
           "--height": "5px",
           "--width": "1px",
           "--fade-stop": "90%",
@@ -114,7 +114,7 @@ const GridLineVertical = ({
           //-100px if you want to keep the line inside
           "--offset": offset || "150px",
 
-          "--color-dark": "rgba(255, 255, 255, 0.2)",
+          "--color-dark": "#555555",
           maskComposite: "exclude"
         }
       }
