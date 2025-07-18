@@ -6,13 +6,10 @@ import AddStudent from "./AddStudent.jsx";
 import StdDataDisplay from "./StdDataDisplay.jsx";
 import useFetchStudents from "@/pages/useFetchStudents.js";
 import { useSelector } from "react-redux";
-import SideBar from "../Navbar/SideBar.jsx";
-import Navbar from "../Navbar/Navbar.jsx";
 import useFilterStudentsBySubject from "./funtions/useFilterStudentsBySubject.js";
 import WrapperCard from "@/utilities/WrapperCard.jsx";
 
-import { motion } from "framer-motion";
-import LazyLoad from "react-lazyload";
+import { motion, AnimatePresence } from "framer-motion";
 
 const StudentData = () => {
   const [showAddStd, setShowAddStd] = useState(false);
@@ -72,6 +69,21 @@ const StudentData = () => {
 
   const displayStudents = selectedSubject ? subjectFilteredStudents : filteredStudents;
 
+  // Animation variants for student cards
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: (i) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: i * 0.05,
+        duration: 0.3,
+        ease: "easeOut",
+      },
+    }),
+    exit: { opacity: 0, y: -20, transition: { duration: 0.2 } },
+  };
+
   return (
       <>
         <div className="flex flex-col gap-6 p-4 sm:p-6 md:p-8 flex-1 overflow-hidden">
@@ -93,12 +105,15 @@ const StudentData = () => {
                       <span className="text-base font-medium text-[#4a3a2c]">Add Student</span>
                     </li>
 
-                    {displayStudents.map((student, index) => (
-                        <LazyLoad key={student._id} height={200} offset={100} once>
+                    <AnimatePresence>
+                      {displayStudents.map((student, index) => (
                           <motion.div
-                              initial={{ opacity: 0, y: 20 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ duration: 0.3, delay: index * 0.02 }}
+                              key={student._id}
+                              custom={index}
+                              variants={cardVariants}
+                              initial="hidden"
+                              animate="visible"
+                              exit="exit"
                               onClick={() => setSeeStdDetails({ stdDetails: student, show: true })}
                               className="relative w-full max-w-[12rem] h-56 cursor-pointer bg-[#fdf5ec] border border-[#e7c6a5]/50 shadow-md rounded-xl p-4 hover:shadow-xl hover:scale-105 transition-all duration-300 flex flex-col items-center justify-center"
                           >
@@ -108,6 +123,7 @@ const StudentData = () => {
                                   deleteStudent(student._id);
                                 }}
                                 className="absolute top-2 right-2 text-[#9b8778] hover:text-[#4a3a2c] transition"
+                                aria-label="Delete Student"
                             >
                               <AiOutlineClose size={20} />
                             </button>
@@ -125,8 +141,8 @@ const StudentData = () => {
                               <span className="text-[#9b8778] text-sm truncate w-full">Batch: {student.batchName}</span>
                             </div>
                           </motion.div>
-                        </LazyLoad>
-                    ))}
+                      ))}
+                    </AnimatePresence>
                   </div>
                 </div>
               </WrapperCard>

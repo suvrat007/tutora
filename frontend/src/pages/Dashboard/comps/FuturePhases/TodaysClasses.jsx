@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import axiosInstance from "@/utilities/axiosInstance";
 import { CalendarDays, NotebookText } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const getTodayDay = () => {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -95,51 +96,65 @@ const TodaysClasses = () => {
         logClasses();
     }, [batches]);
 
+    const listVariants = {
+        hidden: { opacity: 0, y: 20, scale: 0.98 },
+        visible: (i) => ({
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            transition: { duration: 0.4, ease: "easeInOut", delay: i * 0.1 }
+        }),
+        exit: { opacity: 0, y: -20, scale: 0.98, transition: { duration: 0.3, ease: "easeInOut" } }
+    };
+
     return (
-        <div className="bg-white rounded-2xl shadow p-4 h-full flex flex-col overflow-hidden">
-            {/* Header */}
-            <div className="sticky top-0 z-10 bg-white pb-2">
-                <h1 className="text-lg font-semibold text-gray-800 border-b pb-2 flex items-center gap-2">
-                    <CalendarDays className="w-5 h-5 text-blue-600" />
+        <div className="bg-[#f8ede3] rounded-3xl shadow-xl shadow-[0_8px_24px_rgba(0,0,0,0.15)] p-6 h-full flex flex-col overflow-hidden border border-[#e6c8a8]">
+            <div className="sticky top-0 z-10 bg-[#f8ede3] pb-3">
+                <h1 className="text-xl font-semibold text-[#5a4a3c] border-b border-[#e6c8a8] pb-2 flex items-center gap-2">
+                    <CalendarDays className="w-6 h-6 text-[#e0c4a8]" />
                     Today's Classes
                 </h1>
             </div>
-
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto mt-2 space-y-3 pr-1">
+            <div className="flex-1 overflow-y-auto mt-4 space-y-4 pr-2">
                 {loading ? (
-                    <div className="flex flex-col items-center justify-center h-full text-gray-400 animate-pulse">
-                        <NotebookText className="w-8 h-8 text-blue-400 mb-2" />
-                        <p className="text-sm">Loading today's schedule...</p>
+                    <div className="flex flex-col items-center justify-center h-full text-[#7b5c4b] animate-pulse">
+                        <NotebookText className="w-10 h-10 text-[#e0c4a8] mb-3" />
+                        <p className="text-base">Loading today's schedule...</p>
                     </div>
                 ) : error ? (
-                    <div className="text-red-500 text-sm font-medium p-4">{error}</div>
+                    <div className="text-red-500 text-base font-medium p-4">{error}</div>
                 ) : allClasses.length > 0 ? (
-                    allClasses.map((c) => (
-                        <div
-                            key={`${c.batchId}-${c.subjectId}-${c.date}`}
-                            className="border border-gray-200 rounded-xl p-4 bg-gray-50 hover:shadow transition-all duration-200"
-                        >
-                            <div className="mb-2 border-b pb-2">
-                                <p className="text-base font-semibold text-blue-600">{c.batchName}</p>
-                            </div>
-                            <div className="grid grid-cols-3 gap-2 text-sm text-gray-700 font-medium">
-                                <p><span className="text-gray-500">Class:</span> {c.forStandard}</p>
-                                <p><span className="text-gray-500">Subject:</span> {c.subjectName}</p>
-                                <p><span className="text-gray-500">Time:</span> {c.time}</p>
-                            </div>
-                        </div>
-                    ))
+                    <AnimatePresence>
+                        {allClasses.map((c, index) => (
+                            <motion.div
+                                key={`${c.batchId}-${c.subjectId}-${c.date}`}
+                                custom={index}
+                                variants={listVariants}
+                                initial="hidden"
+                                animate="visible"
+                                exit="exit"
+                                className="border border-[#e6c8a8] rounded-xl p-4 bg-white hover:bg-[#f0d9c0] transition-all duration-300 shadow-md hover:shadow-lg"
+                            >
+                                <div className="mb-2 border-b border-[#e6c8a8] pb-2">
+                                    <p className="text-lg font-semibold text-[#e0c4a8]">{c.batchName}</p>
+                                </div>
+                                <div className="grid grid-cols-3 gap-3 text-sm text-[#5a4a3c] font-medium">
+                                    <p><span className="text-[#7b5c4b] font-semibold">Class:</span> {c.forStandard}</p>
+                                    <p><span className="text-[#7b5c4b] font-semibold">Subject:</span> {c.subjectName}</p>
+                                    <p><span className="text-[#7b5c4b] font-semibold">Time:</span> {c.time}</p>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
                 ) : (
-                    <div className="flex flex-col items-center justify-center text-gray-500 animate-pulse mt-12">
-                        <NotebookText className="w-10 h-10 mb-2 text-blue-400" />
-                        <p className="text-md font-medium">Yay! No classes scheduled for today.</p>
-                        <p className="text-sm text-gray-400 mt-1">Take a break or plan ahead 📘</p>
+                    <div className="flex flex-col items-center justify-center text-[#7b5c4b] animate-pulse mt-12">
+                        <NotebookText className="w-12 h-12 mb-3 text-[#e0c4a8]" />
+                        <p className="text-lg font-medium">Yay! No classes scheduled for today.</p>
+                        <p className="text-sm text-[#7b5c4b] mt-2">Take a break or plan ahead 📘</p>
                     </div>
                 )}
             </div>
         </div>
     );
 };
-
 export default TodaysClasses;

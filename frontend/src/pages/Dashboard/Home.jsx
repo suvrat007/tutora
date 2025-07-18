@@ -4,39 +4,50 @@ import TodaysClasses from "./comps/FuturePhases/TodaysClasses.jsx";
 import Callendar from "./comps/P1/Callendar.jsx";
 import ClassStatusUpdates from "./comps/P1/ClassStatusUpdates.jsx";
 import Reminders from "./comps/P1/Reminders.jsx";
+import WrapperCard from "@/utilities/WrapperCard.jsx";
 
 const Home = () => {
-  const [loaded, setLoaded] = useState(false);
+    const [loaded, setLoaded] = useState(false);
 
-  if (!loaded) return <LoadingPage onDone={() => setLoaded(true)} />;
+    if (!loaded) return <LoadingPage onDone={() => setLoaded(true)} />;
 
-  return (
-      <div className="flex flex-col gap-4 p-4 flex-1 overflow-hidden">
-        <div className="flex gap-4 flex-1 h-[10em]">
-          <div className="bg-[#f4d8bb] p-2 rounded-3xl shadow-md flex-1 min-w-[400px]">
-            <TodaysClasses />
-          </div>
-
-          <div className="bg-[#f4d8bb] p-2 rounded-3xl shadow-md w-[28%] min-w-[280px]">
-            <div className="bg-white rounded-2xl shadow p-4 h-full">
-              <Callendar />
+    return (
+        <div className="min-h-screen  py-3 px-5 pb-24 overflow-y-auto flex flex-col gap-6">
+            {/* Top Row */}
+            <div className="flex flex-col sm:flex-row gap-6 h-auto sm:h-[37vh]">
+                <div className="w-full sm:w-[80%]">
+                    <WrapperCard className="h-full">
+                        <div className="h-[30em] sm:h-full">
+                            <TodaysClasses />
+                        </div>
+                    </WrapperCard>
+                </div>
+                <div className="w-full sm:flex-1">
+                    <div className="bg-[#f8ede3] p-4 rounded-3xl shadow-[0_8px_24px_rgba(0,0,0,0.15)] h-full">
+                        <Callendar />
+                    </div>
+                </div>
             </div>
-          </div>
-        </div>
 
-        <div className="flex gap-4 flex-1 overflow-hidden">
-          <div className="bg-[#f4d8bb] p-2 rounded-3xl shadow-md flex-1 min-w-[400px]">
-            <ClassStatusUpdates />
-          </div>
-
-          <div className="bg-[#f4d8bb] p-2 rounded-3xl shadow-md flex-1 min-w-[400px]">
-            <div className="bg-white rounded-2xl shadow p-2 h-full">
-              <Reminders />
+            {/* Bottom Row */}
+            <div className="flex flex-col sm:flex-row gap-6 h-auto sm:h-[37vh]">
+                <div className="w-full sm:w-1/2">
+                    <WrapperCard className="h-full">
+                        <div className="h-[30em] sm:h-full">
+                            <ClassStatusUpdates />
+                        </div>
+                    </WrapperCard>
+                </div>
+                <div className="w-full sm:w-1/2 mb-25 sm:mb-0">
+                    <WrapperCard className="h-full">
+                        <div className="h-[20em]  sm:h-full">
+                            <Reminders />
+                        </div>
+                    </WrapperCard>
+                </div>
             </div>
-          </div>
         </div>
-      </div>
-  );
+    );
 };
 
 export default Home;
