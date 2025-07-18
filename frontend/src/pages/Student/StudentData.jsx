@@ -1,15 +1,31 @@
 import { useState, useEffect } from "react";
 import axiosInstance from "../../utilities/axiosInstance.jsx";
 import { FiPlus, FiSearch } from "react-icons/fi";
-import { AiOutlineClose } from "react-icons/ai";
-import AddStudent from "./AddStudent.jsx";
-import StdDataDisplay from "./StdDataDisplay.jsx";
+import { AiOutlineClose, AiOutlineEdit } from "react-icons/ai";
+import { motion, AnimatePresence } from "framer-motion";
+import WrapperCard from "@/utilities/WrapperCard.jsx";
 import useFetchStudents from "@/pages/useFetchStudents.js";
 import { useSelector } from "react-redux";
 import useFilterStudentsBySubject from "./funtions/useFilterStudentsBySubject.js";
-import WrapperCard from "@/utilities/WrapperCard.jsx";
+import StdDataDisplay from "@/pages/Student/StdDataDisplay.jsx";
+import AddStudent from "@/pages/Student/AddStudent.jsx";
 
-import { motion, AnimatePresence } from "framer-motion";
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.05, duration: 0.3, ease: "easeOut" },
+  }),
+  exit: { opacity: 0, y: -20, transition: { duration: 0.2 } },
+};
+
+const placeholderVariants = {
+  pulse: {
+    scale: [1, 1.1, 1],
+    transition: { duration: 1.5, repeat: Infinity, ease: "easeInOut" },
+  },
+};
 
 const StudentData = () => {
   const [showAddStd, setShowAddStd] = useState(false);
@@ -69,168 +85,166 @@ const StudentData = () => {
 
   const displayStudents = selectedSubject ? subjectFilteredStudents : filteredStudents;
 
-  // Animation variants for student cards
-  const cardVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: (i) => ({
-      opacity: 1,
-      y: 0,
-      transition: {
-        delay: i * 0.05,
-        duration: 0.3,
-        ease: "easeOut",
-      },
-    }),
-    exit: { opacity: 0, y: -20, transition: { duration: 0.2 } },
-  };
-
   return (
-      <>
-        <div className="flex flex-col gap-6 p-4 sm:p-6 md:p-8 flex-1 overflow-hidden">
-          <div className="flex flex-col md:flex-row gap-6 h-full">
-            {/* Left Side: Student Cards */}
-            <div className="w-full md:w-[80%] h-full">
-              <WrapperCard>
-                <div className="flex flex-col h-full bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 border border-[#e7c6a5]/50">
-                  <h2 className="text-2xl font-bold text-[#4a3a2c] p-6 border-b bg-[#f5e8dc]">
-                    All Students in <span>{user?.institute_info?.name || "Org Name"}</span>
-                  </h2>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 overflow-y-auto p-6">
-                    <li
-                        onClick={() => setShowAddStd(true)}
-                        className="w-full max-w-[12rem] h-56 cursor-pointer bg-[#fdf5ec] border border-dashed border-[#e7c6a5]/50 shadow-md rounded-xl p-4 flex flex-col items-center space-y-3 hover:shadow-xl hover:scale-105 transition-all duration-300 justify-center"
+      <div className="flex flex-col gap-4 p-2 sm:p-4 md:p-6 h-screen overflow-y-auto ">
+        <div className="flex flex-col lg:flex-row gap-4 h-full max-w-7xl mx-auto">
+          {/* Students List */}
+          <div className="w-full lg:w-2/3">
+            <WrapperCard>
+              <div className="flex flex-col h-full bg-[#f8ede3] rounded-3xl shadow-[0_8px_24px_rgba(0,0,0,0.15)] overflow-hidden">
+                <h2 className="text-xl sm:text-2xl font-bold text-[#5a4a3c] p-4 sm:p-6 border-b border-[#e6c8a8] bg-[#f0d9c0]">
+                  All Students in <span>{user?.institute_info?.name || "Org Name"}</span>
+                </h2>
+                {displayStudents.length === 0 ? (
+                    <motion.div
+                        variants={placeholderVariants}
+                        animate="pulse"
+                        className="flex flex-col items-center justify-center h-[50vh] sm:h-[60vh] text-[#7b5c4b]"
                     >
-                      <FiPlus className="text-4xl text-[#4a3a2c]" />
-                      <span className="text-base font-medium text-[#4a3a2c]">Add Student</span>
-                    </li>
-
-                    <AnimatePresence>
-                      {displayStudents.map((student, index) => (
-                          <motion.div
-                              key={student._id}
-                              custom={index}
-                              variants={cardVariants}
-                              initial="hidden"
-                              animate="visible"
-                              exit="exit"
-                              onClick={() => setSeeStdDetails({ stdDetails: student, show: true })}
-                              className="relative w-full max-w-[12rem] h-56 cursor-pointer bg-[#fdf5ec] border border-[#e7c6a5]/50 shadow-md rounded-xl p-4 hover:shadow-xl hover:scale-105 transition-all duration-300 flex flex-col items-center justify-center"
-                          >
-                            <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  deleteStudent(student._id);
-                                }}
-                                className="absolute top-2 right-2 text-[#9b8778] hover:text-[#4a3a2c] transition"
-                                aria-label="Delete Student"
+                      <p className="text-sm sm:text-base text-center">No students found. Adjust filters or add a new student.</p>
+                    </motion.div>
+                ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 p-3 sm:p-4 overflow-y-auto h-[50vh] sm:h-[60vh]">
+                      <motion.div
+                          variants={cardVariants}
+                          initial="hidden"
+                          animate="visible"
+                          onClick={() => setShowAddStd(true)}
+                          className="w-full max-w-[12rem] h-48 sm:h-56 cursor-pointer bg-[#f8ede3] border border-dashed border-[#e6c8a8] shadow-md rounded-xl p-3 sm:p-4 flex flex-col items-center space-y-2 sm:space-y-3 hover:shadow-lg hover:scale-105 transition-all duration-300 justify-center mx-auto"
+                      >
+                        <FiPlus className="text-3xl sm:text-4xl text-[#e0c4a8]" />
+                        <span className="text-sm sm:text-base font-medium text-[#5a4a3c]">Add Student</span>
+                      </motion.div>
+                      <AnimatePresence>
+                        {displayStudents.map((student, index) => (
+                            <motion.div
+                                key={student._id}
+                                custom={index}
+                                variants={cardVariants}
+                                initial="hidden"
+                                animate="visible"
+                                exit="exit"
+                                onClick={() => setSeeStdDetails({ stdDetails: student, show: true })}
+                                className="relative w-full max-w-[12rem] h-48 sm:h-56 cursor-pointer bg-[#f8ede3] border border-[#e6c8a8] shadow-md rounded-xl p-3 sm:p-4 hover:shadow-lg hover:scale-105 transition-all duration-300 flex flex-col items-center justify-center mx-auto"
                             >
-                              <AiOutlineClose size={20} />
-                            </button>
-                            <div className="flex flex-col items-center text-center space-y-3 mt-4">
-                              <img
-                                  src="https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png"
-                                  alt="Student Avatar"
-                                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border border-[#e7c6a5]/50"
-                                  loading="lazy"
-                              />
-                              <span className="text-base sm:text-lg font-medium text-[#4a3a2c] truncate w-full">
+                              <motion.button
+                                  whileHover={{ scale: 1.1, color: "#FF3B30" }}
+                                  whileTap={{ scale: 0.9 }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteStudent(student._id);
+                                  }}
+                                  className="absolute top-2 right-2 text-[#e0c4a8] hover:text-[#FF3B30] transition"
+                                  aria-label="Delete Student"
+                              >
+                                <AiOutlineClose size={16} sm={20} />
+                              </motion.button>
+                              <div className="flex flex-col items-center text-center space-y-2 sm:space-y-3 mt-4">
+                                <motion.img
+                                    src="https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png"
+                                    alt="Student Avatar"
+                                    className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover border border-[#e6c8a8]"
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ duration: 0.3 }}
+                                    loading="lazy"
+                                />
+                                <span className="text-sm sm:text-base font-medium text-[#5a4a3c] truncate w-full">
                             {student.name}
                           </span>
-                              <span className="text-[#9b8778] text-sm truncate w-full">{student.school_name}</span>
-                              <span className="text-[#9b8778] text-sm truncate w-full">Batch: {student.batchName}</span>
-                            </div>
-                          </motion.div>
+                                <span className="text-xs sm:text-sm text-[#7b5c4b] truncate w-full">{student.school_name}</span>
+                                <span className="text-xs sm:text-sm text-[#7b5c4b] truncate w-full">Batch: {student.batchName}</span>
+                              </div>
+                            </motion.div>
+                        ))}
+                      </AnimatePresence>
+                    </div>
+                )}
+              </div>
+            </WrapperCard>
+          </div>
+
+          {/* Filters */}
+          <div className="w-full lg:w-1/3">
+            <WrapperCard>
+              <div className="relative flex flex-col h-full bg-[#f8ede3] rounded-3xl shadow-[0_8px_24px_rgba(0,0,0,0.15)]">
+                <div className="text-xl sm:text-2xl font-bold text-[#5a4a3c] bg-[#f0d9c0] p-4 sm:p-6 rounded-t-lg">
+                  <h2>Filter Students</h2>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 p-3 sm:p-4 overflow-y-auto">
+                  <div>
+                    <label className="text-xs sm:text-sm font-medium text-[#5a4a3c]">Search by Name</label>
+                    <div className="relative">
+                      <FiSearch className="absolute top-2 sm:top-3 left-3 text-[#e0c4a8] w-4 h-4 sm:w-5 sm:h-5" />
+                      <input
+                          type="text"
+                          value={searchName}
+                          onChange={(e) => setSearchName(e.target.value)}
+                          placeholder="Enter student name"
+                          className="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-1.5 sm:py-2 border border-[#e6c8a8] bg-[#f0d9c0] rounded-lg text-sm sm:text-base text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] transition"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs sm:text-sm font-medium text-[#5a4a3c]">Batch</label>
+                    <select
+                        value={selectedBatch}
+                        onChange={(e) => {
+                          setSelectedBatch(e.target.value);
+                          setSelectedSubject("");
+                        }}
+                        className="w-full border border-[#e6c8a8] bg-[#f0d9c0] rounded-lg text-sm sm:text-base p-1.5 sm:p-2 text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] transition"
+                    >
+                      <option value="">All Batches</option>
+                      {batches.map((batch) => (
+                          <option key={batch._id} value={batch._id}>
+                            {batch.name} (Class {batch.forStandard})
+                          </option>
                       ))}
-                    </AnimatePresence>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs sm:text-sm font-medium text-[#5a4a3c]">Subject</label>
+                    <select
+                        value={selectedSubject}
+                        onChange={(e) => setSelectedSubject(e.target.value)}
+                        className="w-full border border-[#e6c8a8] bg-[#f0d9c0] rounded-lg text-sm sm:text-base p-1.5 sm:p-2 text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] transition"
+                    >
+                      <option value="">All Subjects</option>
+                      {uniqueSubjects.map((subject) => (
+                          <option key={subject} value={subject}>
+                            {subject.charAt(0).toUpperCase() + subject.slice(1)}
+                          </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs sm:text-sm font-medium text-[#5a4a3c]">Grade</label>
+                    <select
+                        value={selectedGrade}
+                        onChange={(e) => setSelectedGrade(e.target.value)}
+                        className="w-full border border-[#e6c8a8] bg-[#f0d9c0] rounded-lg text-sm sm:text-base p-1.5 sm:p-2 text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] transition"
+                    >
+                      <option value="">All Grades</option>
+                      {uniqueGrades.map((grade) => (
+                          <option key={grade} value={grade}>
+                            {grade}
+                          </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
-              </WrapperCard>
-            </div>
-
-            <div className="w-full md:w-[35%] h-full">
-              <WrapperCard>
-                <div className="flex flex-col h-full bg-white rounded-2xl shadow-lg p-6 overflow-y-auto border border-[#e7c6a5]/50">
-                  <h2 className="text-2xl font-bold text-[#4a3a2c] mb-6 bg-[#f5e8dc] p-4 rounded-t-lg">Filter Students</h2>
-                  <div className="flex flex-col gap-4">
-                    <div>
-                      <label className="text-sm font-medium text-[#4a3a2c]">Search by Name</label>
-                      <div className="relative">
-                        <FiSearch className="absolute top-3 left-3 text-[#9b8778]" />
-                        <input
-                            type="text"
-                            value={searchName}
-                            onChange={(e) => setSearchName(e.target.value)}
-                            placeholder="Enter student name"
-                            className="w-full pl-10 pr-4 py-2 border-2 border-[#e7c6a5]/50 rounded-xl text-[#4a3a2c] text-lg focus:outline-none focus:ring-2 focus:ring-[#e7c6a5] transition"
-                        />
-                      </div>
+                {seeStdDetails?.show && (
+                    <div className="absolute inset-0 z-50 p-3 sm:p-4 bg-[#f8ede3]/95 rounded-3xl overflow-y-auto shadow-xl">
+                      <StdDataDisplay
+                          seeStdDetails={seeStdDetails}
+                          setSeeStdDetails={setSeeStdDetails}
+                          onStudentEdited={() => setRerender((prev) => !prev)}
+                      />
                     </div>
-
-                    <div>
-                      <label className="text-sm font-medium text-[#4a3a2c]">Batch</label>
-                      <select
-                          value={selectedBatch}
-                          onChange={(e) => {
-                            setSelectedBatch(e.target.value);
-                            setSelectedSubject("");
-                          }}
-                          className="w-full border-2 border-[#e7c6a5]/50 rounded-xl text-lg p-2 text-[#4a3a2c] focus:outline-none focus:ring-2 focus:ring-[#e7c6a5] transition"
-                      >
-                        <option value="">All Batches</option>
-                        {batches.map((batch) => (
-                            <option key={batch._id} value={batch._id}>
-                              {batch.name} (Class {batch.forStandard})
-                            </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-medium text-[#4a3a2c]">Subject</label>
-                      <select
-                          value={selectedSubject}
-                          onChange={(e) => setSelectedSubject(e.target.value)}
-                          className="w-full border-2 border-[#e7c6a5]/50 rounded-xl text-lg p-2 text-[#4a3a2c] focus:outline-none focus:ring-2 focus:ring-[#e7c6a5] transition"
-                      >
-                        <option value="">All Subjects</option>
-                        {uniqueSubjects.map((subject) => (
-                            <option key={subject} value={subject}>
-                              {subject.charAt(0).toUpperCase() + subject.slice(1)}
-                            </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-medium text-[#4a3a2c]">Grade</label>
-                      <select
-                          value={selectedGrade}
-                          onChange={(e) => setSelectedGrade(e.target.value)}
-                          className="w-full border-2 border-[#e7c6a5]/50 rounded-xl text-lg p-2 text-[#4a3a2c] focus:outline-none focus:ring-2 focus:ring-[#e7c6a5] transition"
-                      >
-                        <option value="">All Grades</option>
-                        {uniqueGrades.map((grade) => (
-                            <option key={grade} value={grade}>
-                              {grade}
-                            </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  {seeStdDetails?.show && (
-                      <div className="mt-6">
-                        <StdDataDisplay
-                            seeStdDetails={seeStdDetails}
-                            setSeeStdDetails={setSeeStdDetails}
-                            onStudentEdited={() => setRerender((prev) => !prev)}
-                        />
-                      </div>
-                  )}
-                </div>
-              </WrapperCard>
-            </div>
+                )}
+              </div>
+            </WrapperCard>
           </div>
         </div>
 
@@ -241,7 +255,7 @@ const StudentData = () => {
                 setShowAddStd={setShowAddStd}
             />
         )}
-      </>
+      </div>
   );
 };
 

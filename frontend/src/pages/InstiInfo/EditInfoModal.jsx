@@ -3,6 +3,7 @@ import axiosInstance from "@/utilities/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import useFetchUser from "@/pages/useFetchUser.js";
 import { X } from "lucide-react";
+import { motion } from "framer-motion";
 
 const CLOUDINARY_UPLOAD_URL = "https://api.cloudinary.com/v1_1";
 
@@ -50,6 +51,13 @@ const EditInfoModal = ({ isOpen, onClose, initialData }) => {
 
     const cloudName = import.meta.env.VITE_CLOUD_NAME;
     const uploadPreset = import.meta.env.VITE_UPLOAD_PRESET;
+
+    // Animation variants
+    const modalVariants = {
+        hidden: { opacity: 0, scale: 0.95 },
+        show: { opacity: 1, scale: 1, transition: { duration: 0.2 } },
+        exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } },
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -218,21 +226,29 @@ const EditInfoModal = ({ isOpen, onClose, initialData }) => {
 
     return (
         <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex justify-center items-center z-50">
-            <div className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto m-4 p-6 space-y-5 border border-green-200">
-                <button
+            <motion.div
+                variants={modalVariants}
+                initial="hidden"
+                animate="show"
+                exit="exit"
+                className="relative bg-[#f8ede3] rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto m-4 p-6 space-y-5 border border-[#e6c8a8]"
+            >
+                <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={onClose}
-                    className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 focus:outline-none"
+                    className="absolute top-3 right-3 text-[#5a4a3c] hover:text-[#e0c4a8] focus:outline-none"
                     disabled={isSubmitting}
                 >
                     <X className="w-5 h-5"/>
-                </button>
+                </motion.button>
 
-                <h2 className="text-3xl font-extrabold text-center text-green-700 mb-6">
+                <h2 className="text-3xl font-extrabold text-center text-[#5a4a3c] mb-6">
                     Edit Institute Details
                 </h2>
 
                 {error && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
                         <span className="block sm:inline">{error}</span>
                     </div>
                 )}
@@ -241,10 +257,10 @@ const EditInfoModal = ({ isOpen, onClose, initialData }) => {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         {/* Admin Details */}
                         <div className="space-y-4">
-                            <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Admin Details</h3>
+                            <h3 className="text-lg font-semibold text-[#5a4a3c] border-b border-[#e6c8a8] pb-2">Admin Details</h3>
 
                             <div className="space-y-2">
-                                <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                                <label htmlFor="name" className="block text-sm font-medium text-[#7b5c4b]">
                                     Admin Name *
                                 </label>
                                 <input
@@ -256,12 +272,12 @@ const EditInfoModal = ({ isOpen, onClose, initialData }) => {
                                     onChange={handleChange}
                                     required
                                     disabled={isSubmitting}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 transition duration-150 ease-in-out disabled:opacity-50"
+                                    className="w-full px-4 py-2 border border-[#e6c8a8] rounded-lg focus:ring-[#e0c4a8] focus:border-[#e0c4a8] transition duration-150 ease-in-out bg-[#f0d9c0] text-[#5a4a3c] disabled:opacity-50"
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <label htmlFor="emailId" className="block text-sm font-medium text-gray-700">
+                                <label htmlFor="emailId" className="block text-sm font-medium text-[#7b5c4b]">
                                     Admin Email *
                                 </label>
                                 <input
@@ -273,12 +289,12 @@ const EditInfoModal = ({ isOpen, onClose, initialData }) => {
                                     onChange={handleChange}
                                     required
                                     disabled={isSubmitting}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 transition duration-150 ease-in-out disabled:opacity-50"
+                                    className="w-full px-4 py-2 border border-[#e6c8a8] rounded-lg focus:ring-[#e0c4a8] focus:border-[#e0c4a8] transition duration-150 ease-in-out bg-[#f0d9c0] text-[#5a4a3c] disabled:opacity-50"
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <label htmlFor="adminPicUpload" className="block text-sm font-medium text-gray-700">
+                                <label htmlFor="adminPicUpload" className="block text-sm font-medium text-[#7b5c4b]">
                                     Upload Admin Picture (Optional)
                                 </label>
                                 <input
@@ -287,17 +303,17 @@ const EditInfoModal = ({ isOpen, onClose, initialData }) => {
                                     accept="image/*"
                                     onChange={(e) => handleFileUpload(e, "adminPic")}
                                     disabled={isSubmitting || uploadingAdminPic}
-                                    className="w-full text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 transition duration-150 ease-in-out disabled:opacity-50"
+                                    className="w-full text-[#5a4a3c] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#e0c4a8] file:text-[#5a4a3c] hover:file:bg-[#d7b48f] transition duration-150 ease-in-out disabled:opacity-50"
                                 />
                                 {uploadingAdminPic && (
-                                    <p className="text-sm text-blue-600 mt-2">Uploading admin picture, please wait...</p>
+                                    <p className="text-sm text-[#5a4a3c] mt-2">Uploading admin picture, please wait...</p>
                                 )}
                                 {(localAdminPicPreview || formData.adminPicURL) && (
                                     <div className="mt-4 flex justify-center">
                                         <img
                                             src={localAdminPicPreview || formData.adminPicURL}
                                             alt="Admin Picture Preview"
-                                            className="h-28 w-28 object-cover border border-gray-300 rounded-md shadow-sm p-1 bg-white"
+                                            className="h-28 w-28 object-cover border border-[#e6c8a8] rounded-lg shadow-sm p-1 bg-[#f0d9c0]"
                                         />
                                     </div>
                                 )}
@@ -306,10 +322,10 @@ const EditInfoModal = ({ isOpen, onClose, initialData }) => {
 
                         {/* Institute Details */}
                         <div className="space-y-4">
-                            <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Institute Details</h3>
+                            <h3 className="text-lg font-semibold text-[#5a4a3c] border-b border-[#e6c8a8] pb-2">Institute Details</h3>
 
                             <div className="space-y-2">
-                                <label htmlFor="institute_info.name" className="block text-sm font-medium text-gray-700">
+                                <label htmlFor="institute_info.name" className="block text-sm font-medium text-[#7b5c4b]">
                                     Institute Name *
                                 </label>
                                 <input
@@ -321,12 +337,12 @@ const EditInfoModal = ({ isOpen, onClose, initialData }) => {
                                     onChange={handleChange}
                                     required
                                     disabled={isSubmitting}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 transition duration-150 ease-in-out disabled:opacity-50"
+                                    className="w-full px-4 py-2 border border-[#e6c8a8] rounded-lg focus:ring-[#e0c4a8] focus:border-[#e0c4a8] transition duration-150 ease-in-out bg-[#f0d9c0] text-[#5a4a3c] disabled:opacity-50"
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <label htmlFor="logoUpload" className="block text-sm font-medium text-gray-700">
+                                <label htmlFor="logoUpload" className="block text-sm font-medium text-[#7b5c4b]">
                                     Upload Institute Logo (Optional)
                                 </label>
                                 <input
@@ -335,24 +351,24 @@ const EditInfoModal = ({ isOpen, onClose, initialData }) => {
                                     accept="image/*"
                                     onChange={(e) => handleFileUpload(e, "logo")}
                                     disabled={isSubmitting || uploadingLogo}
-                                    className="w-full text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 transition duration-150 ease-in-out disabled:opacity-50"
+                                    className="w-full text-[#5a4a3c] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#e0c4a8] file:text-[#5a4a3c] hover:file:bg-[#d7b48f] transition duration-150 ease-in-out disabled:opacity-50"
                                 />
                                 {uploadingLogo && (
-                                    <p className="text-sm text-blue-600 mt-2">Uploading logo, please wait...</p>
+                                    <p className="text-sm text-[#5a4a3c] mt-2">Uploading logo, please wait...</p>
                                 )}
                                 {(localLogoPreview || formData.institute_info.logo_URL) && (
                                     <div className="mt-4 flex justify-center">
                                         <img
                                             src={localLogoPreview || formData.institute_info.logo_URL}
                                             alt="Institute Logo Preview"
-                                            className="h-28 w-28 object-cover border border-gray-300 rounded-md shadow-sm p-1 bg-white"
+                                            className="h-28 w-28 object-cover border border-[#e6c8a8] rounded-lg shadow-sm p-1 bg-[#f0d9c0]"
                                         />
                                     </div>
                                 )}
                             </div>
 
                             <div className="space-y-2">
-                                <label htmlFor="institute_info.contact_info.emailId" className="block text-sm font-medium text-gray-700">
+                                <label htmlFor="institute_info.contact_info.emailId" className="block text-sm font-medium text-[#7b5c4b]">
                                     Institute Contact Email *
                                 </label>
                                 <input
@@ -364,12 +380,12 @@ const EditInfoModal = ({ isOpen, onClose, initialData }) => {
                                     onChange={handleChange}
                                     required
                                     disabled={isSubmitting}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 transition duration-150 ease-in-out disabled:opacity-50"
+                                    className="w-full px-4 py-2 border border-[#e6c8a8] rounded-lg focus:ring-[#e0c4a8] focus:border-[#e0c4a8] transition duration-150 ease-in-out bg-[#f0d9c0] text-[#5a4a3c] disabled:opacity-50"
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <label htmlFor="institute_info.contact_info.phone_number" className="block text-sm font-medium text-gray-700">
+                                <label htmlFor="institute_info.contact_info.phone_number" className="block text-sm font-medium text-[#7b5c4b]">
                                     Institute Contact Phone *
                                 </label>
                                 <input
@@ -381,32 +397,36 @@ const EditInfoModal = ({ isOpen, onClose, initialData }) => {
                                     onChange={handleChange}
                                     required
                                     disabled={isSubmitting}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 transition duration-150 ease-in-out disabled:opacity-50"
+                                    className="w-full px-4 py-2 border border-[#e6c8a8] rounded-lg focus:ring-[#e0c4a8] focus:border-[#e0c4a8] transition duration-150 ease-in-out bg-[#f0d9c0] text-[#5a4a3c] disabled:opacity-50"
                                 />
                             </div>
                         </div>
                     </div>
 
                     <div className="flex gap-4 pt-4">
-                        <button
+                        <motion.button
                             type="submit"
                             onClick={handleSubmit}
                             disabled={uploadingAdminPic || uploadingLogo || isSubmitting}
-                            className="flex-1 bg-green-600 text-white py-2.5 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                            whileHover={{ scale: 1.05, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
+                            whileTap={{ scale: 0.95 }}
+                            className="flex-1 bg-[#e0c4a8] text-[#5a4a3c] py-2.5 rounded-lg hover:bg-[#d7b48f] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] focus:ring-offset-2 transition duration-150 ease-in-out font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isSubmitting ? "Saving..." : uploadingAdminPic || uploadingLogo ? "Uploading..." : "Save Changes"}
-                        </button>
-                        <button
+                        </motion.button>
+                        <motion.button
                             type="button"
                             onClick={onClose}
                             disabled={isSubmitting}
-                            className="flex-1 bg-gray-300 text-gray-700 py-2.5 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition duration-150 ease-in-out font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                            whileHover={{ scale: 1.05, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
+                            whileTap={{ scale: 0.95 }}
+                            className="flex-1 bg-[#e6c8a8] text-[#5a4a3c] py-2.5 rounded-lg hover:bg-[#d7b48f] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] focus:ring-offset-2 transition duration-150 ease-in-out font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             Cancel
-                        </button>
+                        </motion.button>
                     </div>
                 </div>
-            </div>
+            </motion.div>
         </div>
     );
 };

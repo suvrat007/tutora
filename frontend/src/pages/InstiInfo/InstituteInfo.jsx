@@ -54,13 +54,15 @@ const InstituteInfo = () => {
             <div className="max-w-7xl mx-auto space-y-6">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <h1 className="text-2xl font-bold text-[#4a3a2c]">Edit Info</h1>
-                        <button
+                        <h1 className="text-2xl font-bold text-[#5a4a3c]">Edit Info</h1>
+                        <motion.button
+                            whileHover={{ scale: 1.05, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
+                            whileTap={{ scale: 0.95 }}
                             onClick={() => setShowEditModal(true)}
-                            className="p-2 bg-[#fdf5ec] rounded-lg shadow border border-[#e7c6a5] hover:shadow-md transition"
+                            className="p-2 bg-[#e0c4a8] rounded-lg shadow border border-[#e6c8a8] hover:bg-[#d7b48f] transition"
                         >
-                            <PencilIcon className="w-5 h-5 text-[#4a3a2c]" />
-                        </button>
+                            <PencilIcon className="w-5 h-5 text-[#5a4a3c]" />
+                        </motion.button>
                     </div>
                 </div>
 
@@ -73,22 +75,22 @@ const InstituteInfo = () => {
                     {/* Admin Info */}
                     <motion.div variants={fadeInUp}>
                         <WrapperCard>
-                            <div className="flex gap-10 bg-[#fdf5ec] rounded-xl h-full items-center justify-center text-center p-4">
-                                <div className="rounded-2xl bg-[#e7c6a5] p-1 shadow-inner">
+                            <div className="flex gap-10 bg-[#f8ede3] rounded-2xl h-full items-center justify-center text-center p-4 border border-[#e6c8a8] shadow-[0_8px_24px_rgba(0,0,0,0.15)]">
+                                <div className="rounded-2xl bg-[#e0c4a8] p-1 shadow-inner">
                                     <img
                                         src={userData.adminPicURL}
                                         alt="User Avatar"
-                                        className="w-full h-full object-cover rounded-2xl border border-[#4a3a2c] bg-white"
+                                        className="w-full h-full object-cover rounded-2xl border border-[#e6c8a8] bg-[#f8ede3]"
                                     />
                                 </div>
                                 <div className="space-y-1">
-                                    <h2 className="text-lg font-semibold text-[#4a3a2c]">Admin</h2>
-                                    <p className="text-sm text-[#9b8778] flex items-center justify-center gap-2">
-                                        <Users className="w-4 h-4" />
+                                    <h2 className="text-lg font-semibold text-[#5a4a3c]">Admin</h2>
+                                    <p className="text-sm text-[#7b5c4b] flex items-center justify-center gap-2">
+                                        <Users className="w-4 h-4 text-[#e6c8a8]" />
                                         {userData.name}
                                     </p>
-                                    <p className="text-sm text-[#9b8778] flex items-center justify-center gap-2">
-                                        <Mail className="w-4 h-4" />
+                                    <p className="text-sm text-[#7b5c4b] flex items-center justify-center gap-2">
+                                        <Mail className="w-4 h-4 text-[#e6c8a8]" />
                                         {userData.emailId}
                                     </p>
                                 </div>
@@ -99,28 +101,25 @@ const InstituteInfo = () => {
                     {/* Logo Display */}
                     <motion.div variants={fadeInUp}>
                         <WrapperCard>
-                            <div className="flex justify-center items-center bg-[#fdf5ec] rounded-xl h-full p-6">
+                            <div className="flex justify-center items-center bg-[#f8ede3] rounded-2xl h-full p-6 border border-[#e6c8a8] shadow-[0_8px_24px_rgba(0,0,0,0.15)]">
                                 <div className="relative w-[90%] h-[90%]">
-                                    <div className="rounded-xl shadow-inner w-full h-full flex items-center justify-center">
+                                    <div className="rounded-2xl shadow-inner w-full h-full flex items-center justify-center">
                                         {instiData?.logo_URL ? (
                                             <img
                                                 src={instiData.logo_URL}
                                                 alt="Institute Logo"
-                                                className="h-full w-full object-cover rounded-xl border border-[#4a3a2c]"
+                                                className="h-full w-full object-cover rounded-2xl border border-[#e6c8a8]"
                                             />
                                         ) : (
-                                            <div className="w-full h-full flex items-center justify-center relative">
-                                                <div className="animate-ring w-14 h-14" style={{ animationDelay: '0s' }}></div>
-                                                <div className="animate-ring w-20 h-20" style={{ animationDelay: '0.5s' }}></div>
-                                                <div className="animate-ring w-24 h-24" style={{ animationDelay: '1s' }}></div>
-                                                <div className="z-10 bg-[#4a3a2c] text-white p-6 w-10 h-10 flex items-center justify-center rounded-full font-bold text-sm shadow-md">
+                                            <div className="w-full h-full flex items-center justify-center relative bg-[#e6c8a8] rounded-2xl">
+                                                <div className="z-10 bg-[#5a4a3c] text-white p-6 w-10 h-10 flex items-center justify-center rounded-full font-bold text-sm shadow-md">
                                                     Tutora
                                                 </div>
                                             </div>
                                         )}
                                     </div>
-                                    <div className="absolute -top-2 -right-2 w-7 h-7 bg-white border border-gray-300 rounded-full flex items-center justify-center shadow">
-                                        <GraduationCap className="w-4 h-4 text-[#4a3a2c]" />
+                                    <div className="absolute -top-2 -right-2 w-7 h-7 bg-[#f8ede3] border border-[#e6c8a8] rounded-full flex items-center justify-center shadow">
+                                        <GraduationCap className="w-4 h-4 text-[#e6c8a8]" />
                                     </div>
                                 </div>
                             </div>
@@ -130,10 +129,10 @@ const InstituteInfo = () => {
                     {/* Institute Info */}
                     <motion.div variants={fadeInUp}>
                         <WrapperCard>
-                            <div className="bg-[#fdf5ec] rounded-xl h-full p-4 flex flex-col justify-between">
+                            <div className="bg-[#f8ede3] rounded-2xl h-full p-4 flex flex-col justify-between border border-[#e6c8a8] shadow-[0_8px_24px_rgba(0,0,0,0.15)]">
                                 <div>
-                                    <h2 className="text-lg font-semibold text-[#4a3a2c] flex items-center gap-2 mb-4">
-                                        <Building2 className="w-5 h-5 text-[#4a3a2c]" />
+                                    <h2 className="text-lg font-semibold text-[#5a4a3c] flex items-center gap-2 mb-4">
+                                        <Building2 className="w-5 h-5 text-[#e6c8a8]" />
                                         Institute Info
                                     </h2>
                                     <div className="space-y-2 text-sm">
@@ -150,11 +149,11 @@ const InstituteInfo = () => {
                                             label: 'Email',
                                             value: instiData.contact_info.emailId || 'N/A'
                                         }].map(({ Icon, label, value }, idx) => (
-                                            <div key={idx} className="flex items-start gap-3 p-3 bg-[#fff] rounded-md border border-[#e7c6a5]">
-                                                <Icon className="w-4 h-4 text-[#4a3a2c] mt-0.5" />
+                                            <div key={idx} className="flex items-start gap-3 p-3 bg-[#f0d9c0] rounded-md border border-[#e6c8a8]">
+                                                <Icon className="w-4 h-4 text-[#e6c8a8] mt-0.5" />
                                                 <div>
-                                                    <p className="text-[#9b8778]">{label}</p>
-                                                    <p className="text-[#4a3a2c] font-medium">{value}</p>
+                                                    <p className="text-[#7b5c4b] text-xs">{label}</p>
+                                                    <p className="text-[#5a4a3c] font-medium">{value}</p>
                                                 </div>
                                             </div>
                                         ))}
@@ -172,13 +171,13 @@ const InstituteInfo = () => {
                     transition={{ delay: 0.3, duration: 0.5 }}
                 >
                     <WrapperCard>
-                        <div className="bg-[#fff] rounded-xl h-[600px] overflow-hidden flex flex-col">
-                            <div className="px-6 py-4 bg-[#f5e8dc] border-b border-[#e7c6a5]">
-                                <h2 className="text-xl font-semibold text-[#4a3a2c] flex items-center gap-2">
-                                    <Calendar className="w-5 h-5" />
+                        <div className="bg-[#f8ede3] rounded-2xl h-[600px] overflow-hidden flex flex-col border border-[#e6c8a8] shadow-[0_8px_24px_rgba(0,0,0,0.15)]">
+                            <div className="px-6 py-4 bg-[#f0d9c0] border-b border-[#e6c8a8]">
+                                <h2 className="text-xl font-semibold text-[#5a4a3c] flex items-center gap-2">
+                                    <Calendar className="w-5 h-5 text-[#e6c8a8]" />
                                     Class Management
                                 </h2>
-                                <p className="text-sm text-[#9b8778]">Overview of all scheduled classes</p>
+                                <p className="text-sm text-[#7b5c4b]">Overview of all scheduled classes</p>
                             </div>
                             <div className="flex-1 overflow-y-auto">
                                 <ClassesTable newClassLogs={newClassLogs} onUpdate={onUpdate} />

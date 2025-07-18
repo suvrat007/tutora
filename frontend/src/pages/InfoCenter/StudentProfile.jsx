@@ -238,9 +238,10 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
             </div>
 
             <div className="overflow-y-auto">
-                <div className="flex gap-6 h-64 mb-4">
-                    <WrapperCard className="flex-1">
-                        <div className="w-full h-full p-6 flex flex-col justify-between bg-[#f4e3d0] border-[#ddb892] rounded-2xl shadow-md">
+                <div className="sm:flex gap-6  sm:h-64 mb-4">
+                    <WrapperCard className="flex-1 ">
+                        <div
+                            className="w-full h-full p-6 flex flex-col justify-between bg-[#f8ede3] border-[#ddb892] rounded-2xl shadow-md">
                             <div>
                                 <h2 className="text-xl font-semibold text-[#4a3a2c] mb-4 flex items-center">
                                     <FaUser className="w-5 h-5 mr-2 text-[#6b4c3b]"/>
@@ -269,38 +270,43 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
                     </WrapperCard>
 
                     <WrapperCard className="flex-1">
-                        <div className="w-full h-full p-6 bg-[#f4e3d0] border-[#ddb892] rounded-2xl shadow-md">
+                        <div className="w-full h-full p-6 bg-[#f8ede3] border-[#ddb892] rounded-2xl shadow-md">
                             <h2 className="text-xl font-semibold text-[#4a3a2c] mb-4 flex items-center">
                                 <FaSchool className="w-5 h-5 mr-2 text-[#6b4c3b]"/>
                                 Personal Information
                             </h2>
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-3">
+                                <div className="space-y-2">
                                     <div>
                                         <span className="font-medium text-[#6b4c3b] block">School:</span>
                                         <span className="text-[#4a3a2c] text-sm">{student.school_name || 'N/A'}</span>
                                     </div>
                                     <div>
                                         <span className="font-medium text-[#6b4c3b] block">Admission Date:</span>
-                                        <span className="text-[#4a3a2c] text-sm">{formatDate(student.admission_date)}</span>
+                                        <span
+                                            className="text-[#4a3a2c] text-sm">{formatDate(student.admission_date)}</span>
                                     </div>
                                     <div>
                                         <span className="font-medium text-[#6b4c3b] block">Student Phone:</span>
-                                        <span className="text-[#4a3a2c] text-sm">{student.contact_info?.phoneNumbers?.student || 'N/A'}</span>
+                                        <span
+                                            className="text-[#4a3a2c] text-sm">{student.contact_info?.phoneNumbers?.student || 'N/A'}</span>
                                     </div>
                                 </div>
-                                <div className="space-y-3">
+                                <div className="space-y-2">
                                     <div>
                                         <span className="font-medium text-[#6b4c3b] block">Mom Phone:</span>
-                                        <span className="text-[#4a3a2c] text-sm">{student.contact_info?.phoneNumbers?.mom || 'N/A'}</span>
+                                        <span
+                                            className="text-[#4a3a2c] text-sm">{student.contact_info?.phoneNumbers?.mom || 'N/A'}</span>
                                     </div>
                                     <div>
                                         <span className="font-medium text-[#6b4c3b] block">Dad Phone:</span>
-                                        <span className="text-[#4a3a2c] text-sm">{student.contact_info?.phoneNumbers?.dad || 'N/A'}</span>
+                                        <span
+                                            className="text-[#4a3a2c] text-sm">{student.contact_info?.phoneNumbers?.dad || 'N/A'}</span>
                                     </div>
                                     <div>
                                         <span className="font-medium text-[#6b4c3b] block">Student Email:</span>
-                                        <span className="text-[#4a3a2c] text-sm">{student.contact_info?.emailIds?.student || 'N/A'}</span>
+                                        <span
+                                            className="text-[#4a3a2c] text-sm">{student.contact_info?.emailIds?.student || 'N/A'}</span>
                                     </div>
                                 </div>
                             </div>
@@ -308,7 +314,8 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
                     </WrapperCard>
 
                     <WrapperCard className="flex-1">
-                        <div className="w-full h-full p-6 flex flex-col items-center justify-center bg-[#f4e3d0] border-[#ddb892] rounded-2xl shadow-md">
+                        <div
+                            className="w-full h-full p-6 flex flex-col items-center justify-center bg-[#f8ede3] border-[#ddb892] rounded-2xl shadow-md">
                             <h2 className="text-xl font-semibold text-[#4a3a2c] mb-4">Attendance Summary</h2>
                             <AttendanceChart percentage={attendanceStats.percentage}/>
                             <div className="mt-4 text-center">
@@ -320,15 +327,17 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
                     </WrapperCard>
                 </div>
 
-                <div className="flex-1 overflow-auto max-h-[450px]">
+                <div className="flex-1 h-full">
                     <WrapperCard>
-                        <div className="w-full p-4 bg-[#f4e3d0] border-[#ddb892] rounded-2xl shadow-md">
-                            <div className="flex justify-between items-center mb-4">
+                        <div
+                            className="w-full h-full p-4 bg-[#f8ede3] border-[#ddb892] rounded-2xl shadow-md flex flex-col">
+                            <div
+                                className="sm:flex sm:flex-row flex flex-col justify-between items-center mb-4 flex-shrink-0">
                                 <h2 className="text-xl font-semibold text-[#4a3a2c] flex items-center">
                                     <FaCalendarAlt className="text-[#6b4c3b] mr-2"/>
                                     Attendance History
                                 </h2>
-                                <div className="flex gap-2">
+                                <div className="flex flex-wrap sm:flex-nowrap items-center justify-center mt-2 gap-2">
                                     <select
                                         value={statusFilter}
                                         onChange={(e) => setStatusFilter(e.target.value)}
@@ -358,43 +367,45 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
                                     </button>
                                 </div>
                             </div>
-
-                            <div className="overflow-x-auto">
-                                <table className="min-w-[600px] w-full text-sm text-left border-collapse">
-                                    <thead className="bg-[#d7b48f]/20 text-[#4a3a2c] font-semibold">
-                                    <tr>
-                                        <th className="p-3 border-b border-[#ddb892]">Sr No</th>
-                                        <th className="p-3 border-b border-[#ddb892]">Date</th>
-                                        <th className="p-3 border-b border-[#ddb892]">Subject</th>
-                                        <th className="p-3 border-b border-[#ddb892]">Status</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    {filteredAttendanceData.length > 0 ? (
-                                        filteredAttendanceData.map((entry, index) => (
-                                            <tr key={`${entry.date}-${entry.subjectName}-${index}`}
-                                                className="hover:bg-[#e7c6a5]/50">
-                                                <td className="p-3 border-b border-[#ddb892]">{index + 1}</td>
-                                                <td className="p-3 border-b border-[#ddb892]">{entry.date}</td>
-                                                <td className="p-3 border-b border-[#ddb892]">{entry.subjectName}</td>
-                                                <td className="p-3 border-b border-[#ddb892]">
-                                                    <StatusBadge status={entry.status}/>
+                            <div className="flex-1 overflow-y-auto h-full">
+                                <div className="overflow-x-auto">
+                                    <table className="min-w-[600px] w-full text-sm text-left border-collapse">
+                                        <thead
+                                            className="bg-[#d7b48f]/20 text-[#4a3a2c] font-semibold sticky top-0 z-10">
+                                        <tr>
+                                            <th className="p-3 border-b border-[#ddb892]">Sr No</th>
+                                            <th className="p-3 border-b border-[#ddb892]">Date</th>
+                                            <th className="p-3 border-b border-[#ddb892]">Subject</th>
+                                            <th className="p-3 border-b border-[#ddb892]">Status</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {filteredAttendanceData.length > 0 ? (
+                                            filteredAttendanceData.map((entry, index) => (
+                                                <tr key={`${entry.date}-${entry.subjectName}-${index}`}
+                                                    className="hover:bg-[#e7c6a5]/50">
+                                                    <td className="p-3 border-b border-[#ddb892]">{index + 1}</td>
+                                                    <td className="p-3 border-b border-[#ddb892]">{entry.date}</td>
+                                                    <td className="p-3 border-b border-[#ddb892]">{entry.subjectName}</td>
+                                                    <td className="p-3 border-b border-[#ddb892]">
+                                                        <StatusBadge status={entry.status}/>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={4} className="p-6 text-center text-[#6b4c3b]">
+                                                    <div className="flex flex-col items-center">
+                                                        <FaCalendarAlt className="text-4xl text-[#6b4c3b] mb-2"/>
+                                                        <p className="text-lg">No attendance data found</p>
+                                                        <p className="text-sm">Try adjusting filters</p>
+                                                    </div>
                                                 </td>
                                             </tr>
-                                        ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan={4} className="p-6 text-center text-[#6b4c3b]">
-                                                <div className="flex flex-col items-center">
-                                                    <FaCalendarAlt className="text-4xl text-[#6b4c3b] mb-2"/>
-                                                    <p className="text-lg">No attendance data found</p>
-                                                    <p className="text-sm">Try adjusting filters</p>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    )}
-                                    </tbody>
-                                </table>
+                                        )}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </WrapperCard>
