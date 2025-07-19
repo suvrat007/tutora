@@ -86,9 +86,9 @@ const CompleteInformationDisplay = () => {
   return (
       <div className="flex flex-col md:flex-row gap-6 p-4 overflow-y-auto w-full h-full">
         {/* Left Panel */}
-        <div className="grid grid-rows-2 gap-3 w-full sm:w-[50%]">
+        <div className="grid grid-rows-2 gap-3 w-full sm:w-[50%] max-h-full ">
           {/* Batches Overview */}
-          <WrapperCard className={'max-h-[300px]'}>
+          <WrapperCard>
             <Card className="w-full h-full  bg-[#f8ede3] text-[#4a3a2c] px-6 py-4 rounded-2xl flex flex-col gap-4 border border-[#ddb892]">
               <p className="text-lg font-semibold">Batches Overview</p>
               <div className="flex-1 overflow-y-auto pr-1 ">
@@ -137,7 +137,7 @@ const CompleteInformationDisplay = () => {
 
           {/* Attendance Summary */}
           <WrapperCard>
-            <Card className="w-full h-full justify-between bg-[#f8ede3] text-[#4a3a2c] p-4 rounded-2xl flex flex-col border border-[#ddb892]">
+            <Card className="w-full h-full overflow-y-auto sm:overflow-y-visible justify-between bg-[#f8ede3] text-[#4a3a2c] p-4 rounded-2xl flex flex-col border border-[#ddb892]">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-2">
                 <h2 className="text-lg font-semibold">Average Attendance</h2>
                 <div className="flex gap-2">
