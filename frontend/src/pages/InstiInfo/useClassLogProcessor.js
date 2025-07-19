@@ -22,7 +22,6 @@ const useClassLogProcessor = (classLogs, batches) => {
         // Use the current date as end date to include today
         const endDate = moment(); // July 13, 2025, 02:35 AM IST
 
-        // Process each class log
         const processedLogs = classLogs.map(log => {
             // Find corresponding batch
             const batch = batches.find(b => b._id.toString() === log.batch_id._id.toString());
@@ -41,13 +40,11 @@ const useClassLogProcessor = (classLogs, batches) => {
             const scheduleDays = subject.classSchedule.days;
             const scheduleTime = subject.classSchedule.time;
 
-            // Get earliest class date to start generating expected dates
             const earliestClass = log.classes.reduce((earliest, cls) => {
                 const classDate = moment(cls.date);
                 return earliest ? moment.min(earliest, classDate) : classDate;
             }, null) || moment().startOf('day');
 
-            // Generate all expected class dates using scheduled time
             const expectedDates = generateExpectedDates(
                 earliestClass,
                 endDate,
@@ -55,10 +52,7 @@ const useClassLogProcessor = (classLogs, batches) => {
                 scheduleTime
             );
 
-            // Debug: Log expected dates
-            console.log(`Expected dates for log ${log._id}:`, expectedDates);
 
-            // Create new classes array with all expected dates
             const newClasses = expectedDates.map(date => {
                 const existingClass = log.classes.find(cls =>
                     moment(cls.date).format('YYYY-MM-DD') === moment(date).format('YYYY-MM-DD')
@@ -73,7 +67,6 @@ const useClassLogProcessor = (classLogs, batches) => {
                     };
                 }
 
-                // Add missing class with scheduled time
                 return {
                     date,
                     hasHeld: false,
@@ -91,8 +84,6 @@ const useClassLogProcessor = (classLogs, batches) => {
             };
         });
 
-        // Debug: Log processed logs
-        console.log('Processed logs:', processedLogs);
         return processedLogs;
     }, [classLogs, batches]);
 };

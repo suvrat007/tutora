@@ -14,12 +14,12 @@ const useFetchStudents = () => {
     // Fetching students
     const fetchGroupedStudents = async () => {
         try {
-            console.log("useFetchStudents: Fetching grouped students");
+            // console.log("useFetchStudents: Fetching grouped students");
             const response = await axiosInstance.get("/api/student/get-students-grouped-by-batch", {
                 withCredentials: true,
             });
             const groupedStudents = response.data;
-            console.log("useFetchStudents: Grouped students fetched:", groupedStudents);
+            // console.log("useFetchStudents: Grouped students fetched:", groupedStudents);
             dispatch(setGroupedStudents(groupedStudents));
             setFetched(true); // Trigger fee processing in useEffect
         } catch (error) {
@@ -35,9 +35,7 @@ const useFetchStudents = () => {
         const processFeeData = async () => {
             if (!groupedStudents || !fetched) return;
 
-            console.log("useFetchStudents: Processing fee data");
             const feeData = await useFeeData(groupedStudents, batches);
-            console.log("useFetchStudents: Fee data processed:", feeData);
             dispatch(addFeeData(feeData));
         };
 

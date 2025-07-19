@@ -14,19 +14,14 @@ const useFeeData = async (groupedStudents, batches) => {
 
   // Call the backend to ensure all students have a fee status for the current month
   try {
-    console.log('useFeeData: Calling /api/students/ensure-current-month-fee-status');
     const response = await axiosInstance.post('/api/student/ensure-current-month-fee-status', {}, {
       withCredentials: true
     });
-    console.log('useFeeData: Fee status update response:', response.data);
 
-    // Refetch grouped students to ensure updated fee statuses
-    console.log('useFeeData: Refetching grouped students');
     const updatedResponse = await axiosInstance.get('/api/student/get-students-grouped-by-batch', {
       withCredentials: true
     });
     groupedStudents = updatedResponse.data || groupedStudents;
-    console.log('useFeeData: Updated groupedStudents:', groupedStudents);
   } catch (error) {
     console.error('useFeeData: Error ensuring current month fee status:', error.message, error.response?.data);
     // Proceed with existing data to avoid blocking

@@ -23,7 +23,6 @@ const Landing = () => {
     }, []);
 
     const handleNavigate = (path) => {
-        console.log("Navigating to:", path); // Debug navigation
         try {
             navigate(path);
         } catch (error) {

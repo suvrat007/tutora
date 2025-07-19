@@ -10,7 +10,7 @@ const useFetchAttendanceSummary =  () => {
             const response = await axiosInstance.get(`/api/student/attendance/summary`,{withCredentials:true});
             dispatch(addAttendanceSummary(response.data));
         } catch (error) {
-            console.log(error.message);
+            console.error(error.message)
         }
     };
     return getAttendanceSummary

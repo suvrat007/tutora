@@ -90,7 +90,7 @@ const OnboardingForm = ({ adminCreds }) => {
                 ...formData,
             }, { withCredentials: true });
 
-            console.log("Signup successful:", response.data);
+            // console.log("Signup successful:", response.data);
             await fetchUser();
             navigate("/main");
         } catch (err) {

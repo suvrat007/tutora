@@ -17,7 +17,7 @@ router.post("/add-new-batch",userAuth, async (req, res) => {
             normalized_name:normalized
         });
         await response.save();
-        console.log("Batch added:", response);
+        // console.log("Batch added:", response);
         return res.status(201).json({ message: "Batch added successfully", batch: response });
     } catch (error) {
         console.error(error);

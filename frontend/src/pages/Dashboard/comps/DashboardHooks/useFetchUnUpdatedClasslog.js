@@ -47,7 +47,7 @@ const useFetchUnUpdatedClasslog = (rerenderKey = false) => {
                 const allLogs = response.data;
                 const nowTime = getCurrentTimeString();
                 const todayDate = getTodayDate();
-                console.log(allLogs);
+                // console.log(allLogs);
                 const result = [];
 
                 allLogs.forEach(log => {

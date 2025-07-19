@@ -144,7 +144,7 @@ router.delete("/delete-student/:id", userAuth, async (req, res) => {
         const { id } = req.params;
         const adminId = req.user._id;
         const response = await Student.deleteOne({ adminId, _id: id });
-        console.log(response);
+        // console.log(response);
         return res.status(200).json(response);
     } catch (error) {
         console.error("Error deleting student:", error.message);

@@ -83,7 +83,7 @@ const TodaysClasses = () => {
                         { updates: updatesToSend },
                         { withCredentials: true }
                     );
-                    console.log("Class updates sent:", response.data);
+                    // console.log("Class updates sent:", response.data);
                 }
             } catch (err) {
                 console.error("Error details:", err.response?.data || err.message);
