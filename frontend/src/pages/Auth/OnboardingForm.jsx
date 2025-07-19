@@ -1,7 +1,11 @@
 import { useState } from "react";
 import axiosInstance from "@/utilities/axiosInstance";
 import { useNavigate } from "react-router-dom";
-import useFetchUser from "@/pages/useFetchUser.js"; // Assuming this hook is correctly implemented
+import useFetchUser from "@/pages/useFetchUser.js";
+import { motion } from "framer-motion";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const CLOUDINARY_UPLOAD_URL = "https://api.cloudinary.com/v1_1";
 
@@ -32,7 +36,7 @@ const OnboardingForm = ({ adminCreds }) => {
 
     const [uploading, setUploading] = useState(false);
     const [localPreview, setLocalPreview] = useState(null);
-    const [error, setError] = useState(null); // State for displaying errors
+    const [error, setError] = useState(null);
     const navigate = useNavigate();
 
     const cloudName = import.meta.env.VITE_CLOUD_NAME;
@@ -52,11 +56,14 @@ const OnboardingForm = ({ adminCreds }) => {
         setError(null);
 
         try {
+            if (!cloudName || !uploadPreset) {
+                throw new Error("Cloudinary configuration missing (cloudName or uploadPreset).");
+            }
             const url = await uploadToCloudinary(file, cloudName, uploadPreset);
             setFormData({ ...formData, logo_URL: url });
         } catch (err) {
             console.error("Cloudinary upload error:", err);
-            setError("Failed to upload logo. Please try again.");
+            setError("Failed to upload logo. Please check your Cloudinary configuration and try again.");
             setFormData({ ...formData, logo_URL: "" });
             setLocalPreview(null);
         } finally {
@@ -88,94 +95,106 @@ const OnboardingForm = ({ adminCreds }) => {
             navigate("/main");
         } catch (err) {
             console.error("Signup error:", err);
-            // Display a user-friendly error message
             const errorMessage = err.response?.data?.message || "An unexpected error occurred during signup.";
             setError(errorMessage);
         }
     };
 
     return (
-        <div className="flex justify-center items-center px-4 min-h-screen bg-gray-100">
-            <form onSubmit={handleSubmit} className="p-6 bg-white rounded-lg shadow-xl w-full max-w-md space-y-5 border border-green-200">
-                <h2 className="text-3xl font-extrabold text-center text-green-700 mb-6">Institute Onboarding</h2>
+        <div className="relative min-h-screen bg-gradient-to-br from-[#fdf5ec] to-[#f5e8dc] flex items-center justify-center px-4 sm:px-6 md:px-8 overflow-hidden">
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                className="relative z-10 w-full max-w-md sm:max-w-lg md:max-w-xl"
+            >
+                <Card className="rounded-2xl shadow-xl bg-[#f8ede3]/90 backdrop-blur-sm border border-[#e7c6a5]/50">
+                    <CardContent className="p-6 sm:p-8">
+                        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center text-[#4a3a2c] mb-6">
+                            Institute Onboarding
+                        </h2>
 
-                {error && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-                        <span className="block sm:inline">{error}</span>
-                    </div>
-                )}
+                        {error && (
+                            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md relative mb-4" role="alert">
+                                <span className="block sm:inline">{error}</span>
+                            </div>
+                        )}
 
-                <div className="space-y-3">
-                    <label htmlFor="instiName" className="block text-sm font-medium text-gray-700">Institute Name</label>
-                    <input
-                        id="instiName"
-                        type="text"
-                        name="instiName"
-                        placeholder="e.g., Green Valley School"
-                        value={formData.instiName}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 transition duration-150 ease-in-out"
-                    />
-                </div>
+                        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+                            <div className="space-y-2">
+                                <label htmlFor="instiName" className="block text-sm sm:text-base font-medium text-[#9b8778]">Institute Name</label>
+                                <Input
+                                    id="instiName"
+                                    type="text"
+                                    name="instiName"
+                                    placeholder="e.g., Green Valley School"
+                                    value={formData.instiName}
+                                    onChange={handleChange}
+                                    required
+                                    className="bg-[#f8ede3] border-[#e7c6a5] placeholder-[#9b8778] text-[#4a3a2c] focus:ring-[#e7c6a5] focus:border-[#e7c6a5]"
+                                />
+                            </div>
 
-                <div>
-                    <label htmlFor="logoUpload" className="block mb-1 text-sm font-medium text-gray-700">Upload Institute Logo (Optional)</label>
-                    <input
-                        id="logoUpload"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileUpload}
-                        className="w-full text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 transition duration-150 ease-in-out"
-                    />
-                    {uploading && <p className="text-sm text-blue-600 mt-2">Uploading logo, please wait...</p>}
-                    {(localPreview || formData.logo_URL) && (
-                        <div className="mt-4 flex justify-center">
-                            <img
-                                src={localPreview || formData.logo_URL}
-                                alt="Institute Logo Preview"
-                                className="h-28 w-28 object-contain border border-gray-300 rounded-md shadow-sm p-1 bg-white"
-                            />
-                        </div>
-                    )}
-                </div>
+                            <div>
+                                <label htmlFor="logoUpload" className="block mb-1 text-sm sm:text-base font-medium text-[#9b8778]">Upload Institute Logo (Optional)</label>
+                                <input
+                                    id="logoUpload"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleFileUpload}
+                                    className="w-full text-[#4a3a2c] file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm sm:file:text-base file:font-semibold file:bg-[#f8ede3] file:text-[#4a3a2c] hover:file:bg-[#e7c6a5]/20 transition duration-150 ease-in-out"
+                                />
+                                {uploading && <p className="text-sm sm:text-base text-[#4a3a2c] mt-2">Uploading logo, please wait...</p>}
+                                {(localPreview || formData.logo_URL) && (
+                                    <div className="mt-4 flex justify-center">
+                                        <img
+                                            src={localPreview || formData.logo_URL}
+                                            alt="Institute Logo Preview"
+                                            className="h-20 sm:h-24 md:h-28 w-20 sm:w-24 md:w-28 object-contain border border-[#e7c6a5]/50 rounded-md shadow-sm p-1 bg-[#f8ede3]"
+                                        />
+                                    </div>
+                                )}
+                            </div>
 
-                <div className="space-y-3">
-                    <label htmlFor="instituteEmailId" className="block text-sm font-medium text-gray-700">Institute Contact Email</label>
-                    <input
-                        id="instituteEmailId"
-                        type="email"
-                        name="instituteEmailId"
-                        placeholder="e.g., contact@institute.com"
-                        value={formData.instituteEmailId}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 transition duration-150 ease-in-out"
-                    />
-                </div>
+                            <div className="space-y-2">
+                                <label htmlFor="instituteEmailId" className="block text-sm sm:text-base font-medium text-[#9b8778]">Institute Contact Email</label>
+                                <Input
+                                    id="instituteEmailId"
+                                    type="email"
+                                    name="instituteEmailId"
+                                    placeholder="e.g., contact@institute.com"
+                                    value={formData.instituteEmailId}
+                                    onChange={handleChange}
+                                    required
+                                    className="bg-[#f8ede3] border-[#e7c6a5] placeholder-[#9b8778] text-[#4a3a2c] focus:ring-[#e7c6a5] focus:border-[#e7c6a5]"
+                                />
+                            </div>
 
-                <div className="space-y-3">
-                    <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">Institute Contact Phone</label>
-                    <input
-                        id="phoneNumber"
-                        type="text"
-                        name="phone_number"
-                        placeholder="e.g., +1234567890"
-                        value={formData.phone_number}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 transition duration-150 ease-in-out"
-                    />
-                </div>
+                            <div className="space-y-2">
+                                <label htmlFor="phoneNumber" className="block text-sm sm:text-base font-medium text-[#9b8778]">Institute Contact Phone</label>
+                                <Input
+                                    id="phoneNumber"
+                                    type="text"
+                                    name="phone_number"
+                                    placeholder="e.g., +1234567890"
+                                    value={formData.phone_number}
+                                    onChange={handleChange}
+                                    required
+                                    className="bg-[#f8ede3] border-[#e7c6a5] placeholder-[#9b8778] text-[#4a3a2c] focus:ring-[#e7c6a5] focus:border-[#e7c6a5]"
+                                />
+                            </div>
 
-                <button
-                    type="submit"
-                    className="w-full bg-green-600 text-white py-2.5 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out font-semibold text-lg"
-                    disabled={uploading} // Disable button while uploading
-                >
-                    {uploading ? "Uploading Logo..." : "Submit Onboarding"}
-                </button>
-            </form>
+                            <Button
+                                type="submit"
+                                className="w-full bg-[#4a3a2c] text-white py-2.5 rounded-md hover:bg-[#3e2f23] focus:outline-none focus:ring-2 focus:ring-[#e7c6a5] focus:ring-offset-2 transition duration-150 ease-in-out font-semibold text-base sm:text-lg"
+                                disabled={uploading}
+                            >
+                                {uploading ? "Uploading Logo..." : "Submit Onboarding"}
+                            </Button>
+                        </form>
+                    </CardContent>
+                </Card>
+            </motion.div>
         </div>
     );
 };

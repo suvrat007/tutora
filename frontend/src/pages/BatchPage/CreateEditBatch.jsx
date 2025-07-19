@@ -1,13 +1,25 @@
-import { AiOutlineClose, AiOutlinePlus, AiOutlineMinus } from "react-icons/ai";
-import { useState, useEffect } from "react";
-import axiosInstance from "../../utilities/axiosInstance.jsx";
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import axiosInstance from "@/utilities/axiosInstance";
 import useFetchBatches from "@/pages/useFetchBatches.js";
+import { AiOutlineClose, AiOutlinePlus, AiOutlineMinus } from "react-icons/ai";
+
+const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
+};
+
+const modalVariants = {
+    hidden: { opacity: 0, scale: 0.95 },
+    show: { opacity: 1, scale: 1, transition: { duration: 0.3, ease: "easeOut" } },
+    exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } },
+};
 
 const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 const CreateEditBatch = ({ onClose, onBatchCreated, onBatchUpdated, setRerender, batchToEdit }) => {
     const isEditMode = !!batchToEdit;
-    const  getBatches  = useFetchBatches();
+    const getBatches = useFetchBatches();
 
     const [batchData, setBatchData] = useState({
         name: "",
@@ -107,74 +119,98 @@ const CreateEditBatch = ({ onClose, onBatchCreated, onBatchUpdated, setRerender,
     };
 
     return (
-        <div className="fixed text-black inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div className="relative w-full max-w-3xl bg-white rounded-2xl shadow-xl overflow-hidden">
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
-                    <h2 className="text-lg font-bold">{isEditMode ? 'Edit Batch' : 'Create New Batch'}</h2>
-                    <button onClick={onClose} className="text-gray-500 hover:text-red-500">
+        <motion.div
+            variants={modalVariants}
+            initial="hidden"
+            animate="show"
+            exit="exit"
+            className="fixed text-[#5a4a3c] inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+        >
+            <div className="relative w-full max-w-3xl bg-[#f8ede3] rounded-3xl shadow-[0_8px_24px_rgba(0,0,0,0.15)] overflow-hidden">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-[#e6c8a8] bg-[#f0d9c0]">
+                    <h2 className="text-lg font-bold text-[#5a4a3c]">{isEditMode ? 'Edit Batch' : 'Create New Batch'}</h2>
+                    <motion.button
+                        whileHover={{ scale: 1.1, color: "#FF3B30" }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={onClose}
+                        className="text-[#e0c4a8] hover:text-[#FF3B30] transition"
+                    >
                         <AiOutlineClose size={24} />
-                    </button>
+                    </motion.button>
                 </div>
-                <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-6 space-y-6 max-h-[85vh] sm:max-h-[80vh] overflow-y-auto">
+                    <motion.div variants={fadeInUp} initial="hidden" animate="show" className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium mb-1">Batch Name *</label>
+                            <label className="block text-sm font-medium text-[#5a4a3c] mb-1">Batch Name *</label>
                             <input
                                 type="text"
                                 name="name"
                                 value={batchData.name}
                                 onChange={handleChange}
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                className="w-full border border-[#e6c8a8] bg-[#f8ede3] rounded-lg px-3 py-2 text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] transition"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-1">Standard / Grade *</label>
+                            <label className="block text-sm font-medium text-[#5a4a3c] mb-1">Standard / Grade *</label>
                             <input
                                 type="text"
                                 name="forStandard"
                                 value={batchData.forStandard}
                                 onChange={handleChange}
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                className="w-full border border-[#e6c8a8] bg-[#f8ede3] rounded-lg px-3 py-2 text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] transition"
                             />
                         </div>
-                    </div>
-                    <div>
+                    </motion.div>
+                    <motion.div variants={fadeInUp} initial="hidden" animate="show">
                         <div className="flex justify-between items-center mb-2">
-                            <h3 className="text-md font-semibold">Subjects</h3>
-                            <button onClick={addSubject} className="flex items-center text-blue-600 text-sm font-medium">
+                            <h3 className="text-md font-semibold text-[#5a4a3c]">Subjects</h3>
+                            <motion.button
+                                whileHover={{ scale: 1.05, color: "#34C759" }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={addSubject}
+                                className="flex items-center text-[#e0c4a8] hover:text-[#34C759] text-sm font-medium"
+                            >
                                 <AiOutlinePlus className="mr-1" /> Add Subject
-                            </button>
+                            </motion.button>
                         </div>
                         {batchData.subject.map((subj, i) => (
-                            <div key={i} className="border p-4 rounded-xl mb-4 relative">
-                                <button
+                            <motion.div
+                                key={i}
+                                variants={fadeInUp}
+                                initial="hidden"
+                                animate="show"
+                                className="border border-[#e6c8a8] p-4 rounded-xl mb-4 relative bg-[#f0d9c0]"
+                            >
+                                <motion.button
+                                    whileHover={{ scale: 1.1, color: "#FF3B30" }}
+                                    whileTap={{ scale: 0.95 }}
                                     onClick={() => removeSubject(i)}
-                                    className="absolute top-2 right-2 text-red-500"
+                                    className="absolute top-2 right-2 text-[#e0c4a8] hover:text-[#FF3B30] disabled:opacity-50"
                                     disabled={batchData.subject.length === 1}
                                 >
                                     <AiOutlineMinus size={20} />
-                                </button>
+                                </motion.button>
                                 <div>
-                                    <label className="block text-sm font-medium mb-1">Subject Name *</label>
+                                    <label className="block text-sm font-medium text-[#5a4a3c] mb-1">Subject Name *</label>
                                     <input
                                         type="text"
                                         name="name"
                                         value={subj.name}
                                         onChange={(e) => handleSubjectChange(i, e)}
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                        className="w-full border border-[#e6c8a8] bg-[#f8ede3] rounded-lg px-3 py-2 text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] transition"
                                     />
                                 </div>
                                 <div className="pt-4">
-                                    <label className="block text-sm font-medium mb-1">Class Time *</label>
+                                    <label className="block text-sm font-medium text-[#5a4a3c] mb-1">Class Time *</label>
                                     <input
                                         type="time"
                                         name="time"
                                         value={subj.classSchedule.time}
                                         onChange={(e) => handleScheduleChange(i, e)}
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-3"
+                                        className="w-full border border-[#e6c8a8] bg-[#f8ede3] rounded-lg px-3 py-2 text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] transition mb-3"
                                     />
-                                    <label className="block text-sm font-medium mb-1">Days *</label>
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                    <label className="block text-sm font-medium text-[#5a4a3c] mb-1">Days *</label>
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                                         {daysOfWeek.map(day => (
                                             <label key={day} className="flex items-center space-x-2">
                                                 <input
@@ -183,28 +219,29 @@ const CreateEditBatch = ({ onClose, onBatchCreated, onBatchUpdated, setRerender,
                                                     value={day}
                                                     checked={subj.classSchedule.days.includes(day)}
                                                     onChange={(e) => handleScheduleChange(i, e)}
-                                                    className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                                                    className="h-4 w-4 text-[#e0c4a8] border-[#e6c8a8] rounded"
                                                 />
-                                                <span className="text-sm">{day}</span>
+                                                <span className="text-sm text-[#5a4a3c]">{day}</span>
                                             </label>
                                         ))}
                                     </div>
                                 </div>
-                            </div>
+                            </motion.div>
                         ))}
+                    </motion.div>
+                    <div className="flex justify-end px-6 py-4 border-t border-[#e6c8a8] bg-[#f0d9c0] rounded-2xl">
+                        <motion.button
+                            whileHover={{ scale: 1.05, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={handleSubmit}
+                            className="bg-[#34C759] text-white px-6 py-2 rounded-lg hover:bg-[#2eb84c] transition"
+                        >
+                            {isEditMode ? 'Update Batch' : 'Create Batch'}
+                        </motion.button>
                     </div>
                 </div>
-                <div className="flex justify-end px-6 py-4 border-t border-gray-200 bg-gray-50">
-                    <button
-                        onClick={handleSubmit}
-                        className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
-                    >
-                        {isEditMode ? 'Update Batch' : 'Create Batch'}
-                    </button>
-                </div>
             </div>
-        </div>
+        </motion.div>
     );
 };
-
 export default CreateEditBatch;

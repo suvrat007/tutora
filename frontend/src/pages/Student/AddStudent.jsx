@@ -1,9 +1,23 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import axiosInstance from "../../utilities/axiosInstance.jsx";
 import { AiOutlineClose } from "react-icons/ai";
-import { useSelector } from "react-redux";
+import { motion } from "framer-motion";
 import useFetchStudents from "@/pages/useFetchStudents.js";
 import useFetchBatches from "@/pages/useFetchBatches.js";
+import { useSelector } from "react-redux";
+
+const modalVariants = {
+    hidden: { opacity: 0, scale: 0.95 },
+    show: { opacity: 1, scale: 1, transition: { duration: 0.3, ease: "easeOut" } },
+    exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } },
+};
+
+const placeholderVariants = {
+    pulse: {
+        scale: [1, 1.1, 1],
+        transition: { duration: 1.5, repeat: Infinity, ease: "easeInOut" },
+    },
+};
 
 const AddStudent = ({
                         setEdit,
@@ -26,17 +40,26 @@ const AddStudent = ({
             emailIds: { student: "", mom: "", dad: "" },
             phoneNumbers: { student: "", mom: "", dad: "" },
         },
-        fee_status: { amount: "" },
+        fee_status: {
+            amount: "",
+            feeStatus: [{ date: new Date(), paid: false }],
+        },
     });
     const [formErrors, setFormErrors] = useState({});
     const fetchStudents = useFetchStudents();
-    const fetchBatches = useFetchBatches()
-
-    console.log("setSeeStdDetails:", setSeeStdDetails); // Debug prop
+    const fetchBatches = useFetchBatches();
 
     useEffect(() => {
         if (isEditMode && existingStudentData) {
-            setNewStudent(existingStudentData);
+            setNewStudent({
+                ...existingStudentData,
+                fee_status: {
+                    amount: existingStudentData.fee_status?.amount || "",
+                    feeStatus: existingStudentData.fee_status?.feeStatus?.length > 0
+                        ? existingStudentData.fee_status.feeStatus
+                        : [{ date: new Date(existingStudentData.admission_date), paid: false }],
+                },
+            });
             setSelectedBatchId(existingStudentData.batchId || "");
         }
     }, [isEditMode, existingStudentData]);
@@ -74,7 +97,6 @@ const AddStudent = ({
     };
 
     const handleSubmit = async () => {
-        console.log("handleSubmit called, setSeeStdDetails:", setSeeStdDetails); // Debug
         if (!validateForm()) return;
 
         try {
@@ -82,18 +104,17 @@ const AddStudent = ({
                 ...newStudent,
                 batchId: selectedBatchId || null,
             };
-            console.log("Data sent to backend:", studentData); // Debug payload
 
             if (isEditMode && existingStudentData?._id) {
                 await axiosInstance.patch(`/api/student/update-student/${existingStudentData._id}`, studentData, {
                     withCredentials: true,
                 });
                 fetchStudents();
-                fetchBatches()
+                fetchBatches();
             } else {
                 await axiosInstance.post("/api/student/add-new-student", studentData, { withCredentials: true });
                 fetchStudents();
-                fetchBatches()
+                fetchBatches();
             }
 
             onStudentAdded();
@@ -135,26 +156,40 @@ const AddStudent = ({
     };
 
     const eligibleBatches = batches.filter((batch) => String(batch?.forStandard) === String(newStudent?.grade));
+
     return (
-        <div className="fixed text-black inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div className="relative w-[50em] bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in">
-                <div className="flex items-center justify-between p-4 border-b">
-                    <h2 className="text-lg font-semibold">{isEditMode ? "Edit Student" : "Add New Student"}</h2>
-                    <button
+        <motion.div
+            variants={modalVariants}
+            initial="hidden"
+            animate="show"
+            exit="exit"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-2 sm:p-4"
+        >
+            <div className="relative w-[90vw] sm:w-[80vw] md:w-[70vw] lg:w-[50em] bg-[#f8ede3] rounded-3xl shadow-[0_8px_24px_rgba(0,0,0,0.15)] overflow-hidden">
+                <div className="flex items-center justify-between p-3 sm:p-4 border-b border-[#e6c8a8]">
+                    <h2 className="text-base sm:text-lg md:text-xl font-semibold text-[#5a4a3c]">
+                        {isEditMode ? "Edit Student" : "Add New Student"}
+                    </h2>
+                    <motion.button
+                        whileHover={{ scale: 1.1, color: "#FF3B30" }}
+                        whileTap={{ scale: 0.9 }}
                         onClick={() => (isEditMode ? setEdit(false) : setShowAddStd(false))}
-                        className="text-gray-500 hover:text-red-500 transition"
+                        className="text-[#e0c4a8] hover:text-[#FF3B30] transition"
                     >
-                        <AiOutlineClose size={24} />
-                    </button>
+                        <AiOutlineClose className="w-5 h-5 sm:w-6 sm:h-6" />
+                    </motion.button>
                 </div>
 
-                <div className="p-4 space-y-6 max-h-[75vh] overflow-y-auto">
+                <div className="p-3 sm:p-4 space-y-4 sm:space-y-6 max-h-[80vh] overflow-y-auto">
                     {isEditMode && (
-                        <div className="flex items-center justify-center p-4">
-                            <img
+                        <div className="flex items-center justify-center p-3 sm:p-4">
+                            <motion.img
                                 src="https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png"
                                 alt="Student Avatar"
-                                className="w-40 rounded-full border"
+                                className="w-24 sm:w-32 md:w-40 rounded-full border border-[#e6c8a8]"
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.3 }}
                             />
                         </div>
                     )}
@@ -191,8 +226,8 @@ const AddStudent = ({
                         },
                     ].map((section) => (
                         <div key={section.title}>
-                            <p className="font-semibold mb-2">{section.title}</p>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <p className="font-semibold text-[#5a4a3c] text-sm sm:text-base mb-2">{section.title}</p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                 {section.fields.map(({ label, key, type, value }) => (
                                     <div key={key} className="flex flex-col">
                                         <input
@@ -200,9 +235,9 @@ const AddStudent = ({
                                             placeholder={label}
                                             value={value}
                                             onChange={(e) => handleChange(key, e.target.value)}
-                                            className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            className="border border-[#e6c8a8] bg-[#f0d9c0] rounded-lg px-3 py-1.5 sm:py-2 text-sm sm:text-base text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] transition"
                                         />
-                                        {formErrors[key] && <p className="text-red-500 text-sm">{formErrors[key]}</p>}
+                                        {formErrors[key] && <p className="text-red-500 text-xs sm:text-sm mt-1">{formErrors[key]}</p>}
                                     </div>
                                 ))}
                             </div>
@@ -210,37 +245,47 @@ const AddStudent = ({
                     ))}
 
                     <div>
-                        <p className="font-semibold mb-2">Choose Batch to add student in (Optional)</p>
-                        <select
-                            value={selectedBatchId}
-                            onChange={(e) => {
-                                setSelectedBatchId(e.target.value);
-                                setNewStudent((prev) => ({
-                                    ...prev,
-                                    subjectId: [],
-                                }));
-                            }}
-                            className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            <option value="">No Batch / Deselect</option>
-                            {eligibleBatches.map((batch) => (
-                                <option key={batch._id} value={batch._id}>
-                                    {batch.name} (Class {batch.forStandard})
-                                </option>
-                            ))}
-                        </select>
-                        {formErrors.batch && <p className="text-red-500 text-sm">{formErrors.batch}</p>}
-                        {formErrors.batchGradeMismatch && <p className="text-red-500 text-sm">{formErrors.batchGradeMismatch}</p>}
+                        <p className="font-semibold text-[#5a4a3c] text-sm sm:text-base mb-2">Choose Batch to add student in (Optional)</p>
+                        {eligibleBatches.length === 0 ? (
+                            <motion.div
+                                variants={placeholderVariants}
+                                animate="pulse"
+                                className="flex flex-col items-center justify-center h-12 sm:h-15 text-[#7b5c4b]"
+                            >
+                                <p className="text-xs sm:text-sm">No batches available for this grade</p>
+                            </motion.div>
+                        ) : (
+                            <select
+                                value={selectedBatchId}
+                                onChange={(e) => {
+                                    setSelectedBatchId(e.target.value);
+                                    setNewStudent((prev) => ({
+                                        ...prev,
+                                        subjectId: [],
+                                    }));
+                                }}
+                                className="w-full border border-[#e6c8a8] bg-[#f0d9c0] rounded-lg px-3 py-1.5 sm:py-2 text-sm sm:text-base text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] transition"
+                            >
+                                <option value="">No Batch / Deselect</option>
+                                {eligibleBatches.map((batch) => (
+                                    <option key={batch._id} value={batch._id}>
+                                        {batch.name} (Class {batch.forStandard})
+                                    </option>
+                                ))}
+                            </select>
+                        )}
+                        {formErrors.batch && <p className="text-red-500 text-xs sm:text-sm mt-1">{formErrors.batch}</p>}
+                        {formErrors.batchGradeMismatch && <p className="text-red-500 text-xs sm:text-sm mt-1">{formErrors.batchGradeMismatch}</p>}
                     </div>
 
                     {selectedBatchId && (
                         <div className="mt-4">
-                            <p className="font-semibold mb-2">Select Subjects for this student</p>
-                            <div className="grid grid-cols-2 gap-3">
+                            <p className="font-semibold text-[#5a4a3c] text-sm sm:text-base mb-2">Select Subjects for this student</p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                                 {batches
                                     .find((batch) => batch._id === selectedBatchId)
                                     ?.subject?.map((subject) => (
-                                        <label key={subject._id} className="flex items-center space-x-2 text-gray-700">
+                                        <label key={subject._id} className="flex items-center space-x-2 text-[#7b5c4b] text-xs sm:text-sm">
                                             <input
                                                 type="checkbox"
                                                 value={subject._id}
@@ -255,27 +300,37 @@ const AddStudent = ({
                                                         };
                                                     });
                                                 }}
-                                                className="form-checkbox h-4 w-4 text-blue-500"
+                                                className="form-checkbox h-4 w-4 sm:h-5 sm:w-5 text-[#e0c4a8]"
                                             />
                                             <span>{subject.name}</span>
                                         </label>
                                     ))}
                             </div>
-                            {formErrors.subjectId && <p className="text-red-500 text-sm">{formErrors.subjectId}</p>}
+                            {formErrors.subjectId && <p className="text-red-500 text-xs sm:text-sm mt-1">{formErrors.subjectId}</p>}
                         </div>
                     )}
 
-                    <div className="flex justify-end">
-                        <button
+                    <div className="flex justify-end gap-3 sm:gap-4 pt-3 sm:pt-4">
+                        <motion.button
+                            whileHover={{ scale: 1.05, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
+                            whileTap={{ scale: 0.95 }}
                             onClick={handleSubmit}
-                            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+                            className="bg-[#e0c4a8] text-[#5a4a3c] px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-[#d7b48f] transition shadow-md text-sm sm:text-base"
                         >
                             {isEditMode ? "Update Student" : "Add Student"}
-                        </button>
+                        </motion.button>
+                        <motion.button
+                            whileHover={{ scale: 1.05, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => (isEditMode ? setEdit(false) : setShowAddStd(false))}
+                            className="bg-[#e6c8a8] text-[#5a4a3c] px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-[#d7b48f] transition shadow-md text-sm sm:text-base"
+                        >
+                            Cancel
+                        </motion.button>
                     </div>
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 };
 

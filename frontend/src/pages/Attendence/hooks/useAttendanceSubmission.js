@@ -3,7 +3,8 @@ import axiosInstance from "@/utilities/axiosInstance.jsx";
 
 export const useAttendanceSubmission = (
     batches,
-    fetchAllClassLogs,fetchAttendance,
+    fetchAllClassLogs,
+    fetchAttendance,
     setLoading,
     setError,
     setSuccess
@@ -26,10 +27,6 @@ export const useAttendanceSubmission = (
                 return setError(errorMessage);
             }
 
-            if (!presentIds.size) {
-                return setError("No students marked present");
-            }
-
             setLoading(true);
 
             const selectedBatch = batches.find((b) => b.name === batchName);
@@ -41,14 +38,14 @@ export const useAttendanceSubmission = (
                     batch_id: selectedBatch._id,
                     subject_id: selectedSubject._id,
                     date,
-                    presentIds: [...presentIds],
+                    presentIds: [...presentIds] || [],
                 },
                 { withCredentials: true }
             );
 
             setSuccess(res.data.message || "Attendance marked successfully");
             await fetchAllClassLogs();
-            await fetchAttendance()
+            await fetchAttendance();
             refetchStudents();
         } catch (err) {
             console.error(err);
@@ -56,7 +53,7 @@ export const useAttendanceSubmission = (
         } finally {
             setLoading(false);
         }
-    }, [batches, fetchAttendance,fetchAllClassLogs, setLoading, setError, setSuccess]);
+    }, [batches, fetchAttendance, fetchAllClassLogs, setLoading, setError, setSuccess]);
 
     return { submit };
 };

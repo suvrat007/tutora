@@ -3,11 +3,10 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const Student = require("../models/Student.js");
 const Batch = require("../models/Batch.js");
-const userAuth  =require("../middleware/userAuth.js");
-
+const userAuth = require("../middleware/userAuth.js");
 
 router.post("/add-new-student", userAuth, async (req, res) => {
-    const { contact_info, batchId } = req.body;
+    const { contact_info, batchId, fee_status } = req.body;
     const adminId = req.user._id;
 
     try {
@@ -31,7 +30,11 @@ router.post("/add-new-student", userAuth, async (req, res) => {
 
         const studentData = {
             adminId,
-            ...req.body
+            ...req.body,
+            fee_status: {
+                amount: fee_status?.amount || 0,
+                feeStatus: fee_status?.feeStatus || [{ date: new Date(), paid: false }]
+            }
         };
 
         if (!batchId) {
@@ -51,7 +54,6 @@ router.post("/add-new-student", userAuth, async (req, res) => {
         return res.status(500).json({ message: "Failed to add student", error: error.message });
     }
 });
-
 
 router.get("/get-all-students-of-institute", userAuth, async (req, res) => {
     try {
@@ -137,23 +139,23 @@ router.get("/get-students-grouped-by-batch", userAuth, async (req, res) => {
     }
 });
 
-
-
-router.delete("/delete-student/:id",userAuth, async (req, res) => {
+router.delete("/delete-student/:id", userAuth, async (req, res) => {
     try {
         const { id } = req.params;
         const adminId = req.user._id;
-        const response = await Student.deleteOne({ adminId ,_id: id });
+        const response = await Student.deleteOne({ adminId, _id: id });
         console.log(response);
-        return res.status(200).json(response.data);
-    }catch(error){
+        return res.status(200).json(response);
+    } catch (error) {
         console.error("Error deleting student:", error.message);
+        return res.status(500).json({ message: "Failed to delete student", error: error.message });
     }
-})
+});
 
 router.patch("/update-student/:id", userAuth, async (req, res) => {
     const { id } = req.params;
     const adminId = req.user._id;
+    const updateData = req.body;
 
     try {
         const student = await Student.findById(id);
@@ -161,12 +163,59 @@ router.patch("/update-student/:id", userAuth, async (req, res) => {
             return res.status(404).json({ message: "Student not found or unauthorized" });
         }
 
-        const updated = await Student.findByIdAndUpdate(id, req.body, { new: true });
-        res.status(200).json(updated);
+        const updatedFields = {
+            ...updateData,
+            name: updateData.name ?? student.name,
+            address: updateData.address ?? student.address,
+            grade: updateData.grade ?? student.grade,
+            school_name: updateData.school_name ?? student.school_name,
+            contact_info: {
+                emailIds: {
+                    student: updateData.contact_info?.emailIds?.student ?? student.contact_info.emailIds.student,
+                    mom: updateData.contact_info?.emailIds?.mom ?? student.contact_info.emailIds.mom,
+                    dad: updateData.contact_info?.emailIds?.dad ?? student.contact_info.emailIds.dad
+                },
+                phoneNumbers: {
+                    student: updateData.contact_info?.phoneNumbers?.student ?? student.contact_info.phoneNumbers.student,
+                    mom: updateData.contact_info?.phoneNumbers?.mom ?? student.contact_info.phoneNumbers.mom,
+                    dad: updateData.contact_info?.phoneNumbers?.dad ?? student.contact_info.phoneNumbers.dad
+                }
+            },
+            fee_status: {
+                amount: updateData.fee_status?.amount ?? student.fee_status.amount,
+                feeStatus: updateData.fee_status?.feeStatus ?? (student.fee_status.feeStatus?.length > 0
+                    ? student.fee_status.feeStatus
+                    : [{ date: student.admission_date, paid: false }])
+            }
+        };
+
+        if (updateData.batchId === null || updateData.batchId === undefined) {
+            updatedFields.batchId = null;
+        } else if (updateData.batchId) {
+            updatedFields.batchId = updateData.batchId;
+        }
+
+        if (updateData.subjectId !== undefined) {
+            updatedFields.subjectId = Array.isArray(updateData.subjectId) ? updateData.subjectId : student.subjectId;
+        }
+
+        const updatedStudent = await Student.findByIdAndUpdate(
+            id,
+            { $set: updatedFields },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedStudent) {
+            return res.status(404).json({ message: "Student not found" });
+        }
+
+        res.status(200).json(updatedStudent);
     } catch (error) {
+        console.error("Error updating student:", error);
         res.status(500).json({ message: "Error updating student", error: error.message });
     }
 });
+
 
 router.get('/attendance/summary', userAuth, async (req, res) => {
     try {
@@ -174,9 +223,8 @@ router.get('/attendance/summary', userAuth, async (req, res) => {
             return res.status(401).json({ message: 'Unauthorized: User not authenticated' });
         }
         const adminId = req.user._id;
-        const studentId = req.query.studentId; // Accept studentId as query parameter
+        const studentId = req.query.studentId;
 
-        // Build match stage
         const matchStage = { adminId };
         if (studentId) {
             matchStage._id = mongoose.Types.ObjectId(studentId);
@@ -184,210 +232,17 @@ router.get('/attendance/summary', userAuth, async (req, res) => {
 
         const summary = await Student.aggregate([
             { $match: matchStage },
-            // Unwind subjectId to process each subject
-            { $unwind: { path: '$subjectId', preserveNullAndEmptyArrays: true } },
-
-            // Lookup batch details to get subject info
-            {
-                $lookup: {
-                    from: 'batches',
-                    localField: 'batchId',
-                    foreignField: '_id',
-                    as: 'batchInfo',
-                },
-            },
-            {
-                $unwind: { path: '$batchInfo', preserveNullAndEmptyArrays: true },
-            },
-            {
-                $addFields: {
-                    subjectInfo: {
-                        $arrayElemAt: [
-                            {
-                                $filter: {
-                                    input: { $ifNull: ['$batchInfo.subject', []] },
-                                    as: 'subj',
-                                    cond: { $eq: ['$$subj._id', '$subjectId'] },
-                                },
-                            },
-                            0,
-                        ],
-                    },
-                },
-            },
-
-            // Filter out students with invalid batch or subject
-            {
-                $match: {
-                    $and: [
-                        { batchId: { $ne: null } },
-                        { subjectId: { $ne: null } },
-                        { 'subjectInfo._id': { $exists: true } },
-                    ],
-                },
-            },
-
-            // Lookup attendance data from ClassLog
-            {
-                $lookup: {
-                    from: 'classlogs',
-                    let: { studentId: '$_id', batchId: '$batchId', subjectId: '$subjectId' },
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: {
-                                    $and: [
-                                        { $eq: ['$adminId', adminId] },
-                                        { $eq: ['$batch_id', '$$batchId'] },
-                                        { $eq: ['$subject_id', '$$subjectId'] },
-                                    ],
-                                },
-                            },
-                        },
-                        { $unwind: { path: '$classes', preserveNullAndEmptyArrays: true } },
-                        {
-                            $match: {
-                                $expr: {
-                                    $and: [
-                                        { $eq: ['$classes.updated', true] },
-                                        { $eq: ['$classes.hasHeld', true] },
-                                    ],
-                                },
-                            },
-                        },
-                        { $unwind: { path: '$classes.attendance', preserveNullAndEmptyArrays: true } },
-                        {
-                            $match: {
-                                $expr: {
-                                    $eq: ['$classes.attendance.studentIds', '$$studentId'],
-                                },
-                            },
-                        },
-                        {
-                            $group: {
-                                _id: null,
-                                attendedClasses: { $sum: 1 },
-                            },
-                        },
-                    ],
-                    as: 'attendance',
-                },
-            },
-            {
-                $unwind: { path: '$attendance', preserveNullAndEmptyArrays: true },
-            },
-
-            // Lookup total classes held (updated: true, hasHeld: true)
-            {
-                $lookup: {
-                    from: 'classlogs',
-                    let: { batchId: '$batchId', subjectId: '$subjectId' },
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: {
-                                    $and: [
-                                        { $eq: ['$adminId', adminId] },
-                                        { $eq: ['$batch_id', '$$batchId'] },
-                                        { $eq: ['$subject_id', '$$subjectId'] },
-                                    ],
-                                },
-                            },
-                        },
-                        { $unwind: { path: '$classes', preserveNullAndEmptyArrays: true } },
-                        {
-                            $match: {
-                                $expr: {
-                                    $and: [
-                                        { $eq: ['$classes.updated', true] },
-                                        { $eq: ['$classes.hasHeld', true] },
-                                    ],
-                                },
-                            },
-                        },
-                        { $count: 'totalClasses' },
-                    ],
-                    as: 'tc',
-                },
-            },
-            {
-                $unwind: { path: '$tc', preserveNullAndEmptyArrays: true },
-            },
-
-            // Group by student to collect subjects
-            {
-                $group: {
-                    _id: '$_id',
-                    studentName: { $first: '$name' },
-                    subjects: {
-                        $push: {
-                            subjectId: '$subjectId',
-                            batchId: '$batchId',
-                            subjectName: { $ifNull: ['$subjectInfo.name', 'Unknown'] },
-                            attended: { $ifNull: ['$attendance.attendedClasses', 0] },
-                            total: { $ifNull: ['$tc.totalClasses', 0] },
-                            percentage: {
-                                $cond: {
-                                    if: { $eq: [{ $ifNull: ['$tc.totalClasses', 0] }, 0] },
-                                    then: 0,
-                                    else: {
-                                        $round: [
-                                            {
-                                                $multiply: [
-                                                    { $divide: [{ $ifNull: ['$attendance.attendedClasses', 0] }, '$tc.totalClasses'] },
-                                                    100,
-                                                ],
-                                            },
-                                            2,
-                                        ],
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-            },
-
-            // Final projection
+            // Include admission_date in the projection
             {
                 $project: {
-                    _id: 0,
-                    studentId: '$_id',
-                    studentName: 1,
-                    subjects: 1,
-                },
+                    adminId: 1,
+                    batchId: 1,
+                    subjectId: 1,
+                    name: 1,
+                    admission_date: 1
+                }
             },
-        ]);
-
-        if (!summary.length) {
-            return res.status(200).json({ message: 'No attendance data found', data: [] });
-        }
-
-        return res.status(200).json({ data: summary });
-    } catch (error) {
-        console.error('Attendance summary error:', error);
-        return res.status(500).json({ message: 'Failed to fetch attendance summary', error: error.message });
-    }
-});router.get('/attendance/summary', userAuth, async (req, res) => {
-    try {
-        if (!req.user || !req.user._id) {
-            return res.status(401).json({ message: 'Unauthorized: User not authenticated' });
-        }
-        const adminId = req.user._id;
-        const studentId = req.query.studentId; // Accept studentId as query parameter
-
-        // Build match stage
-        const matchStage = { adminId };
-        if (studentId) {
-            matchStage._id = mongoose.Types.ObjectId(studentId);
-        }
-
-        const summary = await Student.aggregate([
-            { $match: matchStage },
-            // Unwind subjectId to process each subject
             { $unwind: { path: '$subjectId', preserveNullAndEmptyArrays: true } },
-
-            // Lookup batch details to get subject info
             {
                 $lookup: {
                     from: 'batches',
@@ -415,8 +270,6 @@ router.get('/attendance/summary', userAuth, async (req, res) => {
                     },
                 },
             },
-
-            // Filter out students with invalid batch or subject
             {
                 $match: {
                     $and: [
@@ -426,12 +279,10 @@ router.get('/attendance/summary', userAuth, async (req, res) => {
                     ],
                 },
             },
-
-            // Lookup attendance data from ClassLog
             {
                 $lookup: {
                     from: 'classlogs',
-                    let: { studentId: '$_id', batchId: '$batchId', subjectId: '$subjectId' },
+                    let: { studentId: '$_id', batchId: '$batchId', subjectId: '$subjectId', admissionDate: '$admission_date' },
                     pipeline: [
                         {
                             $match: {
@@ -451,6 +302,8 @@ router.get('/attendance/summary', userAuth, async (req, res) => {
                                     $and: [
                                         { $eq: ['$classes.updated', true] },
                                         { $eq: ['$classes.hasHeld', true] },
+                                        // Filter classes on or after admission_date
+                                        { $gte: ['$classes.date', { $dateToString: { format: '%Y-%m-%d', date: '$$admissionDate' } }] },
                                     ],
                                 },
                             },
@@ -476,12 +329,10 @@ router.get('/attendance/summary', userAuth, async (req, res) => {
             {
                 $unwind: { path: '$attendance', preserveNullAndEmptyArrays: true },
             },
-
-            // Lookup total classes held (updated: true, hasHeld: true)
             {
                 $lookup: {
                     from: 'classlogs',
-                    let: { batchId: '$batchId', subjectId: '$subjectId' },
+                    let: { batchId: '$batchId', subjectId: '$subjectId', admissionDate: '$admission_date' },
                     pipeline: [
                         {
                             $match: {
@@ -501,6 +352,8 @@ router.get('/attendance/summary', userAuth, async (req, res) => {
                                     $and: [
                                         { $eq: ['$classes.updated', true] },
                                         { $eq: ['$classes.hasHeld', true] },
+                                        // Filter classes on or after admission_date
+                                        { $gte: ['$classes.date', { $dateToString: { format: '%Y-%m-%d', date: '$$admissionDate' } }] },
                                     ],
                                 },
                             },
@@ -513,8 +366,6 @@ router.get('/attendance/summary', userAuth, async (req, res) => {
             {
                 $unwind: { path: '$tc', preserveNullAndEmptyArrays: true },
             },
-
-            // Group by student to collect subjects
             {
                 $group: {
                     _id: '$_id',
@@ -547,8 +398,6 @@ router.get('/attendance/summary', userAuth, async (req, res) => {
                     },
                 },
             },
-
-            // Final projection
             {
                 $project: {
                     _id: 0,
@@ -569,4 +418,87 @@ router.get('/attendance/summary', userAuth, async (req, res) => {
         return res.status(500).json({ message: 'Failed to fetch attendance summary', error: error.message });
     }
 });
-module.exports=router
+
+router.post("/bulk-update-fee-status", userAuth, async (req, res) => {
+    const { studentIds, paid, date } = req.body;
+
+    try {
+        const students = await Student.find({ _id: { $in: studentIds } });
+
+        if (students.length !== studentIds.length) {
+            return res.status(400).json({ error: "Some student IDs are invalid" });
+        }
+
+        const targetMonth = new Date(date).getMonth();
+        const targetYear = new Date(date).getFullYear();
+
+        await Promise.all(
+            students.map(async (student) => {
+                student.fee_status.feeStatus = student.fee_status.feeStatus.filter((status) => {
+                    const statusDate = new Date(status.date);
+                    return (
+                        statusDate.getMonth() !== targetMonth ||
+                        statusDate.getFullYear() !== targetYear
+                    );
+                });
+
+                student.fee_status.feeStatus.push({
+                    date,
+                    paid,
+                });
+
+                await student.save();
+            })
+        );
+
+        res.status(200).json({ message: "Fee statuses updated successfully" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Failed to update fee statuses" });
+    }
+});
+
+router.post("/ensure-current-month-fee-status", userAuth, async (req, res) => {
+    try {
+        const adminId = req.user._id;
+        const currentDate = new Date();
+        const currentMonth = currentDate.getMonth();
+        const currentYear = currentDate.getFullYear();
+
+        const students = await Student.find({ adminId });
+
+        const updatedStudents = await Promise.all(
+            students.map(async (student) => {
+                const latestFeeStatus = student.fee_status?.feeStatus?.length > 0
+                    ? student.fee_status.feeStatus.sort((a, b) => new Date(b.date) - new Date(a.date))[0]
+                    : null;
+
+                const latestMonth = latestFeeStatus ? new Date(latestFeeStatus.date).getMonth() : null;
+                const latestYear = latestFeeStatus ? new Date(latestFeeStatus.date).getFullYear() : null;
+
+                // If the latest fee status is not from the current month, add a new one
+                if (!latestFeeStatus || latestMonth !== currentMonth || latestYear !== currentYear) {
+                    student.fee_status.feeStatus.push({
+                        date: currentDate,
+                        paid: false // Default to unpaid for the new month
+                    });
+                    await student.save();
+                    return student;
+                }
+                return null; // No update needed
+            })
+        );
+
+        const updatedCount = updatedStudents.filter(student => student !== null).length;
+
+        res.status(200).json({
+            message: `Fee statuses updated for ${updatedCount} students`,
+            updatedCount
+        });
+    } catch (error) {
+        console.error("Error ensuring current month fee status:", error);
+        res.status(500).json({ message: "Failed to ensure current month fee status", error: error.message });
+    }
+});
+
+module.exports = router;

@@ -1,7 +1,7 @@
 import './index.css'
 import './App.css'
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import store from "./utilities/redux/store.jsx";
+import store from "./utilities/redux/store.js";
 import { Provider } from "react-redux";
 import Home from "./pages/Dashboard/Home.jsx";
 import AttendencePage from "./pages/Attendence/components/AttendencePage.jsx";
@@ -15,6 +15,8 @@ import ProtectedRoute from "@/ProtectedRoute.jsx";
 import { ThemeProvider } from "./components/ui/ThemeProvider.jsx";
 import MainLayout from "./pages/MainLayout.jsx";
 import LandingPage from "@/pages/LandingPage.jsx";
+import InstituteInfo from "@/pages/InstiInfo/InstituteInfo.jsx";
+import Fees from "@/pages/Fees Management/Fees.jsx";
 
 const appRouter = createBrowserRouter([
     {
@@ -23,7 +25,7 @@ const appRouter = createBrowserRouter([
         children: [
             {
                 index: true,
-                element: <LandingPage />,
+                element: <Landing />,
             },
             {
                 path: "login",
@@ -46,6 +48,10 @@ const appRouter = createBrowserRouter([
                         element: <AttendencePage />,
                     },
                     {
+                        path: "fees",
+                        element: <Fees />,
+                    },
+                    {
                         path: "student-data",
                         element: <StudentData />,
                     },
@@ -54,8 +60,12 @@ const appRouter = createBrowserRouter([
                         element: <BatchPage />,
                     },
                     {
-                        path: "info",
+                        path: "info-students",
                         element: <CompleteInformationDisplay />,
+                    },
+                    {
+                        path: "info-institute",
+                        element: <InstituteInfo />,
                     },
                 ],
             },

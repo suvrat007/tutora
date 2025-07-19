@@ -1,11 +1,11 @@
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "@/utilities/axiosInstance.jsx";
-import { deleteUser } from "./utilities/redux/userSlice.jsx";
-import {clearBatches} from "@/utilities/redux/batchSlice.jsx";
+import { deleteUser } from "./utilities/redux/userSlice.js";
+import {clearBatches} from "@/utilities/redux/batchSlice.js";
 import {clearClassLogs} from "@/utilities/redux/classLogsSlice.js";
-import {clearGroupedStudents} from "@/utilities/redux/studentSlice.jsx";
-import {clearAttendanceSummary} from "@/utilities/redux/attendanceSlice.jsx";
+import {clearGroupedStudents} from "@/utilities/redux/studentSlice.js";
+import {clearAttendanceSummary} from "@/utilities/redux/attendanceSlice.js";
 
 const useLogoutAdmin = () => {
     const dispatch = useDispatch();

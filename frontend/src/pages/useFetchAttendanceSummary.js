@@ -1,7 +1,7 @@
 import {useDispatch} from "react-redux";
 import axiosInstance from "@/utilities/axiosInstance.jsx";
-import {addBatches} from "@/utilities/redux/batchSlice.jsx";
-import {addAttendanceSummary} from "@/utilities/redux/attendanceSlice.jsx";
+import {addBatches} from "@/utilities/redux/batchSlice.js";
+import {addAttendanceSummary} from "@/utilities/redux/attendanceSlice.js";
 
 const useFetchAttendanceSummary =  () => {
     const dispatch = useDispatch();

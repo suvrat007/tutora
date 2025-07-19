@@ -1,9 +1,31 @@
-import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
-import { AiOutlineClose } from "react-icons/ai";
-import axiosInstance from "@/utilities/axiosInstance.jsx";
-import useFetchStudents from "@/pages/useFetchStudents.js";
+import { useSelector } from "react-redux";
+import { motion  } from "framer-motion";
+import axiosInstance from "@/utilities/axiosInstance";
 import useFetchBatches from "@/pages/useFetchBatches.js";
+import useFetchStudents from "@/pages/useFetchStudents.js";
+import {  Users} from "lucide-react";
+import { AiOutlineClose } from "react-icons/ai";
+
+
+const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
+};
+
+
+const modalVariants = {
+    hidden: { opacity: 0, scale: 0.95 },
+    show: { opacity: 1, scale: 1, transition: { duration: 0.3, ease: "easeOut" } },
+    exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } },
+};
+
+const placeholderVariants = {
+    pulse: {
+        scale: [1, 1.1, 1],
+        transition: { duration: 1.5, repeat: Infinity, ease: "easeInOut" },
+    },
+};
 
 const AddStudentModal = ({ onClose, setRerender, batch, refreshStudents }) => {
     const groupedStudents = useSelector((state) => state.students.groupedStudents);
@@ -80,73 +102,84 @@ const AddStudentModal = ({ onClose, setRerender, batch, refreshStudents }) => {
     const selectedStudentObjs = noBatchStudents.filter((std) => isStudentSelected(std._id));
 
     return (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white w-full max-w-2xl rounded-2xl shadow-lg p-6 relative">
-                <button
+        <motion.div
+            variants={modalVariants}
+            initial="hidden"
+            animate="show"
+            exit="exit"
+            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+            <div className="bg-[#f8ede3] w-full max-w-2xl rounded-3xl shadow-[0_8px_24px_rgba(0,0,0,0.15)] p-6 relative">
+                <motion.button
+                    whileHover={{ scale: 1.1, color: "#FF3B30" }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={onClose}
-                    className="absolute top-4 right-4 text-gray-500 hover:text-red-500 transition"
+                    className="absolute top-4 right-4 text-[#e0c4a8] hover:text-[#FF3B30] transition"
                 >
                     <AiOutlineClose size={24} />
-                </button>
-
-                <h2 className="text-xl font-bold text-gray-800 mb-4 text-center">
+                </motion.button>
+                <h2 className="text-xl font-bold text-[#5a4a3c] mb-4 text-center">
                     Students Without Any Batch (Class {batch.forStandard})
                 </h2>
-
                 {selectedStudentObjs.length > 0 && (
-                    <div className="flex gap-3 overflow-x-auto pb-2 mb-4 border-b">
+                    <motion.div
+                        variants={fadeInUp}
+                        initial="hidden"
+                        animate="show"
+                        className="flex gap-3 overflow-x-auto pb-2 mb-4 border-b border-[#e6c8a8]"
+                    >
                         {selectedStudentObjs.map((student) => (
-                            <div key={student._id} className="flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full whitespace-nowrap">
+                            <div key={student._id} className="flex items-center bg-[#f0d9c0] text-[#5a4a3c] px-3 py-1 rounded-full whitespace-nowrap">
                                 {student.name}
-                                <button
+                                <motion.button
+                                    whileHover={{ scale: 1.1, color: "#FF3B30" }}
+                                    whileTap={{ scale: 0.95 }}
                                     onClick={() => handleSelectStudent(student._id)}
-                                    className="ml-2 text-red-500 hover:text-red-700"
+                                    className="ml-2 text-[#e0c4a8] hover:text-[#FF3B30]"
                                 >
                                     <AiOutlineClose size={14} />
-                                </button>
+                                </motion.button>
                             </div>
                         ))}
-                    </div>
+                    </motion.div>
                 )}
-
                 {noBatchStudents.length > 0 ? (
-                    <ul className="divide-y max-h-[50vh] overflow-y-auto">
+                    <motion.ul
+                        variants={fadeInUp}
+                        initial="hidden"
+                        animate="show"
+                        className="divide-y divide-[#e6c8a8] max-h-[50vh] overflow-y-auto"
+                    >
                         {noBatchStudents.map((student) => {
                             const isSelected = isStudentSelected(student._id);
                             return (
-                                <li
-                                    key={student._id}
-                                    className="py-3 px-4"
-                                >
+                                <li key={student._id} className="py-3 px-4">
                                     <div
                                         onClick={() => handleSelectStudent(student._id)}
-                                        className={`cursor-pointer rounded transition ${isSelected ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
+                                        className={`cursor-pointer rounded-lg transition ${isSelected ? 'bg-[#f0d9c0]' : 'hover:bg-[#f0d9c0]'}`}
                                     >
                                         <div className="flex flex-col">
-                                            <span className="font-semibold text-gray-800">{student.name}</span>
-                                            <span className="text-sm text-gray-600">{student.school_name}</span>
-                                            <span className="text-sm text-gray-600">Grade: {student.grade}</span>
+                                            <span className="font-semibold text-[#5a4a3c]">{student.name}</span>
+                                            <span className="text-sm text-[#7b5c4b]">{student.school_name}</span>
+                                            <span className="text-sm text-[#7b5c4b]">Grade: {student.grade}</span>
                                         </div>
                                     </div>
-
                                     {isSelected && (
                                         <div className="mt-2 ml-4">
-                                            <p className="text-xs text-gray-600 mb-1">Select Subjects:</p>
+                                            <p className="text-xs text-[#7b5c4b] mb-1">Select Subjects:</p>
                                             <div className="flex flex-wrap gap-2">
                                                 {batch.subject.map((subj) => (
                                                     <label
                                                         key={subj._id}
-                                                        className="text-xs flex items-center gap-1 bg-gray-100 px-2 py-1 rounded hover:bg-gray-200 cursor-pointer"
+                                                        className="text-xs flex items-center gap-1 bg-[#f0d9c0] px-2 py-1 rounded hover:bg-[#e0c4a8] cursor-pointer"
                                                     >
                                                         <input
                                                             type="checkbox"
-                                                            className="form-checkbox"
-                                                            checked={
-                                                                isStudentSelected(student._id)?.subjectIds.includes(subj._id)
-                                                            }
+                                                            className="form-checkbox h-4 w-4 text-[#e0c4a8]"
+                                                            checked={isStudentSelected(student._id)?.subjectIds.includes(subj._id)}
                                                             onChange={() => handleSubjectToggle(student._id, subj._id)}
                                                         />
-                                                        {subj.name}
+                                                        <span>{subj.name}</span>
                                                     </label>
                                                 ))}
                                             </div>
@@ -155,29 +188,37 @@ const AddStudentModal = ({ onClose, setRerender, batch, refreshStudents }) => {
                                 </li>
                             );
                         })}
-                    </ul>
+                    </motion.ul>
                 ) : (
-                    <p className="text-center text-gray-600">No students found without a batch.</p>
+                    <motion.div
+                        variants={placeholderVariants}
+                        animate="pulse"
+                        className="flex flex-col justify-center items-center py-12 text-[#7b5c4b] "
+                    >
+                        <Users className="text-6xl text-[#e0c4a8] mb-4" />
+                        <p className="text-sm">No students found without a batch.</p>
+                    </motion.div>
                 )}
-
                 {selectedStudents.length > 0 && (
-                    <div className="mt-6 text-center">
-                        <button
+                    <motion.div
+                        variants={fadeInUp}
+                        initial="hidden"
+                        animate="show"
+                        className="mt-6 text-center"
+                    >
+                        <motion.button
+                            whileHover={{ scale: 1.05, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
+                            whileTap={{ scale: 0.95 }}
                             onClick={handleUpdateStudents}
-                            className={`px-6 py-2 rounded-lg transition ${
-                                isValidSelection()
-                                    ? "bg-blue-600 text-white hover:bg-blue-700"
-                                    : "bg-gray-400 text-gray-200 cursor-not-allowed"
-                            }`}
+                            className={`px-6 py-2 rounded-lg transition ${isValidSelection() ? "bg-[#34C759] text-white hover:bg-[#2eb84c]" : "bg-[#e0c4a8] text-[#5a4a3c] cursor-not-allowed"}`}
                             disabled={!isValidSelection()}
                         >
                             Assign to Batch
-                        </button>
-                    </div>
+                        </motion.button>
+                    </motion.div>
                 )}
             </div>
-        </div>
+        </motion.div>
     );
 };
-
 export default AddStudentModal;

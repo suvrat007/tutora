@@ -1,9 +1,10 @@
 import { configureStore } from '@reduxjs/toolkit';
-import batchSlice from "@/utilities/redux/batchSlice.jsx";
-import userSlice from "@/utilities/redux/userSlice.jsx";
-import studentSlice from "@/utilities/redux/studentSlice.jsx";
+import batchSlice from "@/utilities/redux/batchSlice.js";
+import userSlice from "@/utilities/redux/userSlice.js";
+import studentSlice from "@/utilities/redux/studentSlice.js";
 import classLogsSlice from "@/utilities/redux/classLogsSlice.js";
-import attendanceSlice from "@/utilities/redux/attendanceSlice.jsx";
+import attendanceSlice from "@/utilities/redux/attendanceSlice.js";
+import feeSlice from "@/utilities/redux/feeSlice.js";
 
 const store =  configureStore({
     reducer: {
@@ -12,6 +13,7 @@ const store =  configureStore({
         students : studentSlice,
         classlogs : classLogsSlice,
         attendance : attendanceSlice,
+        fees:feeSlice,
     },
 });
 
