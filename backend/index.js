@@ -12,8 +12,7 @@ const AuthRouter = require("./routes/Auth.js");
 const InstituteRouter = require("./routes/Institute.js");
 
 app.use(cors({
-    // origin:['http://localhost:5173'],
-    origin:['    origin:[\'http://localhost:5173\'],\n'],
+    origin:['http://localhost:5173'],
     credentials: true,
 }))
 
