@@ -86,8 +86,8 @@ const StudentData = () => {
   const displayStudents = selectedSubject ? subjectFilteredStudents : filteredStudents;
 
   return (
-      <div className="flex flex-col gap-4 p-2 sm:p-4 md:p-6 h-screen overflow-y-auto ">
-        <div className="flex flex-col lg:flex-row gap-4 h-full max-w-7xl mx-auto">
+      <>
+        <div className="flex flex-col-reverse lg:flex-row gap-4 h-full p-4 mx-auto overflow-y-auto">
           {/* Students List */}
           <div className="w-full lg:w-2/3">
             <WrapperCard>
@@ -165,7 +165,7 @@ const StudentData = () => {
           </div>
 
           {/* Filters */}
-          <div className="w-full lg:w-1/3">
+          <div className="w-full lg:w-1/3 ">
             <WrapperCard>
               <div className="relative flex flex-col h-full bg-[#f8ede3] rounded-3xl shadow-[0_8px_24px_rgba(0,0,0,0.15)]">
                 <div className="text-xl sm:text-2xl font-bold text-[#5a4a3c] bg-[#f0d9c0] p-4 sm:p-6 rounded-t-lg">
@@ -255,7 +255,7 @@ const StudentData = () => {
                 setShowAddStd={setShowAddStd}
             />
         )}
-      </div>
+      </>
   );
 };
 

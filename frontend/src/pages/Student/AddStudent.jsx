@@ -244,13 +244,13 @@ const AddStudent = ({
                         </div>
                     ))}
 
-                    <div>
+                    <div >
                         <p className="font-semibold text-[#5a4a3c] text-sm sm:text-base mb-2">Choose Batch to add student in (Optional)</p>
                         {eligibleBatches.length === 0 ? (
                             <motion.div
                                 variants={placeholderVariants}
                                 animate="pulse"
-                                className="flex flex-col items-center justify-center h-12 sm:h-15 text-[#7b5c4b]"
+                                className="flex flex-col items-center justify-center h-12 w-[80%] sm:h-15 text-[#7b5c4b]"
                             >
                                 <p className="text-xs sm:text-sm">No batches available for this grade</p>
                             </motion.div>
