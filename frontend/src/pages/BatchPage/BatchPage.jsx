@@ -105,11 +105,11 @@ const BatchPage = () => {
             initial="hidden"
             animate="visible"
             onClick={() => !isLoading && setCreateBatches(true)}
-            className={`flex flex-col justify-center items-center rounded-3xl  border-2 border-dashed border-[#e6c8a8] 
+            className={`flex flex-col justify-center items-center rounded-3xl p-4 border-2 border-dashed border-[#e6c8a8] 
             bg-[#f8ede3] hover:bg-[#f0d9c0] transition-all cursor-pointer shadow-[0_8px_24px_rgba(0,0,0,0.15)] 
             hover:shadow-lg ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
         >
-            <AiOutlinePlus className="text-4xl text-[#5a4a3c] mb-2 p-10" />
+            <AiOutlinePlus className="text-5xl text-[#5a4a3c] mb-2 sm:mb-4 " />
             <span className="text-xl font-medium text-[#5a4a3c] m-2">Create New Batch</span>
         </motion.div>
     );

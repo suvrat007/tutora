@@ -47,10 +47,10 @@ const Sidebar = () => {
           />
         </div>
 
-        <div className="pt-4 border-t border-[#d4a97f]">
+        <div className="pt-4  border-t border-[#d4a97f]">
           <button
               onClick={handleLogout}
-              className={`flex items-center gap-3 p-3 rounded-lg transition-all ${
+              className={`flex w-full items-center gap-3 p-3 rounded-lg transition-all ${
                   isHovered
                       ? "hover:bg-[#d1ac8a] text-[#4a3a2c]"
                       : "justify-center hover:text-white"
@@ -154,6 +154,8 @@ const SidebarItems = ({ isHovered, management, register, setManagement, setRegis
               { label: "Fee Management", path: "/main/fees", icon: FaMoneyCheckAlt },
             ]}
         />
+          <Item label="Student Center" path="/main/info-students" icon={FaUserGraduate} />
+          <Item label="Institute Center" path="/main/info-institute" icon={FaUniversity} />
         <DropItem
             label="Registrations"
             icon={FaUsers}
@@ -164,8 +166,7 @@ const SidebarItems = ({ isHovered, management, register, setManagement, setRegis
               { label: "Batches", path: "/main/batches", icon: FaUserGraduate },
             ]}
         />
-        <Item label="Student Center" path="/main/info-students" icon={FaUserGraduate} />
-        <Item label="Institute Center" path="/main/info-institute" icon={FaUniversity} />
+
       </>
   );
 };

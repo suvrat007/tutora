@@ -71,17 +71,18 @@ const CompleteInformationDisplay = () => {
   }
 
   return (
-      <div className="flex gap-6 p-6 flex-1 overflow-hidden ">
-        <div className="flex flex-col gap-3 w-120">
+      <div className="flex flex-col md:flex-row gap-6 p-6 flex-1 overflow-y-auto">
+        <div className="flex flex-col gap-3 w-full sm:w-[45em]">
           <WrapperCard>
-            <Card className="w-full h-[16em] bg-[#f4e3d0] text-[#4a3a2c] px-6 py-4 rounded-2xl flex flex-col gap-4 border border-[#ddb892]">
+            <Card className="w-full h-full lg:h-[16em] bg-[#f8ede3] text-[#4a3a2c] px-6 py-4 rounded-2xl flex flex-col
+            gap-4 border border-[#ddb892]">
               <p className="text-lg font-semibold">Batches Overview</p>
               <div className="flex-1 overflow-y-auto pr-1">
                 {batches.length > 0 ? (
                     batches.map((batch) => (
                         <div
                             key={batch._id}
-                            className="group relative bg-[#e7c6a5] border border-[#ddb892] rounded-xl w-full p-4 flex flex-col gap-2 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 mb-2"
+                            className="group relative bg-[#f0d9c0] border border-[#ddb892] rounded-xl w-full p-4 flex flex-col gap-2 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 mb-2"
                         >
                           <div className="flex justify-between items-start mb-1 text-sm font-medium">
                             <p className="text-[#4a3a2c]">{batch.name}</p>
@@ -111,7 +112,7 @@ const CompleteInformationDisplay = () => {
               <div className="pt-2 border-t border-[#ddb892]">
                 <button
                     onClick={() => navigate('/main/batches')}
-                    className="w-full py-2 text-sm font-semibold text-[#4a3a2c] border border-[#d7b48f] rounded-xl bg-[#d7b48f] hover:bg-[#d7b48f]/80 transition"
+                    className="w-full py-2 text-sm font-semibold text-[#4a3a2c] border border-[#d7b48f] rounded-xl bg-[#f0d9c0] hover:bg-[#d7b48f]/80 transition"
                 >
                   View All Batch Details
                 </button>
@@ -120,41 +121,44 @@ const CompleteInformationDisplay = () => {
           </WrapperCard>
 
           <WrapperCard>
-            <Card className="w-full bg-[#f4e3d0] text-[#4a3a2c] p-4 rounded-2xl flex flex-col border border-[#ddb892]">
+            <Card className="w-full h-full justify-between bg-[#f8ede3] text-[#4a3a2c] p-4 rounded-2xl flex flex-col border border-[#ddb892]">
               <div>
-                <div className="flex gap-3 mb-2 items-center justify-between">
+                <div className="sm:flex-row flex flex-col gap-3 mb-2 items-center justify-between">
                   <h2 className="text-lg font-semibold mb-2">Average Attendance</h2>
-                  <select
-                      value={batchName}
-                      onChange={(e) => {
-                        setBatchName(e.target.value);
-                        setSubjectName('');
-                      }}
-                      className="border border-[#ddb892] rounded px-2 py-1 text-sm text-[#4a3a2c] bg-[#e7c6a5]"
-                      disabled={isLoadingBatches}
-                  >
-                    <option value="">All Batches</option>
-                    {batches.map((b) => (
-                        <option key={b._id} value={b.name}>{b.name}</option>
-                    ))}
-                  </select>
-                  <select
-                      value={subjectName}
-                      onChange={(e) => setSubjectName(e.target.value)}
-                      className="border border-[#ddb892] rounded px-2 py-1 text-sm text-[#4a3a2c] bg-[#e7c6a5]"
-                      disabled={!batchName || isLoadingBatches}
-                  >
-                    <option value="">All Subjects</option>
-                    {batches.find((b) => b.name === batchName)?.subject?.map((s) => (
-                        <option key={s._id} value={s.name}>{s.name}</option>
-                    ))}
-                  </select>
+                  <div className="flex gap-2">
+                    <select
+                        value={batchName}
+                        onChange={(e) => {
+                          setBatchName(e.target.value);
+                          setSubjectName('');
+                        }}
+                        className="border border-[#ddb892] rounded px-2 py-1 text-sm text-[#4a3a2c] bg-[#f0d9c0]"
+                        disabled={isLoadingBatches}
+                    >
+                      <option value="">All Batches</option>
+                      {batches.map((b) => (
+                          <option key={b._id} value={b.name}>{b.name}</option>
+                      ))}
+                    </select>
+                    <select
+                        value={subjectName}
+                        onChange={(e) => setSubjectName(e.target.value)}
+                        className="border border-[#ddb892] rounded px-2 py-1 text-sm text-[#4a3a2c] bg-[#f0d9c0]"
+                        disabled={!batchName || isLoadingBatches}
+                    >
+                      <option value="">All Subjects</option>
+                      {batches.find((b) => b.name === batchName)?.subject?.map((s) => (
+                          <option key={s._id} value={s.name}>{s.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
                 </div>
               </div>
               <div className="w-full flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 {isLoadingBatches ? (
                     <div className="flex-1 flex items-center justify-center py-10 text-[#6b4c3b]">
-                      <Loader2 className="animate-spin w-5 h-5 mr-2" /> Loading...
+                      <Loader2 className="animate-spin w-5 h-5 mr-2"/> Loading...
                     </div>
                 ) : (
                     <>
@@ -246,9 +250,9 @@ const CompleteInformationDisplay = () => {
           </WrapperCard>
         </div>
 
-        <div className="flex gap-6 flex-1">
+        <div className="flex sm:w-full gap-6 ">
           <WrapperCard>
-            <Card className="w-full h-full bg-[#f4e3d0] text-[#4a3a2c] p-6 overflow-x-auto rounded-2xl border border-[#ddb892]">
+            <Card className="w-full h-full bg-[#f8ede3] text-[#4a3a2c] p-6 overflow-x-auto rounded-2xl border border-[#ddb892]">
               <h2 className="text-lg font-semibold mb-4">Students Table</h2>
               <div className="flex gap-4 mb-4">
                 <select
@@ -257,7 +261,7 @@ const CompleteInformationDisplay = () => {
                       setBatchName(e.target.value);
                       setSubjectName('');
                     }}
-                    className="border border-[#ddb892] rounded px-2 py-1 text-sm text-[#4a3a2c] bg-[#e7c6a5]"
+                    className="border border-[#ddb892] rounded px-2 py-1 text-sm text-[#4a3a2c] bg-[#f0d9c0]"
                     disabled={isLoadingBatches}
                 >
                   <option value="">All Batches</option>
@@ -270,7 +274,7 @@ const CompleteInformationDisplay = () => {
                 <select
                     value={subjectName}
                     onChange={(e) => setSubjectName(e.target.value)}
-                    className="border border-[#ddb892] rounded px-2 py-1 text-sm text-[#4a3a2c] bg-[#e7c6a5]"
+                    className="border border-[#ddb892] rounded px-2 py-1 text-sm text-[#4a3a2c] bg-[#f0d9c0]"
                     disabled={!batchName || isLoadingBatches}
                 >
                   <option value="">All Subjects</option>
@@ -283,7 +287,7 @@ const CompleteInformationDisplay = () => {
                 <select
                     value={gradeFilter}
                     onChange={(e) => setGradeFilter(e.target.value)}
-                    className="border border-[#ddb892] rounded px-2 py-1 text-sm text-[#4a3a2c] bg-[#e7c6a5]"
+                    className="border border-[#ddb892] rounded px-2 py-1 text-sm text-[#4a3a2c] bg-[#f0d9c0]"
                 >
                   <option value="">All Grades</option>
                   {uniqueGrades.map((grade) => (
@@ -295,7 +299,7 @@ const CompleteInformationDisplay = () => {
                 <select
                     value={attendanceFilter}
                     onChange={(e) => setAttendanceFilter(e.target.value)}
-                    className="border border-[#ddb892] rounded px-2 py-1 text-sm text-[#4a3a2c] bg-[#e7c6a5]"
+                    className="border border-[#ddb892] rounded px-2 py-1 text-sm text-[#4a3a2c] bg-[#f0d9c0]"
                 >
                   <option value="">All Attendance</option>
                   <option value=">50">Attendance > 50%</option>
@@ -327,7 +331,7 @@ const CompleteInformationDisplay = () => {
                             <tr key={student.studentId} className="border-t hover:bg-[#e7c6a5]/50">
                               <td className="p-2">{index + 1}</td>
                               <td
-                                  className="p-2 hover:cursor-pointer hover:underline text-[#d7b48f]"
+                                  className="p-2 hover:cursor-pointer hover:underline "
                                   onClick={() => handleStudentDisplay(student)}
                               >
                                 {student.studentName}
