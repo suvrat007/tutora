@@ -50,8 +50,8 @@ const Fees = () => {
     return (
         <div className="min-h-screen  p-4 sm:p-6 overflow-y-auto">
             <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                <div className="flex flex-col w-full items-center justify-center">
+                    <div className="flex items-center gap-3 sm:justify-left">
                         <h1 className="text-2xl font-bold text-[#5a4a3c]">Fee Management</h1>
                         <DollarSign className="w-6 h-6 text-[#5a4a3c]" />
                     </div>

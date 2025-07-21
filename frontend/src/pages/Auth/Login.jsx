@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "@/utilities/axiosInstance";
 import { useSelector } from "react-redux";
@@ -79,22 +79,22 @@ const Login = () => {
                         <p className="text-center text-[#9b8778] text-sm sm:text-base mb-4">
                             Your smart, modern tutoring platform.
                         </p>
-                        <div className="flex justify-center mb-4 gap-2 sm:gap-3">
-                            {["Tutor"].map((r) => (
-                                <button
-                                    key={r}
-                                    type="button"
-                                    onClick={() => setRole(r.toLowerCase())}
-                                    className={`px-3 sm:px-4 py-1.5 rounded-full text-sm sm:text-base font-medium border transition ${
-                                        role === r.toLowerCase()
-                                            ? "bg-[#4a3a2c] text-white border-[#4a3a2c]"
-                                            : "bg-[#f8ede3] text-[#4a3a2c] border-[#e7c6a5] hover:bg-[#e7c6a5]/20"
-                                    }`}
-                                >
-                                    {r}
-                                </button>
-                            ))}
-                        </div>
+                        {/*<div className="flex justify-center mb-4 gap-2 sm:gap-3">*/}
+                        {/*    {["Tutor"].map((r) => (*/}
+                        {/*        <button*/}
+                        {/*            key={r}*/}
+                        {/*            type="button"*/}
+                        {/*            onClick={() => setRole(r.toLowerCase())}*/}
+                        {/*            className={`px-3 sm:px-4 py-1.5 rounded-full text-sm sm:text-base font-medium border transition ${*/}
+                        {/*                role === r.toLowerCase()*/}
+                        {/*                    ? "bg-[#4a3a2c] text-white border-[#4a3a2c]"*/}
+                        {/*                    : "bg-[#f8ede3] text-[#4a3a2c] border-[#e7c6a5] hover:bg-[#e7c6a5]/20"*/}
+                        {/*            }`}*/}
+                        {/*        >*/}
+                        {/*            {r}*/}
+                        {/*        </button>*/}
+                        {/*    ))}*/}
+                        {/*</div>*/}
 
                         <form
                             onSubmit={isSignup ? handleSignupCreds : handleLogin}

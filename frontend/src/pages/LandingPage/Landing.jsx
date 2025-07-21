@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
-    Calendar, Users, DollarSign, FileText, Clock,
-    Shield, Heart, Zap, Star, Quote, CheckCircle, ArrowRight,
-    Play, Sparkles
+    Calendar, Users, DollarSign, FileText, Clock,Play,
+    Shield, Heart, Zap, Star, CheckCircle, ArrowRight, Sparkles
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button.jsx";
@@ -164,7 +163,6 @@ const Landing = () => {
 
     return (
         <div className="bg-gradient-to-br from-[#fdf5ec] to-[#f5e8dc] min-h-screen font-['Inter',sans-serif]">
-            {/* Hero Section */}
             <section className="bg-gradient-to-br from-[#fdf5ec] to-[#f5e8dc] flex flex-col items-center justify-center min-h-[90vh] px-4 sm:px-6 md:px-8">
                 <div className="text-center max-w-6xl mx-auto">
                     <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#f8ede3] rounded-full border border-[#e7c6a5]/50 shadow-sm mb-6">
@@ -207,7 +205,7 @@ const Landing = () => {
                     <div className="flex flex-col sm:flex-row justify-center gap-4 mb-12">
                         <Button
                             size="lg"
-                            className="group bg-[#4a3a2c] text-white hover:bg-[#3e2f23] transition-all duration-300 shadow-sm px-6 py-3 text-base font-semibold rounded-xl"
+                            className="group cursor-pointer bg-[#4a3a2c] text-white hover:bg-[#3e2f23] transition-all duration-300 shadow-sm px-6 py-3 text-base font-semibold rounded-xl"
                             onClick={() => handleNavigate("/login")}
                         >
                             <Sparkles className="mr-2 h-5 w-5" />
@@ -217,11 +215,12 @@ const Landing = () => {
                         <Button
                             variant="outline"
                             size="lg"
-                            className="group border-2 border-[#e7c6a5] text-[#4a3a2c] hover:bg-[#e7c6a5]/20 transition-all duration-300 shadow-sm px-6 py-3 text-base font-semibold rounded-xl bg-[#f8ede3]"
+                            className="group cursor-pointer border-2 border-[#e7c6a5] text-[#4a3a2c] hover:bg-[#e7c6a5]/20 transition-all duration-300 shadow-sm px-6 py-3 text-base font-semibold rounded-xl bg-[#f8ede3]"
                             onClick={() => handleNavigate("/main/info-institute")}
                         >
-                            {user ? "Institute Information" : "Start Free Trial"}
-                            <ArrowRight className="ml-2 h-5 w-5" />
+                            {user ? "Institute Information" : "Watch Demo Video"}
+
+                            {user ? <ArrowRight className="ml-2 h-5 w-5" /> :<Play/>}
                         </Button>
                     </div>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-6 text-[#9b8778]">
@@ -281,7 +280,6 @@ const Landing = () => {
                 </div>
             </section>
 
-            {/* Benefits Section */}
             <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 md:px-8 bg-gradient-to-br from-[#f5e8dc] to-[#fdf5ec]">
                 <div className="max-w-7xl mx-auto text-center">
                     <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#4a3a2c] mb-4">
@@ -387,10 +385,10 @@ const Landing = () => {
 
             {/* Final CTA Section */}
             {!user && (
-                <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 md:px-8 bg-gradient-to-br from-[#f5e8dc] to-[#fdf5ec] text-center">
+                <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 md:px-8 bg-gradient-to-br  from-[#f5e8dc] to-[#fdf5ec] text-center">
                     <div className="max-w-4xl mx-auto">
                         <div className="bg-[#f8ede3] rounded-xl p-8 shadow-sm border border-[#e7c6a5]/20">
-                            <AnimatedGradientText className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-[#4a3a2c] via-[#6b5b4f] to-[#4a3a2c] bg-clip-text text-transparent">
+                            <AnimatedGradientText className="text-3xl  sm:text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-[#4a3a2c] via-[#6b5b4f] to-[#4a3a2c] bg-clip-text text-transparent">
                                 Ready to Transform Your Teaching?
                             </AnimatedGradientText>
                             <p className="text-base sm:text-lg md:text-xl text-[#9b8778] mb-8 max-w-2xl mx-auto leading-relaxed">
@@ -399,7 +397,7 @@ const Landing = () => {
                             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
                                 <Button
                                     size="lg"
-                                    className="group bg-[#4a3a2c] text-white hover:bg-[#3e2f23] transition-all duration-300 shadow-sm px-6 py-3 text-base font-semibold rounded-xl"
+                                    className="group cursor-pointer bg-[#4a3a2c] text-white hover:bg-[#3e2f23] transition-all duration-300 shadow-sm px-6 py-3 text-base font-semibold rounded-xl"
                                     onClick={() => handleNavigate("/main")}
                                 >
                                     <Sparkles className="mr-2 h-5 w-5" />

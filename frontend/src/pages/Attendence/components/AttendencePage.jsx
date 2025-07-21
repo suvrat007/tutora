@@ -1,6 +1,6 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useSelector } from "react-redux";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import useFetchClassLogs from "@/pages/useFetchClassLogs.js";
 import useAttendanceConstraints from "../hooks/useAttendanceConstraints.js";
 import MarkedPresentList from "@/pages/Attendence/components/MarkedPresentList.jsx";
@@ -10,8 +10,8 @@ import { useStudentFetcher } from "@/pages/Attendence/hooks/useStudentFetcher.js
 import { useStudentActions } from "@/pages/Attendence/hooks/useStudentActions.js";
 import AttendancePercentages from "@/pages/Attendence/components/AttendancePercentages.jsx";
 import useFetchAttendanceSummary from "@/pages/useFetchAttendanceSummary.js";
-import {StudentList} from "@/pages/Attendence/components/StudentList.jsx";
-import {useAttendanceSubmission} from "@/pages/Attendence/hooks/useAttendanceSubmission.js";
+import { StudentList } from "@/pages/Attendence/components/StudentList.jsx";
+import { useAttendanceSubmission } from "@/pages/Attendence/hooks/useAttendanceSubmission.js";
 import WrapperCard from "@/utilities/WrapperCard.jsx";
 
 export const AttendancePage = () => {
@@ -65,14 +65,27 @@ export const AttendancePage = () => {
       state.setSuccess
   );
 
-  const actions = useStudentActions(presentIds, state.setPresentIds, students, markedPresentStudents);
+  const actions = useStudentActions(
+      presentIds,
+      state.setPresentIds,
+      students,
+      markedPresentStudents
+  );
 
   const handleSearch = () => {
     fetchStudents(batchName, subjectName, date, isValidDateTime, errorMessage);
   };
 
   const handleSubmit = async () => {
-    await submit(batchName, subjectName, date, presentIds, isValidDateTime, errorMessage, handleSearch);
+    await submit(
+        batchName,
+        subjectName,
+        date,
+        presentIds,
+        isValidDateTime,
+        errorMessage,
+        handleSearch
+    );
   };
 
   useEffect(() => {
@@ -85,47 +98,51 @@ export const AttendancePage = () => {
   }, [batchName, subjectName, date, classLogs.length, classLogs]);
 
   return (
-      <div className="min-h-screen py-3 px-5  sm:px-6 flex flex-col gap-6 flex-1 overflow-y-auto">
+      <div className="min-h-screen py-3 px-5 sm:px-6 flex flex-col gap-6 flex-1 overflow-y-auto">
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
+            initial={{opacity: 0, y: 20}}
+            animate={{opacity: 1, y: 0}}
+            transition={{duration: 0.5, ease: "easeInOut"}}
             className="flex flex-col sm:flex-row gap-6 h-auto sm:h-[37vh]"
         >
-          <WrapperCard>
-            <AttendancePercentages
-                attendance={attendanceSummary}
-                batchName={batchName}
-                setBatchName={state.setBatchName}
-                subjectName={subjectName}
-                setSubjectName={state.setSubjectName}
-                batches={batches}
-            />
-          </WrapperCard>
-          <WrapperCard>
-            <AttendanceForm
-                batchName={batchName}
-                setBatchName={state.setBatchName}
-                subjectName={subjectName}
-                setSubjectName={state.setSubjectName}
-                date={date}
-                setDate={state.setDate}
-                batches={batches}
-                error={error}
-                success={success}
-                loading={loading}
-                resetStudentData={resetStudentData}
-                clearForm={clearForm}
-                handleSearch={handleSearch}
-            />
-          </WrapperCard>
-
-
+          <div className="flex-1 order-2 sm:order-1">
+            <WrapperCard>
+              <AttendancePercentages
+                  attendance={attendanceSummary}
+                  batchName={batchName}
+                  setBatchName={state.setBatchName}
+                  subjectName={subjectName}
+                  setSubjectName={state.setSubjectName}
+                  batches={batches}
+              />
+            </WrapperCard>
+          </div>
+          <div className="flex-1 order-1 sm:order-2">
+            <WrapperCard>
+              <AttendanceForm
+                  batchName={batchName}
+                  setBatchName={state.setBatchName}
+                  subjectName={subjectName}
+                  setSubjectName={state.setSubjectName}
+                  date={date}
+                  setDate={state.setDate}
+                  batches={batches}
+                  error={error}
+                  success={success}
+                  loading={loading}
+                  resetStudentData={resetStudentData}
+                  clearForm={clearForm}
+                  handleSearch={handleSearch}
+              />
+            </WrapperCard>
+          </div>
         </motion.div>
+
+
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeInOut", delay: 0.2 }}
+            initial={{opacity: 0, y: 20}}
+            animate={{opacity: 1, y: 0}}
+            transition={{duration: 0.5, ease: "easeInOut", delay: 0.2}}
             className="flex flex-col md:flex-row gap-6 sm:h-[37vh] h-full mb-50 sm:mb-0"
         >
           <WrapperCard>
@@ -146,7 +163,7 @@ export const AttendancePage = () => {
             />
           </WrapperCard>
 
-          <WrapperCard >
+          <WrapperCard>
             <MarkedPresentList
                 markedPresentStudents={markedPresentStudents}
                 batchName={batchName}
@@ -154,9 +171,6 @@ export const AttendancePage = () => {
                 date={date}
             />
           </WrapperCard>
-
-
-
         </motion.div>
       </div>
   );

@@ -6,6 +6,7 @@ import {clearBatches} from "@/utilities/redux/batchSlice.js";
 import {clearClassLogs} from "@/utilities/redux/classLogsSlice.js";
 import {clearGroupedStudents} from "@/utilities/redux/studentSlice.js";
 import {clearAttendanceSummary} from "@/utilities/redux/attendanceSlice.js";
+import {clearFeeData} from "@/utilities/redux/feeSlice.js";
 
 const useLogoutAdmin = () => {
     const dispatch = useDispatch();
@@ -22,7 +23,9 @@ const useLogoutAdmin = () => {
             dispatch(clearClassLogs());
             dispatch(clearGroupedStudents());
             dispatch(clearAttendanceSummary());
-            navigate("/login", { replace: true });
+            dispatch(clearFeeData());
+
+            navigate("/", { replace: true });
         } catch (error) {
             console.error("Logout failed:", error);
         }

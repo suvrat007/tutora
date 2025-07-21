@@ -5,6 +5,8 @@ import useFetchBatches from "@/pages/useFetchBatches.js";
 import useFetchStudents from "@/pages/useFetchStudents.js";
 import useFetchClassLogs from "@/pages/useFetchClassLogs.js";
 import useFetchAttendanceSummary from "@/pages/useFetchAttendanceSummary.js";
+import { FaUniversity, FaUserCheck, FaUserGraduate } from "react-icons/fa";
+import { HiOutlineClipboardList } from "react-icons/hi";
 
 const LoadingPage = ({ onDone }) => {
     const fetchBatches = useFetchBatches();
@@ -20,10 +22,10 @@ const LoadingPage = ({ onDone }) => {
     const attendanceSummary = useSelector((state) => state.attendanceSummary);
 
     const steps = [
-        { name: "Batches", icon: "📚" },
-        { name: "Students", icon: "👨‍🎓" },
-        { name: "Classes", icon: "📝" },
-        { name: "Attendance", icon: "✅" },
+        { name: "Batches", icon: FaUserGraduate },
+        { name: "Students", icon: FaUserCheck },
+        { name: "Classes", icon: FaUniversity },
+        { name: "Attendance", icon: HiOutlineClipboardList },
     ];
 
     useEffect(() => {
@@ -85,7 +87,6 @@ const LoadingPage = ({ onDone }) => {
                         >
                             <div className="absolute top-0 left-1/2 w-1 h-4 bg-orange-500 rounded-full transform -translate-x-1/2 origin-bottom"></div>
                         </motion.div>
-
                         <motion.div
                             animate={{ rotate: -360 }}
                             transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
@@ -144,31 +145,29 @@ const LoadingPage = ({ onDone }) => {
                         >
                             <motion.div
                                 animate={
-                                    index === currentStep
-                                        ? { rotate: [0, 10, -10, 0] }
-                                        : {}
+                                    index === currentStep ? { rotate: [0, 10, -10, 0] } : {}
                                 }
                                 transition={{
                                     duration: 0.5,
                                     repeat: index === currentStep ? Infinity : 0,
                                 }}
-                                className="text-lg"
+                                className="text-lg text-orange-700"
                             >
-                                {step.icon}
+                                <step.icon />
                             </motion.div>
 
                             <div className="flex-1 text-left">
-                                <span
-                                    className={`text-sm font-medium ${
-                                        index < currentStep
-                                            ? "text-orange-600"
-                                            : index === currentStep
-                                                ? "text-orange-700"
-                                                : "text-orange-400"
-                                    }`}
-                                >
-                                    {step.name}
-                                </span>
+                <span
+                    className={`text-sm font-medium ${
+                        index < currentStep
+                            ? "text-orange-600"
+                            : index === currentStep
+                                ? "text-orange-700"
+                                : "text-orange-400"
+                    }`}
+                >
+                  {step.name}
+                </span>
                             </div>
 
                             {index < currentStep && (

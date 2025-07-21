@@ -1,4 +1,3 @@
-import React from "react";
 import SideBar from "@/pages/Navbar/SideBar.jsx";
 import Navbar from "@/pages/Navbar/Navbar.jsx";
 import { Outlet } from "react-router-dom";

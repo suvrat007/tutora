@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button.jsx";
 import { ArrowRight, Sparkles, Play, Star } from "lucide-react";
-import React from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatedGradientText } from "../../components/ui/AnimatedGradientText.jsx";
 

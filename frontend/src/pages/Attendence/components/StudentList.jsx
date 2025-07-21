@@ -1,4 +1,3 @@
-import React from "react";
 import { FaCheckCircle, FaUserGraduate } from 'react-icons/fa';
 import { Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";

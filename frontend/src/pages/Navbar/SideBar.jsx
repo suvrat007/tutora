@@ -19,13 +19,11 @@ import { FiLogOut } from "react-icons/fi";
 import useLogoutAdmin from "@/useLogoutAdmin.js";
 
 const Sidebar = () => {
-  const location = useLocation();
   const handleLogout = useLogoutAdmin();
   const [isHovered, setIsHovered] = useState(false);
   const [management, setManagement] = useState(false);
   const [register, setRegister] = useState(false);
 
-  const isActive = (path) => location.pathname.startsWith(path);
 
   const DesktopSidebar = () => (
       <div
@@ -109,7 +107,7 @@ const SidebarItems = ({ isHovered, management, register, setManagement, setRegis
   const Item = ({ label, path, icon: Icon }) => (
       <Link
           to={path}
-          className={`cursor-pointer flex items-center justify-between gap-3 p-3 rounded-lg transition-all group relative ${
+          className={`cursor-pointer flex items-center  gap-3 p-3 rounded-lg transition-all group relative ${
               path && location.pathname.startsWith(path)
                   ? "bg-[#f4e3d0] text-[#6b4c3b] font-semibold"
                   : "hover:bg-gradient-to-r from-[#c5a37e] to-[#b98b65] hover:text-white text-[#4a3a2c]"
@@ -123,7 +121,7 @@ const SidebarItems = ({ isHovered, management, register, setManagement, setRegis
   const DropItem = ({ label, isOpen, toggle, subItems, icon: Icon }) => (
       <div>
         <div onClick={toggle} className="cursor-pointer flex items-center justify-between gap-3 p-3 rounded-lg transition-all hover:bg-[#d1ac8a] text-[#4a3a2c]">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between gap-3">
             <Icon size={20} />
             {isHovered && <span>{label}</span>}
           </div>

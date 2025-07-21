@@ -263,7 +263,7 @@ const CompleteInformationDisplay = () => {
                               </td>
                               <td className="p-2">{student.grade}</td>
                               <td className="p-2">{student.batchName}</td>
-                              <td className="p-2">{getStudentSubjects(student.studentId, student.batchId)}</td>
+                              <td className="p-2">{student.subjects}</td>
                               <td className="p-2">{student.percentage}%</td>
                               <td className="p-2">{student.school_name}</td>
                               <td className="p-2">{student.contact_info?.phoneNumbers?.student || 'N/A'}</td>

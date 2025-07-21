@@ -122,18 +122,20 @@ const FeesTable = ({ batches, students, fetchStudents }) => {
             <WrapperCard>
                 <div className="bg-[#f8ede3] rounded-3xl h-[80vh] overflow-hidden flex flex-col">
                     <div className="px-6 py-4 bg-[#f0d9c0] border-b border-[#e6c8a8]">
-                        <div className="flex items-center justify-between flex-wrap gap-2">
-                            <div>
-                                <h2 className="text-xl font-semibold text-[#5a4a3c] flex items-center gap-2">
-                                    <Users className="w-5 h-5 text-[#5a4a3c]" />
+                        <div className="flex flex-col sm:flex-row items-center justify-between flex-wrap gap-2 w-full">
+                            <div className="flex flex-col items-center sm:items-start justify-center w-full">
+                                <h2 className="text-xl font-semibold text-[#5a4a3c] flex items-center gap-2 text-center sm:text-left">
+                                    <Users className="w-5 h-5 text-[#5a4a3c]"/>
                                     Student Fee Details
                                 </h2>
-                                <p className="text-sm text-[#7b5c4b]">Manage and track student fee payments</p>
+                                <p className="text-sm text-[#7b5c4b] text-center sm:text-left">
+                                    Manage and track student fee payments
+                                </p>
                             </div>
                             <div className="flex gap-2">
                                 <motion.button
-                                    whileHover={{ scale: 1.05, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
-                                    whileTap={{ scale: 0.95 }}
+                                    whileHover={{scale: 1.05, boxShadow: "0 4px 12px rgba(0,0,0,0.1)"}}
+                                    whileTap={{scale: 0.95}}
                                     onClick={() => setShowCheckboxes((prev) => !prev)}
                                     className="px-4 py-2 bg-[#e0c4a8] text-[#5a4a3c] rounded-lg hover:bg-[#d8bca0] transition-all duration-300 shadow-md"
                                 >
@@ -141,8 +143,8 @@ const FeesTable = ({ batches, students, fetchStudents }) => {
                                 </motion.button>
                                 {showCheckboxes && (
                                     <motion.button
-                                        whileHover={{ scale: 1.05, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
-                                        whileTap={{ scale: 0.95 }}
+                                        whileHover={{scale: 1.05, boxShadow: "0 4px 12px rgba(0,0,0,0.1)"}}
+                                        whileTap={{scale: 0.95}}
                                         onClick={handleMarkSelectedPaid}
                                         className="px-4 py-2 bg-[#34C759] text-white rounded-lg hover:bg-[#2eb84c] transition-all duration-300 disabled:bg-gray-400 shadow-md"
                                         disabled={selectedStudentIds.length === 0}
@@ -154,7 +156,8 @@ const FeesTable = ({ batches, students, fetchStudents }) => {
                         </div>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row flex-wrap gap-4 p-4 bg-[#f8ede3] border-b border-[#e6c8a8]">
+                    <div
+                        className="flex flex-col sm:flex-row flex-wrap gap-4 p-4 bg-[#f8ede3] border-b border-[#e6c8a8]">
                         <div className="flex-1 min-w-[120px]">
                             <label className="block text-xs font-medium text-[#7b5c4b] uppercase mb-1">Batch</label>
                             <select

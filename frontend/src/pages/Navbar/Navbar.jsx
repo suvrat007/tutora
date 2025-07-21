@@ -1,7 +1,4 @@
-import useLogoutAdmin from "@/useLogoutAdmin.js";
 import { useSelector } from "react-redux";
-import { BsSearch } from "react-icons/bs";
-import {navigate} from "react-big-calendar/lib/utils/constants.js";
 import {useNavigate} from "react-router-dom";
 
 const Navbar = () => {
@@ -34,8 +31,8 @@ const Navbar = () => {
 
             </div>
 
-            <div className="flex flex-col text-left cursor-pointer items-center justify-between" onClick={()=> navigate('/main')}>
-                <h1 className="text-2xl font-semibold text-[#4a3a2c] leading-tight">
+            <div className="flex flex-col text-center cursor-pointer items-center justify-between" onClick={()=> navigate('/main')}>
+                <h1 className="text-xl sm:text-2xl font-semibold text-[#4a3a2c] leading-tight">
                     {adminData?.institute_info?.name || "Tutora"}
                 </h1>
                 <span className="text-sm text-[#6b4c3b]">Tutor Dashboard</span>

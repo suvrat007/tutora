@@ -1,4 +1,3 @@
-import React from "react";
 import useAttendanceSummary from "@/pages/Attendence/hooks/useAttendanceSummary.js";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiCalendar } from "react-icons/fi";
@@ -42,7 +41,7 @@ const AttendancePercentages = ({ attendance, batchName, setBatchName, subjectNam
             className="bg-[#f8ede3] p-4 rounded-3xl shadow-[0_8px_24px_rgba(0,0,0,0.15)] w-full h-[25em] sm:h-full overflow-hidden"
         >
             <div className="h-full flex flex-col">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex flex-col sm:flex-row items-center justify-between mb-4">
                     <h2 className="font-bold text-lg text-[#5a4a3c]">Attendance Summary</h2>
                     <div className="flex gap-2">
                         <select

@@ -91,7 +91,7 @@ const Reminders = () => {
         <div className="px-6 py-3 border-b border-[#e6c8a8] flex flex-col h-full bg-[#f8ede3] rounded-3xl shadow-[0_8px_24px_rgba(0,0,0,0.15)]">
             <div className="flex justify-between items-center">
                 <h1 className="text-lg font-semibold text-[#5a4a3c]">
-                    📅 Reminders for Today
+                     Reminders for Today
                 </h1>
                 <motion.button
                     whileTap={{ scale: 0.95 }}

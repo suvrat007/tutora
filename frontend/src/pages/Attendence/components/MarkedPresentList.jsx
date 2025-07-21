@@ -1,4 +1,3 @@
-import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaCheckCircle } from "react-icons/fa";
 
@@ -60,7 +59,7 @@ const MarkedPresentList = ({ markedPresentStudents, batchName, subjectName, date
                     <motion.div
                         variants={placeholderVariants}
                         animate="pulse"
-                        className="flex flex-col items-center justify-center h-[70%] w-[95%] text-[#7b5c4b] mt-8"
+                        className="flex flex-col items-center justify-center h-[60%] sm:h-[70%] w-[95%] text-[#7b5c4b] mt-8"
                     >
                         <FaCheckCircle className="w-12 h-12 text-[#34C759] mb-3" />
                         <p className="text-sm text-center">
