@@ -13,7 +13,7 @@ import useFetchUser from "@/pages/useFetchUser.js";
 
 const Login = () => {
     const words = ["mazing", "wesome", "mbitious", "daptive", "dvanced"];
-    const [role, setRole] = useState("student");
+    // const [role, setRole] = useState("student");
     const [isSignup, setIsSignup] = useState(false);
     const [signupCreds, setSignupCreds] = useState(null);
     const [formData, setFormData] = useState({ name: "", emailId: "", password: "" });

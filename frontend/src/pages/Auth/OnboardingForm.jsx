@@ -86,8 +86,12 @@ const OnboardingForm = ({ adminCreds }) => {
 
         try {
             const response = await axiosInstance.post("/api/auth/signup", {
-                admin: adminCreds,
-                ...formData,
+                name: adminCreds.name,
+                emailId: adminCreds.emailId,
+                password: adminCreds.password,
+                institute_info:{
+                    ...formData,
+                }
             }, { withCredentials: true });
 
             // console.log("Signup successful:", response.data);

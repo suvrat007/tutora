@@ -11,12 +11,11 @@ router.post("/signup", async (req, res) => {
     const { error } = signupValidation.validate(req.body);
     if (error) return res.status(400).json({ message: error.details[0].message });
 
-    const { admin } = req.body;
-    if (!admin || !admin.name || !admin.emailId || !admin.password) {
+    if (!req.body || !req.body.name || !req.body.emailId || !req.body.password) {
         return res.status(400).json({ message: "Incomplete admin credentials" });
     }
 
-    const { name, emailId, password } = admin;
+    const { name, emailId, password } = req.body;
 
     try {
         const existingUser = await Admin.findOne({ emailId });
@@ -28,11 +27,11 @@ router.post("/signup", async (req, res) => {
 
         const newInstitute = new Institute({
             adminId: newUser._id,
-            name: req.body.instiName,
-            logo_URL: req.body.logo_URL,
+            name: req.body.institute_info.instiName,
+            logo_URL: req.body.institute_info.logo_URL,
             contact_info: {
-                emailId: req.body.instituteEmailId,
-                phone_number: req.body.phone_number,
+                emailId: req.body.institute_info.instituteEmailId,
+                phone_number: req.body.institute_info.phone_number,
             },
         });
 
