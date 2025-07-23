@@ -6,17 +6,17 @@ import OnboardingForm from "@/pages/Auth/OnboardingForm.jsx";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { BackgroundBeams } from "@/components/ui/background-beams";
 import { FlipWords } from "@/components/ui/flip-words";
 import useFetchUser from "@/pages/useFetchUser.js";
 
 const Login = () => {
     const words = ["mazing", "wesome", "mbitious", "daptive", "dvanced"];
-    // const [role, setRole] = useState("student");
     const [isSignup, setIsSignup] = useState(false);
     const [signupCreds, setSignupCreds] = useState(null);
     const [formData, setFormData] = useState({ name: "", emailId: "", password: "" });
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
     const fetchUser = useFetchUser();
 
@@ -33,6 +33,7 @@ const Login = () => {
 
     const handleLogin = async (e) => {
         e.preventDefault();
+        setIsLoading(true);
         try {
             const response = await axiosInstance.post(
                 "/api/auth/login",
@@ -46,20 +47,49 @@ const Login = () => {
             navigate("/main");
         } catch (err) {
             alert("Login failed. Please check your credentials.");
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const handleSignupCreds = (e) => {
         e.preventDefault();
         if (!formData.name || !formData.emailId || !formData.password) return;
-        setSignupCreds({
-            name: formData.name,
-            emailId: formData.emailId,
-            password: formData.password,
-        });
+        setIsLoading(true);
+        try {
+            setSignupCreds({
+                name: formData.name,
+                emailId: formData.emailId,
+                password: formData.password,
+            });
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     if (signupCreds) return <OnboardingForm adminCreds={signupCreds} />;
+
+    const LoadingSpinner = () => (
+        <motion.div
+            className="absolute inset-0 bg-[#f8ede3]/80 backdrop-blur-sm z-50 flex items-center justify-center rounded-2xl"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+        >
+            <motion.div
+                className="w-12 h-12 border-4 border-[#e7c6a5] border-t-[#4a3a2c] rounded-full"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            >
+                <motion.div
+                    className="w-full h-full rounded-full border-2 border-[#e7c6a5]/50"
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                />
+            </motion.div>
+        </motion.div>
+    );
 
     return (
         <div className="relative min-h-screen bg-gradient-to-br from-[#fdf5ec] to-[#f5e8dc] flex items-center justify-center px-4 sm:px-6 md:px-8 overflow-hidden">
@@ -71,7 +101,10 @@ const Login = () => {
                 className="relative z-10 w-full max-w-md"
             >
                 <Card className="rounded-2xl shadow-xl bg-[#f8ede3]/90 backdrop-blur-sm border border-[#e7c6a5]/50">
-                    <CardContent className="p-6 sm:p-8">
+                    <CardContent className="p-6 sm:p-8 relative">
+                        <AnimatePresence>
+                            {isLoading && <LoadingSpinner />}
+                        </AnimatePresence>
                         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-2 text-[#4a3a2c]">
                             <span className="inline">TUTORA</span>
                             <FlipWords className="text-[#e7c6a5]" words={words} />
@@ -79,23 +112,6 @@ const Login = () => {
                         <p className="text-center text-[#9b8778] text-sm sm:text-base mb-4">
                             Your smart, modern tutoring platform.
                         </p>
-                        {/*<div className="flex justify-center mb-4 gap-2 sm:gap-3">*/}
-                        {/*    {["Tutor"].map((r) => (*/}
-                        {/*        <button*/}
-                        {/*            key={r}*/}
-                        {/*            type="button"*/}
-                        {/*            onClick={() => setRole(r.toLowerCase())}*/}
-                        {/*            className={`px-3 sm:px-4 py-1.5 rounded-full text-sm sm:text-base font-medium border transition ${*/}
-                        {/*                role === r.toLowerCase()*/}
-                        {/*                    ? "bg-[#4a3a2c] text-white border-[#4a3a2c]"*/}
-                        {/*                    : "bg-[#f8ede3] text-[#4a3a2c] border-[#e7c6a5] hover:bg-[#e7c6a5]/20"*/}
-                        {/*            }`}*/}
-                        {/*        >*/}
-                        {/*            {r}*/}
-                        {/*        </button>*/}
-                        {/*    ))}*/}
-                        {/*</div>*/}
-
                         <form
                             onSubmit={isSignup ? handleSignupCreds : handleLogin}
                             className="space-y-4 sm:space-y-5"
@@ -109,6 +125,7 @@ const Login = () => {
                                     onChange={handleInputChange}
                                     className="bg-[#f8ede3] border-[#e7c6a5] placeholder-[#9b8778] text-[#4a3a2c] focus:ring-[#e7c6a5] focus:border-[#e7c6a5]"
                                     required
+                                    disabled={isLoading}
                                 />
                             )}
                             <Input
@@ -119,6 +136,7 @@ const Login = () => {
                                 onChange={handleInputChange}
                                 className="bg-[#f8ede3] border-[#e7c6a5] placeholder-[#9b8778] text-[#4a3a2c] focus:ring-[#e7c6a5] focus:border-[#e7c6a5]"
                                 required
+                                disabled={isLoading}
                             />
                             <Input
                                 type="password"
@@ -128,10 +146,12 @@ const Login = () => {
                                 onChange={handleInputChange}
                                 className="bg-[#f8ede3] border-[#e7c6a5] placeholder-[#9b8778] text-[#4a3a2c] focus:ring-[#e7c6a5] focus:border-[#e7c6a5]"
                                 required
+                                disabled={isLoading}
                             />
                             <Button
                                 type="submit"
                                 className="w-full bg-[#4a3a2c] text-white hover:bg-[#3e2f23] text-base sm:text-lg font-semibold rounded-md py-2.5"
+                                disabled={isLoading}
                             >
                                 {isSignup ? "Next" : `Login as Tutor`}
                             </Button>
@@ -143,7 +163,7 @@ const Login = () => {
                             <div className="flex-grow h-px bg-[#e7c6a5]/50" />
                         </div>
 
-                        <p className="mt-6 text-sm sm:text-base text-center text-[#9b8778]">
+                        <p className="mt-6 text-sm sm:text-base text-center text-[#9b8778] cursor-pointer">
                             {isSignup ? "Already have an account?" : "Don’t have an account?"}{" "}
                             <button
                                 onClick={() => {
@@ -151,6 +171,7 @@ const Login = () => {
                                     setSignupCreds(null);
                                 }}
                                 className="text-[#4a3a2c] hover:underline"
+                                disabled={isLoading}
                             >
                                 {isSignup ? "Login" : "Sign up"}
                             </button>

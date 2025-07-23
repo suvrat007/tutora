@@ -86,12 +86,12 @@ const CompleteInformationDisplay = () => {
   return (
       <div className="flex flex-col md:flex-row gap-6 p-4 overflow-y-auto w-full h-full">
         {/* Left Panel */}
-        <div className="grid grid-rows-2 gap-3 w-full sm:w-[50%] max-h-full ">
+        <div className="grid grid-rows-2 gap-3 w-full md:w-[50%] max-h-full">
           {/* Batches Overview */}
           <WrapperCard>
-            <Card className="w-full h-full  bg-[#f8ede3] text-[#4a3a2c] px-6 py-4 rounded-2xl flex flex-col gap-4 border border-[#ddb892]">
+            <Card className="w-full h-full bg-[#f8ede3] text-[#4a3a2c] px-6 py-4 rounded-2xl flex flex-col gap-4 border border-[#ddb892]">
               <p className="text-lg font-semibold">Batches Overview</p>
-              <div className="flex-1 overflow-y-auto pr-1 ">
+              <div className="flex-1 overflow-y-auto pr-1">
                 {batches.length > 0 ? (
                     batches.map((batch) => (
                         <div
@@ -110,8 +110,8 @@ const CompleteInformationDisplay = () => {
                                         key={idx}
                                         className="px-3 py-1 bg-[#d7b48f]/30 text-[#4a3a2c] rounded-full text-xs font-medium hover:bg-[#d7b48f]/50"
                                     >
-                            {s.name}
-                          </span>
+                                      {s.name}
+                                    </span>
                                 ))
                             ) : (
                                 <span className="italic text-xs">None</span>
@@ -132,44 +132,43 @@ const CompleteInformationDisplay = () => {
                 </button>
               </div>
             </Card>
-
           </WrapperCard>
 
           {/* Attendance Summary */}
           <WrapperCard>
-            <Card className="w-full h-full overflow-y-auto sm:overflow-y-visible justify-between bg-[#f8ede3] text-[#4a3a2c] p-4 rounded-2xl flex flex-col border border-[#ddb892]">
+            <Card className="w-full h-full bg-[#f8ede3] text-[#4a3a2c] p-4 rounded-2xl flex flex-col border border-[#ddb892]">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-2">
                 <h2 className="text-lg font-semibold">Average Attendance</h2>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   {renderDropdown(batchName, (v) => { setBatchName(v); setSubjectName(''); }, batches, "All Batches", isLoadingBatches)}
                   {renderDropdown(subjectName, setSubjectName, batches.find((b) => b.name === batchName)?.subject || [], "All Subjects", !batchName)}
                 </div>
               </div>
-              <div className="flex flex-col lg:flex-row gap-6">
+              <div className="flex-1 flex flex-col sm:flex-row gap-4 overflow-hidden">
                 {isLoadingBatches ? (
-                    <div className="flex-1 flex justify-center py-10">
+                    <div className="flex-1 flex justify-center items-center py-10">
                       <Loader2 className="animate-spin w-5 h-5 mr-2" /> Loading...
                     </div>
                 ) : (
                     <>
                       {/* Stats */}
-                      <div className="flex-1 flex flex-col gap-4 text-sm">
+                      <div className="flex-1 flex flex-col gap-4 text-sm min-w-0">
                         <div className="bg-[#d7b48f]/20 p-3 rounded-lg text-center">
                           <div className="font-semibold">Total Students</div>
                           <div className="text-lg font-bold">{combinedData.length}</div>
                         </div>
                         <div className="bg-[#d7b48f]/20 p-3 rounded-lg text-center">
                           <div className="font-semibold">Filter Applied</div>
-                          <div className="text-xs">
+                          <div className="text-xs truncate">
                             {batchName || subjectName
                                 ? `${batchName || 'All Batches'}${subjectName ? ` - ${subjectName}` : ''}`
-                                : 'All Data'}
+                                : 'No Filter Applied'}
                           </div>
                         </div>
                       </div>
 
                       {/* Circular Progress */}
-                      <div className="flex-1 flex flex-col items-center">
+                      <div className="flex-1 flex flex-col items-center justify-center min-w-[120px]">
                         <div className="relative inline-flex justify-center">
                           <svg width="120" height="120" className="-rotate-90">
                             <circle cx="60" cy="60" r="56" stroke="#e7c6a5" strokeWidth="8" fill="none" />
@@ -193,11 +192,11 @@ const CompleteInformationDisplay = () => {
                             </div>
                           </div>
                         </div>
-                        <div className="text-sm mt-2">Overall Average Attendance</div>
+                        <div className="text-sm mt-2 text-center">Overall Average Attendance</div>
                       </div>
 
                       {/* Distribution */}
-                      <div className="flex-1 grid grid-cols-1 gap-2 text-xs">
+                      <div className="flex-1 grid grid-cols-1 gap-2 text-xs min-w-0">
                         <div className="bg-red-50 p-2 rounded text-center">
                           <div className="font-semibold text-red-700">Below 50%</div>
                           <div>{combinedData.filter(s => s.percentage < 50).length} students</div>
