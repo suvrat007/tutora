@@ -204,11 +204,11 @@ const BatchPage = () => {
                 <motion.div
                     variants={placeholderVariants}
                     animate="pulse"
-                    className="text-center py-12"
+                    onClick={() => !isLoading && setCreateBatches(true)}
+                    className="text-center py-12 cursor-pointer mx-10 "
                 >
-                    <BookOpen className="text-6xl text-[#e0c4a8] mb-4" />
                     <h3 className="text-xl font-semibold text-[#5a4a3c] mb-2">No batches yet</h3>
-                    <p className="text-[#7b5c4b]">Create your first batch to get started</p>
+                    <p className="text-[#7b5c4b]">Click here and create your first batch to get started</p>
                 </motion.div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -225,7 +225,7 @@ const BatchPage = () => {
 
     return (
         <div className="h-full p-4 overflow-y-auto">
-            <WrapperCard className="h-auto w-full">
+            <WrapperCard className="h-full w-full">
                 {viewDetails.display ? (
                     <ViewBatchDetails
                         viewDetails={viewDetails}
