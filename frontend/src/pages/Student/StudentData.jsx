@@ -99,9 +99,10 @@ const StudentData = () => {
                     <motion.div
                         variants={placeholderVariants}
                         animate="pulse"
+                        onClick={() => setShowAddStd(true)}
                         className="flex flex-col items-center justify-center h-[50vh] sm:h-[60vh] text-[#7b5c4b]"
                     >
-                      <p className="text-sm sm:text-base text-center">No students found. Adjust filters or add a new student.</p>
+                      <p className="text-sm sm:text-base text-center">No students found. Adjust filters or Click and add a new student.</p>
                     </motion.div>
                 ) : (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 p-3 sm:p-4 overflow-y-auto h-[50vh] sm:h-[60vh]">
