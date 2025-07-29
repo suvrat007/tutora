@@ -87,7 +87,7 @@ const StudentData = () => {
 
   return (
       <>
-        <div className="flex flex-col-reverse lg:flex-row gap-4 h-full p-4 mx-auto overflow-y-auto">
+        <div className="w-full flex flex-col-reverse lg:flex-row gap-4 h-full p-4 mx-auto overflow-y-auto">
           {/* Students List */}
           <div className="w-full lg:w-2/3">
             <WrapperCard>
@@ -102,7 +102,8 @@ const StudentData = () => {
                         onClick={() => setShowAddStd(true)}
                         className="flex flex-col items-center justify-center h-[50vh] sm:h-[60vh] text-[#7b5c4b]"
                     >
-                      <p className="text-sm sm:text-base text-center">No students found. Adjust filters or Click and add a new student.</p>
+                      <p className="text-sm sm:text-base text-center">No students found. Adjust filters or </p>
+                      <p className="text-sm sm:text-base text-center">Click and add a new student. </p>
                     </motion.div>
                 ) : (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 p-3 sm:p-4 overflow-y-auto h-[50vh] sm:h-[60vh]">
