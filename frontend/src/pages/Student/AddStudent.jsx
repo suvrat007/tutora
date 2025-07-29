@@ -67,21 +67,20 @@ const AddStudent = ({
     const validateForm = () => {
         const errors = {};
 
-        if (!newStudent.name) errors.name = "Student name is required";
-        if (!newStudent.grade) errors.grade = "Grade is required";
+        // Required field validations
+        if (!newStudent.name.trim()) errors.name = "Please fill in the student name";
+        if (!newStudent.grade.trim()) errors.grade = "Please fill in the grade";
+        if (!newStudent.address.trim()) errors.address = "Please fill in the address";
+        if (!newStudent.school_name.trim()) errors.school_name = "Please fill in the school name";
+        if (!newStudent.contact_info.emailIds.student.trim()) errors.student_email = "Please fill in the student email";
+        if (!newStudent.contact_info.phoneNumbers.student.trim()) errors.student_phone = "Please fill in the student phone";
+        if (!newStudent.contact_info.emailIds.dad.trim()) errors.dad_email = "Please fill in the father email";
+        if (!newStudent.contact_info.phoneNumbers.dad.trim()) errors.dad_phone = "Please fill in the father phone";
+        if (!newStudent.contact_info.emailIds.mom.trim()) errors.mom_email = "Please fill in the mother email";
+        if (!newStudent.contact_info.phoneNumbers.mom.trim()) errors.mom_phone = "Please fill in the mother phone";
+        if (!newStudent.fee_status.amount.trim()) errors.fee_amount = "Please fill in the fee amount";
 
-        if (!isEditMode) {
-            if (!newStudent.address) errors.address = "Address is required";
-            if (!newStudent.school_name) errors.school_name = "School name is required";
-            if (!newStudent.contact_info.emailIds.student) errors.student_email = "Student email is required";
-            if (!newStudent.contact_info.phoneNumbers.student) errors.student_phone = "Student phone is required";
-            if (!newStudent.contact_info.emailIds.dad) errors.dad_email = "Father email is required";
-            if (!newStudent.contact_info.phoneNumbers.dad) errors.dad_phone = "Father phone is required";
-            if (!newStudent.contact_info.emailIds.mom) errors.mom_email = "Mother email is required";
-            if (!newStudent.contact_info.phoneNumbers.mom) errors.mom_phone = "Mother phone is required";
-            if (!newStudent.fee_status.amount) errors.fee_amount = "Fee amount is required";
-        }
-
+        // Batch and subject validation (only if a batch is selected)
         if (selectedBatchId) {
             const selectedBatch = batches.find((b) => b._id === selectedBatchId);
             if (selectedBatch && String(selectedBatch.forStandard) !== String(newStudent.grade)) {
@@ -244,7 +243,7 @@ const AddStudent = ({
                         </div>
                     ))}
 
-                    <div >
+                    <div>
                         <p className="font-semibold text-[#5a4a3c] text-sm sm:text-base mb-2">Choose Batch to add student in (Optional)</p>
                         {eligibleBatches.length === 0 ? (
                             <motion.div
@@ -274,8 +273,8 @@ const AddStudent = ({
                                 ))}
                             </select>
                         )}
-                        {formErrors.batch && <p className="text-red-500 text-xs sm:text-sm mt-1">{formErrors.batch}</p>}
                         {formErrors.batchGradeMismatch && <p className="text-red-500 text-xs sm:text-sm mt-1">{formErrors.batchGradeMismatch}</p>}
+                        {formErrors.subjectId && <p className="text-red-500 text-xs sm:text-sm mt-1">{formErrors.subjectId}</p>}
                     </div>
 
                     {selectedBatchId && (

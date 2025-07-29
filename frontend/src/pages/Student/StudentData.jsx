@@ -87,7 +87,7 @@ const StudentData = () => {
 
   return (
       <>
-        <div className="flex flex-col-reverse lg:flex-row gap-4 h-full p-4 mx-auto overflow-y-auto">
+        <div className="w-full flex flex-col-reverse lg:flex-row gap-4 h-full p-4 mx-auto overflow-y-auto">
           {/* Students List */}
           <div className="w-full lg:w-2/3">
             <WrapperCard>
