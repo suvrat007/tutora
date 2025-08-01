@@ -53,8 +53,9 @@ const AddStudent = ({
         if (isEditMode && existingStudentData) {
             setNewStudent({
                 ...existingStudentData,
+                grade: String(existingStudentData.grade || ""), // Ensure grade is a string
                 fee_status: {
-                    amount: existingStudentData.fee_status?.amount || "",
+                    amount: String(existingStudentData.fee_status?.amount || ""), // Ensure amount is a string
                     feeStatus: existingStudentData.fee_status?.feeStatus?.length > 0
                         ? existingStudentData.fee_status.feeStatus
                         : [{ date: new Date(existingStudentData.admission_date), paid: false }],
@@ -69,7 +70,7 @@ const AddStudent = ({
 
         // Required field validations
         if (!newStudent.name.trim()) errors.name = "Please fill in the student name";
-        if (!newStudent.grade.trim()) errors.grade = "Please fill in the grade";
+        if (!newStudent.grade || String(newStudent.grade).trim() === "") errors.grade = "Please fill in the grade";
         if (!newStudent.address.trim()) errors.address = "Please fill in the address";
         if (!newStudent.school_name.trim()) errors.school_name = "Please fill in the school name";
         if (!newStudent.contact_info.emailIds.student.trim()) errors.student_email = "Please fill in the student email";
@@ -78,7 +79,7 @@ const AddStudent = ({
         if (!newStudent.contact_info.phoneNumbers.dad.trim()) errors.dad_phone = "Please fill in the father phone";
         if (!newStudent.contact_info.emailIds.mom.trim()) errors.mom_email = "Please fill in the mother email";
         if (!newStudent.contact_info.phoneNumbers.mom.trim()) errors.mom_phone = "Please fill in the mother phone";
-        if (!newStudent.fee_status.amount.trim()) errors.fee_amount = "Please fill in the fee amount";
+        if (!newStudent.fee_status.amount || String(newStudent.fee_status.amount).trim() === "") errors.fee_amount = "Please fill in the fee amount";
 
         // Batch and subject validation (only if a batch is selected)
         if (selectedBatchId) {

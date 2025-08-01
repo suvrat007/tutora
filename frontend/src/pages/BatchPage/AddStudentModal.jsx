@@ -156,7 +156,7 @@ const AddStudentModal = ({ onClose, setRerender, batch, refreshStudents }) => {
                                 <li key={student._id} className="py-3 px-4">
                                     <div
                                         onClick={() => handleSelectStudent(student._id)}
-                                        className={`cursor-pointer rounded-lg transition ${isSelected ? 'bg-[#f0d9c0]' : 'hover:bg-[#f0d9c0]'}`}
+                                        className={`cursor-pointer px-5 p-2 rounded-lg transition ${isSelected ? 'bg-[#f0d9c0]' : 'hover:bg-[#f0d9c0]'}`}
                                     >
                                         <div className="flex flex-col">
                                             <span className="font-semibold text-[#5a4a3c]">{student.name}</span>

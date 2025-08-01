@@ -23,7 +23,7 @@ export const AttendanceForm = ({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeInOut" }}
-            className="bg-[#f8ede3] p-4 rounded-3xl shadow-[0_8px_24px_rgba(0,0,0,0.15)] flex-1 w-full h-full overflow-hidden"
+            className="bg-[#f8ede3] p-4 rounded-3xl shadow-[0_8px_24px_rgba(0,0,0,0.15)] flex-1 w-full h-full overflow-y-auto"
         >
             <div className="flex flex-col gap-4 h-full">
                 <select
