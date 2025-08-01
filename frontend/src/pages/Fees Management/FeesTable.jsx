@@ -11,10 +11,9 @@ import WrapperCard from "@/utilities/WrapperCard.jsx";
 import axiosInstance from "@/utilities/axiosInstance.jsx";
 import { useState } from "react";
 
-
 const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
+    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
 };
 
 const placeholderVariants = {
@@ -32,16 +31,16 @@ const FeesTable = ({ batches, students, fetchStudents }) => {
     const [paidFilter, setPaidFilter] = useState("");
 
     const availableSubjects = batchFilter
-        ? (batches.find((batch) => batch.batchId === batchFilter)?.students || [])
+        ? [...(batches.find((batch) => batch.batchId === batchFilter)?.students || [])
             .flatMap((student) => student.subjects || [])
             .filter((subject) => subject && subject !== "Unknown Subject")
-            .filter((subject, index, array) => array.indexOf(subject) === index)
-            .sort()
-        : students
+            .filter((subject, index, array) => array.indexOf(subject) === index)]
+            .sort() // Spread the array to create a new one before sorting
+        : [...students
             .flatMap((student) => student.subjects || [])
             .filter((subject) => subject && subject !== "Unknown Subject")
-            .filter((subject, index, array) => array.indexOf(subject) === index)
-            .sort();
+            .filter((subject, index, array) => array.indexOf(subject) === index)]
+            .sort(); // Spread the array to create a new one before sorting
 
     const filteredStudents = students.filter((student) => {
         const matchesBatch = batchFilter ? student.batchId === batchFilter : true;
@@ -123,7 +122,7 @@ const FeesTable = ({ batches, students, fetchStudents }) => {
                 <div className="bg-[#f8ede3] rounded-3xl h-[80vh] overflow-hidden flex flex-col">
                     <div className="px-6 py-4 bg-[#f0d9c0] border-b border-[#e6c8a8]">
                         <div className="flex flex-col sm:flex-row items-center justify-between flex-wrap gap-2 w-full">
-                            <div className="flex flex-col items-center sm:items-start justify-center w-full">
+                            <div className="flex flex-col items-center items-start justify-center w-full">
                                 <h2 className="text-xl font-semibold text-[#5a4a3c] flex items-center gap-2 text-center sm:text-left">
                                     <Users className="w-5 h-5 text-[#5a4a3c]"/>
                                     Student Fee Details
@@ -197,7 +196,7 @@ const FeesTable = ({ batches, students, fetchStudents }) => {
                             <select
                                 value={paidFilter}
                                 onChange={(e) => setPaidFilter(e.target.value)}
-                                className="w-full p-2 rounded-lg border border-[#e6c8a8] text-sm text-[#5a4a3c] bg-[#f8ede3] focus:ring-[#e0c4a8] focus:border-[#e0c4a8]"
+                                className="w-full p-2 rounded-lg border border-[#e6c8a8] text-sm text-[#5a4a3c] bg-[#f8ede3] focus:ring-[#e0c4a8] focus:border-[#e6c8a8]"
                             >
                                 <option value="">All Statuses</option>
                                 <option value="paid">Paid</option>
