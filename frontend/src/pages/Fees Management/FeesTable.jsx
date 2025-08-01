@@ -29,6 +29,7 @@ const FeesTable = ({ batches, students, fetchStudents, monthFilter, setMonthFilt
     const [batchFilter, setBatchFilter] = useState("");
     const [subjectFilter, setSubjectFilter] = useState("");
     const [paidFilter, setPaidFilter] = useState("");
+    const currentMonth = `${new Date().toLocaleString("default", { month: "long" })} ${new Date().getFullYear()}`;
 
     // Extract unique months from feeStatus arrays
     const availableMonths = [
@@ -63,30 +64,32 @@ const FeesTable = ({ batches, students, fetchStudents, monthFilter, setMonthFilt
 
     // Get fee status for the selected month
     const getMonthStatus = (feeStatus, month) => {
-        if (!month) return { isPaid: false, date: null };
+        const effectiveMonth = month === "Present Month" ? currentMonth : month;
+        if (!effectiveMonth) return { isPaid: false, date: null };
         const status = (feeStatus || []).find((s) => {
             const date = new Date(s.date);
             const monthYear = `${date.toLocaleString("default", { month: "long" })} ${date.getFullYear()}`;
-            return monthYear === month;
+            return monthYear === effectiveMonth;
         });
         return status ? { isPaid: status.paid, date: new Date(status.date) } : { isPaid: false, date: null };
     };
 
     const filteredStudents = students.filter((student) => {
+        const effectiveMonth = monthFilter === "Present Month" ? currentMonth : monthFilter;
         const matchesBatch = batchFilter ? student.batchId === batchFilter : true;
         const matchesSubject = subjectFilter
             ? (student.subjects || []).includes(subjectFilter)
             : true;
         const matchesPaid = paidFilter
             ? paidFilter === "paid"
-                ? getMonthStatus(student.feeStatus, monthFilter).isPaid
-                : !getMonthStatus(student.feeStatus, monthFilter).isPaid
+                ? getMonthStatus(student.feeStatus, effectiveMonth).isPaid
+                : !getMonthStatus(student.feeStatus, effectiveMonth).isPaid
             : true;
-        const matchesMonth = monthFilter
+        const matchesMonth = effectiveMonth
             ? (student.feeStatus || []).some((status) => {
                 const date = new Date(status.date);
                 const monthYear = `${date.toLocaleString("default", { month: "long" })} ${date.getFullYear()}`;
-                return monthYear === monthFilter;
+                return monthYear === effectiveMonth;
             })
             : true;
 
@@ -113,11 +116,11 @@ const FeesTable = ({ batches, students, fetchStudents, monthFilter, setMonthFilt
                 {
                     studentIds: selectedStudentIds,
                     paid: true,
-                    date: monthFilter
-                        ? new Date(
+                    date: monthFilter === "Present Month" || !monthFilter
+                        ? new Date().toISOString()
+                        : new Date(
                             `${monthFilter.split(" ")[0]} 1, ${monthFilter.split(" ")[1]}`
-                        ).toISOString()
-                        : new Date().toISOString(),
+                        ).toISOString(),
                 },
                 { withCredentials: true }
             );
@@ -151,6 +154,23 @@ const FeesTable = ({ batches, students, fetchStudents, monthFilter, setMonthFilt
             .filter((status) => status.paid)
             .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
         return paidStatus ? new Date(paidStatus.date) : null;
+    };
+
+    // Get fee updates for display
+    const getFeeUpdates = (feeStatus, month) => {
+        if (!feeStatus || feeStatus.length === 0) return [];
+        const effectiveMonth = month === "Present Month" ? currentMonth : month;
+        if (effectiveMonth) {
+            const status = (feeStatus || []).find((s) => {
+                const date = new Date(s.date);
+                const monthYear = `${date.toLocaleString("default", { month: "long" })} ${date.getFullYear()}`;
+                return monthYear === effectiveMonth;
+            });
+            return status ? [status] : [];
+        }
+        return [...feeStatus]
+            .sort((a, b) => new Date(b.date) - new Date(a.date))
+            .slice(0, 2);
     };
 
     return (
@@ -205,7 +225,7 @@ const FeesTable = ({ batches, students, fetchStudents, monthFilter, setMonthFilt
                                     setBatchFilter(e.target.value);
                                     setSubjectFilter("");
                                 }}
-                                className="w-full p-2 rounded-lg border border-[#e6c8a8] text-sm text-[#5a4a3c] bg-[#f8ede3] focus:ring-[#e0c4a8] focus:border-[#e6c8a8]"
+                                className="w-full p-2 rounded-lg border border-[#e6c8a8] text-sm text-[#5a4a3c] bg-[#f8ede3] focus:ring-[#e0c4a8] focus:border-[#e0c4a8]"
                             >
                                 <option value="">All Batches</option>
                                 {batches.map((batch) => (
@@ -251,7 +271,7 @@ const FeesTable = ({ batches, students, fetchStudents, monthFilter, setMonthFilt
                                 className="w-full p-2 rounded-lg border border-[#e6c8a8] text-sm text-[#5a4a3c] bg-[#f8ede3] focus:ring-[#e0c4a8] focus:border-[#e0c4a8]"
                                 disabled={availableMonths.length === 0}
                             >
-                                <option value="">Present Month</option>
+                                <option value="Present Month">Present Month</option>
                                 {availableMonths.map((month) => (
                                     <option key={month} value={month}>
                                         {month}
@@ -314,6 +334,7 @@ const FeesTable = ({ batches, students, fetchStudents, monthFilter, setMonthFilt
                                 <AnimatePresence>
                                     {filteredStudents.map((student, index) => {
                                         const monthStatus = getMonthStatus(student.feeStatus, monthFilter);
+                                        const feeUpdates = getFeeUpdates(student.feeStatus, monthFilter);
                                         return (
                                             <motion.tr
                                                 key={student.studentId}
@@ -371,24 +392,18 @@ const FeesTable = ({ batches, students, fetchStudents, monthFilter, setMonthFilt
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    {student.feeStatus && student.feeStatus.length > 0 ? (
+                                                    {feeUpdates.length > 0 ? (
                                                         <div className="space-y-1">
-                                                            {[...student.feeStatus]
-                                                                .sort((a, b) => new Date(b.date) - new Date(a.date))
-                                                                .slice(0, 2)
-                                                                .map((status, index) => (
-                                                                    <div key={index} className="flex items-center gap-2 text-xs">
-                                                                        <Calendar className="w-3 h-3 text-[#7b5c4b]" />
-                                                                        <span className="text-[#7b5c4b]">
-                                                                            {status.paid
-                                                                                ? `Paid on ${new Date(status.date).toLocaleDateString()}`
-                                                                                : `Last paid on ${
-                                                                                    getLastPaidDate(student.feeStatus)?.toLocaleDateString() ||
-                                                                                    "No payment history"
-                                                                                }`}
-                                                                        </span>
-                                                                    </div>
-                                                                ))}
+                                                            {feeUpdates.map((status, index) => (
+                                                                <div key={index} className="flex items-center gap-2 text-xs">
+                                                                    <Calendar className="w-3 h-3 text-[#7b5c4b]" />
+                                                                    <span className="text-[#7b5c4b]">
+                                                                        {status.paid
+                                                                            ? `Paid on ${new Date(status.date).toLocaleDateString()}`
+                                                                            : `Unpaid on ${new Date(status.date).toLocaleDateString()}`}
+                                                                    </span>
+                                                                </div>
+                                                            ))}
                                                         </div>
                                                     ) : (
                                                         <span className="text-[#7b5c4b] text-xs">No payment history</span>

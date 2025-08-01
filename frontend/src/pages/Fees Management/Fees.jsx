@@ -25,7 +25,8 @@ const placeholderVariants = {
 
 const Fees = () => {
     const { batches, students, totalInstituteFees } = useSelector((state) => state.fees);
-    const [monthFilter, setMonthFilter] = useState(""); // Manage month filter state
+    const currentMonth = `${new Date().toLocaleString("default", { month: "long" })} ${new Date().getFullYear()}`;
+    const [monthFilter, setMonthFilter] = useState(currentMonth); // Default to present month
     const isNoData =
         !batches ||
         batches.length === 0 ||
@@ -35,15 +36,13 @@ const Fees = () => {
         totalInstituteFees === 0;
     const fetchStudents = useFetchStudents();
 
-    // Calculate total paid amount for the selected month
+    // Calculate total paid amount for the selected month (or present month by default)
     const totalPaidAmount = students.reduce((sum, student) => {
-        if (!monthFilter) {
-            return student.isPaidThisMonth ? sum + (student.amount || 0) : sum;
-        }
+        const effectiveMonth = monthFilter === "Present Month" ? currentMonth : monthFilter;
         const paidInMonth = (student.feeStatus || []).some((status) => {
             const date = new Date(status.date);
             const monthYear = `${date.toLocaleString("default", { month: "long" })} ${date.getFullYear()}`;
-            return monthYear === monthFilter && status.paid;
+            return monthYear === effectiveMonth && status.paid;
         });
         return paidInMonth ? sum + (student.amount || 0) : sum;
     }, 0);
@@ -97,7 +96,9 @@ const Fees = () => {
                                         <p className="text-2xl font-bold text-[#5a4a3c] mt-2">
                                             ₹{totalPaidAmount.toLocaleString()}
                                         </p>
-                                        <p className="text-sm text-[#7b5c4b] mt-1">Collected {monthFilter ? `in ${monthFilter}` : ""}</p>
+                                        <p className="text-sm text-[#7b5c4b] mt-1">
+                                            Collected {monthFilter === "Present Month" ? "this month" : `in ${monthFilter}`}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
