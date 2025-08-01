@@ -9,6 +9,7 @@ import {
 import WrapperCard from "@/utilities/WrapperCard.jsx";
 import useFetchStudents from "@/pages/useFetchStudents.js";
 import FeesTable from "@/pages/Fees Management/FeesTable.jsx";
+import { useState } from "react";
 
 const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
@@ -24,6 +25,7 @@ const placeholderVariants = {
 
 const Fees = () => {
     const { batches, students, totalInstituteFees } = useSelector((state) => state.fees);
+    const [monthFilter, setMonthFilter] = useState(""); // Manage month filter state
     const isNoData =
         !batches ||
         batches.length === 0 ||
@@ -33,13 +35,22 @@ const Fees = () => {
         totalInstituteFees === 0;
     const fetchStudents = useFetchStudents();
 
+    // Calculate total paid amount for the selected month
     const totalPaidAmount = students.reduce((sum, student) => {
-        return student.isPaidThisMonth ? sum + (student.amount || 0) : sum;
+        if (!monthFilter) {
+            return student.isPaidThisMonth ? sum + (student.amount || 0) : sum;
+        }
+        const paidInMonth = (student.feeStatus || []).some((status) => {
+            const date = new Date(status.date);
+            const monthYear = `${date.toLocaleString("default", { month: "long" })} ${date.getFullYear()}`;
+            return monthYear === monthFilter && status.paid;
+        });
+        return paidInMonth ? sum + (student.amount || 0) : sum;
     }, 0);
 
     if (isNoData) {
         return (
-            <div className="h-full  m-4 flex items-center justify-center">
+            <div className="h-full m-4 flex items-center justify-center">
                 <motion.div
                     variants={placeholderVariants}
                     animate="pulse"
@@ -86,7 +97,7 @@ const Fees = () => {
                                         <p className="text-2xl font-bold text-[#5a4a3c] mt-2">
                                             ₹{totalPaidAmount.toLocaleString()}
                                         </p>
-                                        <p className="text-sm text-[#7b5c4b] mt-1">Collected</p>
+                                        <p className="text-sm text-[#7b5c4b] mt-1">Collected {monthFilter ? `in ${monthFilter}` : ""}</p>
                                     </div>
                                 </div>
                             </div>
@@ -188,6 +199,8 @@ const Fees = () => {
                         batches={batches}
                         students={students}
                         fetchStudents={fetchStudents}
+                        monthFilter={monthFilter}
+                        setMonthFilter={setMonthFilter}
                     />
                 </div>
             </div>
