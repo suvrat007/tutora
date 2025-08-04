@@ -5,6 +5,12 @@ _A CRM-based SaaS platform empowering solo tutors and small coaching educators t
 ## 🚀 Problem Statement  
 Solo educators juggle scattered tools—WhatsApp chats, Google Sheets, manual reminders, and disparate payment records—wasting time on repetitive admin tasks and missing crucial student data points.
 
+<video width="100%" controls>
+  <source src="/demo.mp4" type="video/mp4" />
+  Your browser does not support the video tag.
+</video>
+
+
 ## 🎯 Target Audience  
 - **Individual Tutors** (1-on-1 or small groups)  
 - **Freelance Educators** building coaching brands  
@@ -46,7 +52,7 @@ Tutora unifies attendance tracking and fee management into a single, intuitive d
    npm install
    npm start
    ```
-4. Open your browser at `http://localhost:1573` (frontend) and `http://localhost:8000` (API)
+4. Open your browser at `http://localhost:5173` (frontend) and `http://localhost:8000` (API)
 
 ## 🤝 Contribute & Feedback  
 Questions, feature requests, or bug reports? Open an issue on GitHub or reach out directly. Let’s build the ultimate teaching platform together!
