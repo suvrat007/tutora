@@ -8,7 +8,7 @@ const Institute = require("../models/Institutes");
 const {OAuth2Client} = require("google-auth-library");
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-router.post('/google-auth', async (req, res) => {
+router.post('/google-auth',async (req, res) => {
     try {
         const { credential } = req.body; // Google ID token from frontend
 
@@ -22,7 +22,7 @@ router.post('/google-auth', async (req, res) => {
         const { email, given_name, picture } = payload;
 
         // Check if user exists or create new one
-        let user = await Admin.findOne({ emailId });
+        let user = await Admin.findOne({ emailId: email });
 
         if (!user) {
             user = new Admin({

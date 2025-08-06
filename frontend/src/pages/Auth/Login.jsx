@@ -12,7 +12,7 @@ import { FlipWords } from "@/components/ui/flip-words";
 import useFetchUser from "@/pages/useFetchUser.js";
 import toast from "react-hot-toast";
 import axios from "axios";
-import {GoogleLogin, GoogleOAuthProvider} from "@react-oauth/google";
+import {GoogleLogin} from "@react-oauth/google";
 
 const Login = () => {
     const words = ["mazing", "wesome", "mbitious", "daptive", "dvanced"];
@@ -114,7 +114,7 @@ const Login = () => {
     );
 
     return (
-        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+        // <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
             <div className="relative min-h-screen bg-gradient-to-br from-[#fdf5ec] to-[#f5e8dc] flex items-center justify-center px-4 sm:px-6 md:px-8 overflow-hidden">
                 <BackgroundBeams className="absolute top-0 left-0 w-full h-full z-0"/>
                 <motion.div
@@ -209,8 +209,6 @@ const Login = () => {
                     </Card>
                 </motion.div>
             </div>
-
-        </GoogleOAuthProvider>
     );
 };
 
