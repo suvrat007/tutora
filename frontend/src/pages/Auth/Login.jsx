@@ -10,6 +10,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { BackgroundBeams } from "@/components/ui/background-beams";
 import { FlipWords } from "@/components/ui/flip-words";
 import useFetchUser from "@/pages/useFetchUser.js";
+import toast from "react-hot-toast";
+import axios from "axios";
+import {GoogleLogin, GoogleOAuthProvider} from "@react-oauth/google";
 
 const Login = () => {
     const words = ["mazing", "wesome", "mbitious", "daptive", "dvanced"];
@@ -52,6 +55,25 @@ const Login = () => {
         }
     };
 
+    const handleGoogleLogin=async (credentialResponse)=>{
+        try{
+            setIsLoading(true);
+            const response=await axiosInstance.post('/api/auth/google-auth',{credential: credentialResponse.credential},{withCredentials:true})
+            await fetchUser();
+            navigate('/main');
+            // toast.success("Google login successful!");
+        }
+        catch (err) {
+            if (axios.isAxiosError(err)) {
+                console.log(err);
+                toast.error(err.response?.data.message || err.message);
+            } else {
+                toast.error("Internal server error");
+            }
+        } finally {
+            setIsLoading(false);
+        }
+    }
     const handleSignupCreds = (e) => {
         e.preventDefault();
         if (!formData.name || !formData.emailId || !formData.password) return;
@@ -92,94 +114,103 @@ const Login = () => {
     );
 
     return (
-        <div className="relative min-h-screen bg-gradient-to-br from-[#fdf5ec] to-[#f5e8dc] flex items-center justify-center px-4 sm:px-6 md:px-8 overflow-hidden">
-            <BackgroundBeams className="absolute top-0 left-0 w-full h-full z-0" />
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
-                className="relative z-10 w-full max-w-md"
-            >
-                <Card className="rounded-2xl shadow-xl bg-[#f8ede3]/90 backdrop-blur-sm border border-[#e7c6a5]/50">
-                    <CardContent className="p-6 sm:p-8 relative">
-                        <AnimatePresence>
-                            {isLoading && <LoadingSpinner />}
-                        </AnimatePresence>
-                        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-2 text-[#4a3a2c]">
-                            <span className="inline">TUTORA</span>
-                            <FlipWords className="text-[#e7c6a5]" words={words} />
-                        </h1>
-                        <p className="text-center text-[#9b8778] text-sm sm:text-base mb-4">
-                            Your smart, modern tutoring platform.
-                        </p>
-                        <form
-                            onSubmit={isSignup ? handleSignupCreds : handleLogin}
-                            className="space-y-4 sm:space-y-5"
-                        >
-                            {isSignup && (
+        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+            <div className="relative min-h-screen bg-gradient-to-br from-[#fdf5ec] to-[#f5e8dc] flex items-center justify-center px-4 sm:px-6 md:px-8 overflow-hidden">
+                <BackgroundBeams className="absolute top-0 left-0 w-full h-full z-0"/>
+                <motion.div
+                    initial={{opacity: 0, y: 20}}
+                    animate={{opacity: 1, y: 0}}
+                    transition={{duration: 0.8}}
+                    className="relative z-10 w-full max-w-md"
+                >
+                    <Card className="rounded-2xl shadow-xl bg-[#f8ede3]/90 backdrop-blur-sm border border-[#e7c6a5]/50">
+                        <CardContent className="p-6 sm:p-8 relative">
+                            <AnimatePresence>
+                                {isLoading && <LoadingSpinner/>}
+                            </AnimatePresence>
+                            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-2 text-[#4a3a2c]">
+                                <span className="inline">TUTORA</span>
+                                <FlipWords className="text-[#e7c6a5]" words={words}/>
+                            </h1>
+                            <p className="text-center text-[#9b8778] text-sm sm:text-base mb-4">
+                                Your smart, modern tutoring platform.
+                            </p>
+                            <form
+                                onSubmit={isSignup ? handleSignupCreds : handleLogin}
+                                className="space-y-4 sm:space-y-5"
+                            >
+                                {isSignup && (
+                                    <Input
+                                        type="text"
+                                        name="name"
+                                        placeholder="Username"
+                                        value={formData.name}
+                                        onChange={handleInputChange}
+                                        className="bg-[#f8ede3] border-[#e7c6a5] placeholder-[#9b8778] text-[#4a3a2c] focus:ring-[#e7c6a5] focus:border-[#e7c6a5]"
+                                        required
+                                        disabled={isLoading}
+                                    />
+                                )}
                                 <Input
-                                    type="text"
-                                    name="name"
-                                    placeholder="Username"
-                                    value={formData.name}
+                                    type="email"
+                                    name="emailId"
+                                    placeholder="Email"
+                                    value={formData.emailId}
                                     onChange={handleInputChange}
                                     className="bg-[#f8ede3] border-[#e7c6a5] placeholder-[#9b8778] text-[#4a3a2c] focus:ring-[#e7c6a5] focus:border-[#e7c6a5]"
                                     required
                                     disabled={isLoading}
                                 />
-                            )}
-                            <Input
-                                type="email"
-                                name="emailId"
-                                placeholder="Email"
-                                value={formData.emailId}
-                                onChange={handleInputChange}
-                                className="bg-[#f8ede3] border-[#e7c6a5] placeholder-[#9b8778] text-[#4a3a2c] focus:ring-[#e7c6a5] focus:border-[#e7c6a5]"
-                                required
-                                disabled={isLoading}
-                            />
-                            <Input
-                                type="password"
-                                name="password"
-                                placeholder="Password"
-                                value={formData.password}
-                                onChange={handleInputChange}
-                                className="bg-[#f8ede3] border-[#e7c6a5] placeholder-[#9b8778] text-[#4a3a2c] focus:ring-[#e7c6a5] focus:border-[#e7c6a5]"
-                                required
-                                disabled={isLoading}
-                            />
-                            <Button
-                                type="submit"
-                                className="w-full bg-[#4a3a2c] text-white hover:bg-[#3e2f23] text-base sm:text-lg font-semibold rounded-md py-2.5"
-                                disabled={isLoading}
-                            >
-                                {isSignup ? "Next" : `Login as Tutor`}
-                            </Button>
-                        </form>
+                                <Input
+                                    type="password"
+                                    name="password"
+                                    placeholder="Password"
+                                    value={formData.password}
+                                    onChange={handleInputChange}
+                                    className="bg-[#f8ede3] border-[#e7c6a5] placeholder-[#9b8778] text-[#4a3a2c] focus:ring-[#e7c6a5] focus:border-[#e7c6a5]"
+                                    required
+                                    disabled={isLoading}
+                                />
+                                <Button
+                                    type="submit"
+                                    className="w-full bg-[#4a3a2c] text-white hover:bg-[#3e2f23] text-base sm:text-lg font-semibold rounded-md py-2.5"
+                                    disabled={isLoading}
+                                >
+                                    {isSignup ? "Next" : `Login as Tutor`}
+                                </Button>
+                            </form>
 
-                        <div className="my-6 flex items-center">
-                            <div className="flex-grow h-px bg-[#e7c6a5]/50" />
-                            <span className="px-4 text-sm sm:text-base text-[#9b8778]">or continue with</span>
-                            <div className="flex-grow h-px bg-[#e7c6a5]/50" />
-                        </div>
+                            <div className="my-6 flex items-center">
+                                <div className="flex-grow h-px bg-[#e7c6a5]/50"/>
+                                <span className="px-4 text-sm sm:text-base text-[#9b8778]">or continue with</span>
+                                <div className="flex-grow h-px bg-[#e7c6a5]/50"/>
+                            </div>
 
-                        <p className="mt-6 text-sm sm:text-base text-center text-[#9b8778] cursor-pointer">
-                            {isSignup ? "Already have an account?" : "Don’t have an account?"}{" "}
-                            <button
-                                onClick={() => {
-                                    setIsSignup(!isSignup);
-                                    setSignupCreds(null);
-                                }}
-                                className="text-[#4a3a2c] hover:underline"
-                                disabled={isLoading}
-                            >
-                                {isSignup ? "Login" : "Sign up"}
-                            </button>
-                        </p>
-                    </CardContent>
-                </Card>
-            </motion.div>
-        </div>
+                            <p className="mt-6 text-sm sm:text-base text-center text-[#9b8778] cursor-pointer">
+                                {isSignup ? "Already have an account?" : "Don’t have an account?"}{" "}
+                                <button
+                                    onClick={() => {
+                                        setIsSignup(!isSignup);
+                                        setSignupCreds(null);
+                                    }}
+                                    className="text-[#4a3a2c] hover:underline"
+                                    disabled={isLoading}
+                                >
+                                    {isSignup ? "Login" : "Sign up"}
+                                </button>
+                            </p>
+
+                            <GoogleLogin
+                                onSuccess={handleGoogleLogin}
+                                onError={()=>{toast.error('Google Login Failed')}}
+                                useOneTap
+                            />
+                        </CardContent>
+                    </Card>
+                </motion.div>
+            </div>
+
+        </GoogleOAuthProvider>
     );
 };
 

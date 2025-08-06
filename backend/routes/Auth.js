@@ -5,7 +5,59 @@ const jwt = require('jsonwebtoken');
 const Admin = require('../models/Admin');
 const {signupValidation,logInValidation} = require('../utils/validations');
 const Institute = require("../models/Institutes");
+const {OAuth2Client} = require("google-auth-library");
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
+router.post('/google-auth', async (req, res) => {
+    try {
+        const { credential } = req.body; // Google ID token from frontend
+
+        // Verify the Google token
+        const ticket = await client.verifyIdToken({
+            idToken: credential,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+
+        const payload = ticket.getPayload();
+        const { email, given_name, picture } = payload;
+
+        // Check if user exists or create new one
+        let user = await Admin.findOne({ emailId });
+
+        if (!user) {
+            user = new Admin({
+                name: given_name,
+                emailId: email,
+                adminPicURL: picture,
+                isGoogleAuth: true // Add this field to your User model
+            });
+            await user.save();
+        }
+
+        // Generate JWT token (same as your existing flow)
+        const token = jwt.sign({_id: user._id}, process.env.JWT_KEY, {expiresIn: '1d'});
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'none',
+            path: '/',
+            maxAge: 3600000 * 24
+        });
+
+        const userObj = user.toObject();
+        delete userObj.password;
+
+        res.status(200).json({
+            message: 'Google authentication successful',
+            user: userObj
+        });
+
+    } catch (error) {
+        console.error('Google auth error:', error);
+        res.status(401).json({ message: 'Invalid Google token' });
+    }
+});
 
 router.post("/signup", async (req, res) => {
     const { error } = signupValidation.validate(req.body);
