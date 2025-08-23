@@ -49,7 +49,7 @@ const Login = () => {
             await fetchUser();
             navigate("/main");
         } catch (err) {
-            alert("Login failed. Please check your credentials.");
+            toast.error(err.response?.data?.message || "Login failed. Please check your credentials.");
         } finally {
             setIsLoading(false);
         }
@@ -65,7 +65,6 @@ const Login = () => {
         }
         catch (err) {
             if (axios.isAxiosError(err)) {
-                console.log(err);
                 toast.error(err.response?.data.message || err.message);
             } else {
                 toast.error("Internal server error");

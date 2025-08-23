@@ -44,7 +44,6 @@ const BatchPage = () => {
     const [batchToDelete, setBatchToDelete] = useState(null);
     const [viewDetails, setViewDetails] = useState({ display: false, batch: null });
     const [isLoading, setIsLoading] = useState(false);
-    const [rerender, setRerender] = useState(false);
 
     const adminData = useSelector((state) => state.user);
     const batches = useSelector((state) => state.batches);
@@ -52,9 +51,7 @@ const BatchPage = () => {
     const dispatch = useDispatch();
     const fetchBatches = useFetchBatches();
 
-    useEffect(() => {
-        fetchBatches();
-    }, [rerender]);
+    
 
     const handleDelete = async (id, shouldDeleteStudents) => {
         setBatchToDelete(null);
@@ -67,10 +64,10 @@ const BatchPage = () => {
 
             if (response.status !== 200) throw new Error("Failed to delete the batch");
 
-            alert("Batch successfully deleted.");
+            toast.success("Batch successfully deleted.");
             await fetchBatches();
         } catch (error) {
-            alert(error?.response?.data?.message || "Something went wrong during deletion.");
+            toast.error(error?.response?.data?.message || "Something went wrong during deletion.");
         } finally {
             setIsLoading(false);
         }
@@ -230,7 +227,6 @@ const BatchPage = () => {
                     <ViewBatchDetails
                         viewDetails={viewDetails}
                         setViewDetails={setViewDetails}
-                        setRerender={setRerender}
                         onClose={closeViewDetails}
                     />
                 ) : (
@@ -243,14 +239,12 @@ const BatchPage = () => {
                         onClose={() => setCreateBatches(false)}
                         handleBatchUpdated={handleBatchUpdated}
                         batchToEdit={null}
-                        setRerender={setRerender}
                     />
                 </ModalBackdrop>
             )}
             {batchToDelete && (
                 <ConfirmationModal
                     closeModal={() => setBatchToDelete(null)}
-                    setRerender={setRerender}
                     onClose={(shouldDeleteStudents) => handleDelete(batchToDelete, shouldDeleteStudents)}
                 />
             )}

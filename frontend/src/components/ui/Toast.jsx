@@ -1,19 +1,27 @@
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { Toaster, toast } from 'react-hot-toast';
 
-const Toast = () => {
+const ToastProvider = () => {
   return (
-    <ToastContainer
+    <Toaster
       position="bottom-right"
-      autoClose={5000}
-      hideProgressBar={false}
-      newestOnTop={false}
-      closeOnClick
-      rtl={false}
-      pauseOnFocusLoss
-      draggable
-      pauseOnHover
-      theme="colored"
+      toastOptions={{
+        style: {
+          background: '#4a3a2c',
+          color: '#f8ede3',
+        },
+        success: {
+          iconTheme: {
+            primary: '#f8ede3',
+            secondary: '#4a3a2c',
+          },
+        },
+        error: {
+          iconTheme: {
+            primary: '#f8ede3',
+            secondary: '#4a3a2c',
+          },
+        },
+      }}
     />
   );
 };
@@ -35,4 +43,4 @@ export const notify = (message, type = 'info') => {
   }
 };
 
-export default Toast;
+export default ToastProvider;

@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import useFetchStudents from "@/pages/useFetchStudents.js";
 import useFetchBatches from "@/pages/useFetchBatches.js";
 import { useSelector } from "react-redux";
+import toast from 'react-hot-toast';
 
 const modalVariants = {
     hidden: { opacity: 0, scale: 0.95 },
@@ -29,6 +30,7 @@ const AddStudent = ({
                     }) => {
     const batches = useSelector((state) => state.batches);
     const [selectedBatchId, setSelectedBatchId] = useState(existingStudentData?.batchId || "");
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [newStudent, setNewStudent] = useState({
         batchId: null,
         subjectId: [],
@@ -97,7 +99,9 @@ const AddStudent = ({
     };
 
     const handleSubmit = async () => {
-        if (!validateForm()) return;
+        if (!validateForm() || isSubmitting) return;
+
+        setIsSubmitting(true);
 
         try {
             const studentData = {
@@ -105,53 +109,102 @@ const AddStudent = ({
                 batchId: selectedBatchId || null,
             };
 
+            let response;
+
             if (isEditMode && existingStudentData?._id) {
-                await axiosInstance.patch(`/api/student/update-student/${existingStudentData._id}`, studentData, {
-                    withCredentials: true,
-                });
-                fetchStudents();
-                fetchBatches();
+                response = await axiosInstance.patch(
+                    `/api/student/update-student/${existingStudentData._id}`,
+                    studentData,
+                    { withCredentials: true }
+                );
+
+                // Check if the response indicates success
+                if (response.status === 200 || response.status === 201) {
+                    toast.success("Student updated successfully!");
+                } else {
+                    throw new Error(response.data?.message || "Update failed");
+                }
             } else {
-                await axiosInstance.post("/api/student/add-new-student", studentData, { withCredentials: true });
-                fetchStudents();
-                fetchBatches();
+                response = await axiosInstance.post(
+                    "/api/student/add-new-student",
+                    studentData,
+                    { withCredentials: true }
+                );
+
+                // Check if the response indicates success
+                if (response.status === 200 || response.status === 201) {
+                    toast.success("Student added successfully!");
+                } else {
+                    throw new Error(response.data?.message || "Failed to add student");
+                }
             }
 
-            onStudentAdded();
+            // Refresh data
+            await Promise.all([fetchStudents(), fetchBatches()]);
+
+            // Call the callback function
+            if (onStudentAdded && typeof onStudentAdded === 'function') {
+                await onStudentAdded();
+            }
+
+            // Close modals/components
             setSeeStdDetails((prev) => ({ ...prev, show: false }));
-            isEditMode ? setEdit(false) : setShowAddStd(false);
-        } catch (err) {
-            console.error("Error submitting student data:", err);
-            alert("Failed to submit student data.");
+            if (isEditMode) {
+                setEdit(false);
+            } else {
+                setShowAddStd(false);
+            }
+
+        } catch (error) {
+            console.error("Submit error:", error);
+
+            // Handle different types of errors
+            if (error.response) {
+                // Server responded with error status
+                const errorMessage = error.response.data?.message || error.response.data?.error || "Server error occurred";
+                toast.error(errorMessage);
+            } else if (error.request) {
+                // Network error
+                toast.error("Network error. Please check your connection and try again.");
+            } else {
+                // Other errors
+                toast.error(error.message || "An unexpected error occurred");
+            }
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     const handleChange = (key, value) => {
-        if (key.includes("email") || key.includes("phone")) {
-            const [type, field] = key.split("_");
-            setNewStudent((prev) => ({
-                ...prev,
-                contact_info: {
-                    ...prev.contact_info,
-                    [type === "email" ? "emailIds" : "phoneNumbers"]: {
-                        ...prev.contact_info[type === "email" ? "emailIds" : "phoneNumbers"],
-                        [field]: value,
+        try {
+            if (key.includes("email") || key.includes("phone")) {
+                const [type, field] = key.split("_");
+                setNewStudent((prev) => ({
+                    ...prev,
+                    contact_info: {
+                        ...prev.contact_info,
+                        [type === "email" ? "emailIds" : "phoneNumbers"]: {
+                            ...prev.contact_info[type === "email" ? "emailIds" : "phoneNumbers"],
+                            [field]: value,
+                        },
                     },
-                },
-            }));
-        } else if (key === "fee_amount") {
-            setNewStudent((prev) => ({
-                ...prev,
-                fee_status: {
-                    ...prev.fee_status,
-                    amount: value,
-                },
-            }));
-        } else {
-            setNewStudent((prev) => ({
-                ...prev,
-                [key]: value,
-            }));
+                }));
+            } else if (key === "fee_amount") {
+                setNewStudent((prev) => ({
+                    ...prev,
+                    fee_status: {
+                        ...prev.fee_status,
+                        amount: value,
+                    },
+                }));
+            } else {
+                setNewStudent((prev) => ({
+                    ...prev,
+                    [key]: value,
+                }));
+            }
+        } catch (error) {
+            toast.error("An error occurred while updating the form.");
         }
     };
 
@@ -174,7 +227,8 @@ const AddStudent = ({
                         whileHover={{ scale: 1.1, color: "#FF3B30" }}
                         whileTap={{ scale: 0.9 }}
                         onClick={() => (isEditMode ? setEdit(false) : setShowAddStd(false))}
-                        className="text-[#e0c4a8] hover:text-[#FF3B30] transition"
+                        disabled={isSubmitting}
+                        className="text-[#e0c4a8] hover:text-[#FF3B30] transition disabled:opacity-50"
                     >
                         <AiOutlineClose className="w-5 h-5 sm:w-6 sm:h-6" />
                     </motion.button>
@@ -235,7 +289,8 @@ const AddStudent = ({
                                             placeholder={label}
                                             value={value}
                                             onChange={(e) => handleChange(key, e.target.value)}
-                                            className="border border-[#e6c8a8] bg-[#f0d9c0] rounded-lg px-3 py-1.5 sm:py-2 text-sm sm:text-base text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] transition"
+                                            disabled={isSubmitting}
+                                            className="border border-[#e6c8a8] bg-[#f0d9c0] rounded-lg px-3 py-1.5 sm:py-2 text-sm sm:text-base text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] transition disabled:opacity-50"
                                         />
                                         {formErrors[key] && <p className="text-red-500 text-xs sm:text-sm mt-1">{formErrors[key]}</p>}
                                     </div>
@@ -264,7 +319,8 @@ const AddStudent = ({
                                         subjectId: [],
                                     }));
                                 }}
-                                className="w-full border border-[#e6c8a8] bg-[#f0d9c0] rounded-lg px-3 py-1.5 sm:py-2 text-sm sm:text-base text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] transition"
+                                disabled={isSubmitting}
+                                className="w-full border border-[#e6c8a8] bg-[#f0d9c0] rounded-lg px-3 py-1.5 sm:py-2 text-sm sm:text-base text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] transition disabled:opacity-50"
                             >
                                 <option value="">No Batch / Deselect</option>
                                 {eligibleBatches.map((batch) => (
@@ -300,7 +356,8 @@ const AddStudent = ({
                                                         };
                                                     });
                                                 }}
-                                                className="form-checkbox h-4 w-4 sm:h-5 sm:w-5 text-[#e0c4a8]"
+                                                disabled={isSubmitting}
+                                                className="form-checkbox h-4 w-4 sm:h-5 sm:w-5 text-[#e0c4a8] disabled:opacity-50"
                                             />
                                             <span>{subject.name}</span>
                                         </label>
@@ -312,18 +369,30 @@ const AddStudent = ({
 
                     <div className="flex justify-end gap-3 sm:gap-4 pt-3 sm:pt-4">
                         <motion.button
-                            whileHover={{ scale: 1.05, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
-                            whileTap={{ scale: 0.95 }}
+                            whileHover={{ scale: isSubmitting ? 1 : 1.05, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
+                            whileTap={{ scale: isSubmitting ? 1 : 0.95 }}
                             onClick={handleSubmit}
-                            className="bg-[#e0c4a8] text-[#5a4a3c] px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-[#d7b48f] transition shadow-md text-sm sm:text-base"
+                            disabled={isSubmitting}
+                            className="bg-[#e0c4a8] text-[#5a4a3c] px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-[#d7b48f] transition shadow-md text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed min-w-[120px] flex items-center justify-center"
                         >
-                            {isEditMode ? "Update Student" : "Add Student"}
+                            {isSubmitting ? (
+                                <>
+                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-[#5a4a3c]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    {isEditMode ? "Updating..." : "Adding..."}
+                                </>
+                            ) : (
+                                isEditMode ? "Update Student" : "Add Student"
+                            )}
                         </motion.button>
                         <motion.button
-                            whileHover={{ scale: 1.05, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
-                            whileTap={{ scale: 0.95 }}
+                            whileHover={{ scale: isSubmitting ? 1 : 1.05, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
+                            whileTap={{ scale: isSubmitting ? 1 : 0.95 }}
                             onClick={() => (isEditMode ? setEdit(false) : setShowAddStd(false))}
-                            className="bg-[#e6c8a8] text-[#5a4a3c] px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-[#d7b48f] transition shadow-md text-sm sm:text-base"
+                            disabled={isSubmitting}
+                            className="bg-[#e6c8a8] text-[#5a4a3c] px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-[#d7b48f] transition shadow-md text-sm sm:text-base disabled:opacity-50"
                         >
                             Cancel
                         </motion.button>

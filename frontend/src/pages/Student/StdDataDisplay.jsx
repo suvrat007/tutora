@@ -31,7 +31,7 @@ const StdDataDisplay = ({ seeStdDetails, setSeeStdDetails, onStudentEdited }) =>
                     setEdit={setEdit}
                     setSeeStdDetails={setSeeStdDetails}
                     setShowAddStd={() => setSeeStdDetails({ ...seeStdDetails, show: false })}
-                    onStudentAdded={handleStudentAdded}
+                    onStudentAdded={onStudentEdited}
                 />
             )}
             <div className="flex justify-between p-2 sm:p-3">
@@ -52,7 +52,7 @@ const StdDataDisplay = ({ seeStdDetails, setSeeStdDetails, onStudentEdited }) =>
                     <AiOutlineClose className="w-5 h-5 sm:w-6 sm:h-6" />
                 </motion.button>
             </div>
-            <div className="flex flex-col items-center text-center gap-2 sm:gap-3 p-3 sm:p-4 border-b border-[#e6c8a8] break-words">
+            <div className="flex flex-col items-center text-center gap-2 sm:gap-3 p-3 sm:p-4 border-b border-[#e6c8a8] break-words truncate">
                 <motion.img
                     src="https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png"
                     alt="Student Avatar"
@@ -79,7 +79,7 @@ const StdDataDisplay = ({ seeStdDetails, setSeeStdDetails, onStudentEdited }) =>
                     <span className="truncate">{seeStdDetails.stdDetails?.address || "N/A"}</span>
                 </div>
             </div>
-            <div className="gap-2 p-3 sm:p-4 break-words">
+            <div className="gap-2 p-3 sm:p-4 break-words truncate">
                 <h3 className="text-base sm:text-lg font-semibold text-[#5a4a3c] mb-2">Parent Details</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 sm:gap-x-4 gap-y-1 sm:gap-y-2 text-xs sm:text-sm text-[#7b5c4b]">
                     <span className="font-medium text-[#5a4a3c]">Father's Phone:</span>
