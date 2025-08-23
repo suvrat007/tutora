@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import useFetchStudents from "@/pages/useFetchStudents.js";
@@ -28,12 +28,20 @@ const placeholderVariants = {
     },
 };
 
-const ViewBatchDetails = ({ viewDetails, setViewDetails, setRerender }) => {
+const ViewBatchDetails = ({ viewDetails, setViewDetails }) => {
     const [showEditModal, setShowEditModal] = useState(false);
     const [showAddStudentModal, setShowAddStudentModal] = useState(false);
     const [students, setStudents] = useState(viewDetails.studentsForBatch);
     const fetchStudents = useFetchStudents();
     const batch = viewDetails.batch;
+    const groupedStudents = useSelector((state) => state.students.groupedStudents);
+
+    useEffect(() => {
+        const foundGroup = groupedStudents.find((group) => group.batchId === batch._id);
+        if (foundGroup) {
+            setStudents(foundGroup.students || []);
+        }
+    }, [groupedStudents, batch._id]);
 
     const handleCloseDetails = () => {
         setViewDetails({ display: false, batch: null, studentsForBatch: null });
@@ -44,15 +52,12 @@ const ViewBatchDetails = ({ viewDetails, setViewDetails, setRerender }) => {
     };
 
     const handleBatchUpdated = () => {
-        setRerender((prev) => !prev);
+        fetchBatches();
         setShowEditModal(false);
     };
 
     const refreshStudents = async () => {
         await fetchStudents();
-        const newGrouped = useSelector((state) => state.students.groupedStudents);
-        const foundGroup = newGrouped.find((group) => group.batchId === batch._id);
-        if (foundGroup) setStudents(foundGroup.students || []);
     };
 
     const getTotalFee = () =>
@@ -264,7 +269,6 @@ const ViewBatchDetails = ({ viewDetails, setViewDetails, setRerender }) => {
                 <AddStudentModal
                     batch={batch}
                     onClose={() => setShowAddStudentModal(false)}
-                    setRerender={setRerender}
                     refreshStudents={refreshStudents}
                 />
             )}

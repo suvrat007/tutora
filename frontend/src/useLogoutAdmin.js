@@ -7,6 +7,7 @@ import {clearClassLogs} from "@/utilities/redux/classLogsSlice.js";
 import {clearGroupedStudents} from "@/utilities/redux/studentSlice.js";
 import {clearAttendanceSummary} from "@/utilities/redux/attendanceSlice.js";
 import {clearFeeData} from "@/utilities/redux/feeSlice.js";
+import toast from 'react-hot-toast';
 
 const useLogoutAdmin = () => {
     const dispatch = useDispatch();
@@ -27,7 +28,7 @@ const useLogoutAdmin = () => {
 
             navigate("/", { replace: true });
         } catch (error) {
-            console.error("Logout failed:", error);
+            toast.error(error.response?.data?.message || "Logout failed");
         }
     };
 
