@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import {Link, useLocation, useNavigate} from "react-router-dom";
 import { useState } from "react";
 import {
     AiOutlineDown,
@@ -59,6 +59,7 @@ const Sidebar = () => {
             </div>
         </div>
     );
+    const navigate = useNavigate();
 
     const MobileBottomNav = () => {
         const [expand, setExpand] = useState(null); // 'management' | 'register' | null
@@ -86,8 +87,8 @@ const Sidebar = () => {
                         { label: "Batches", path: "/main/batches", icon: <FaUserGraduate /> },
                     ]}
                 />
-                <MobileNavItem icon={<FaUniversity />} to="/main/info-institute" label="Institute" />
-                <MobileNavItem icon={<FaUserGraduate />} to="/main/info-students" label="Student" />
+                <MobileNavItem icon={<FaUniversity />} to="/main/info-institute" onClick={()=>navigate('/main/info-institute')} label="Institute" />
+                <MobileNavItem icon={<FaUserGraduate />} to="/main/info-students" onClick={()=>navigate('/main/info-students')} label="Student" />
                 <MobileNavItem icon={<FiLogOut />} label="Logout" onClick={handleLogout} />
             </div>
         );
