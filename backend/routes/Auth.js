@@ -39,8 +39,8 @@ router.post('/google-auth',async (req, res) => {
 
         res.cookie("token", token, {
             httpOnly: true,
-            secure: true,
-            sameSite: 'none',
+            secure: process.env.NODE_ENV === 'production', // Only secure in production
+            sameSite: 'lax',  // Change from 'none' to 'lax'
             path: '/',
             maxAge: 3600000 * 24
         });
@@ -96,10 +96,10 @@ router.post("/signup", async (req, res) => {
 
         res.cookie("token", token, {
             httpOnly: true,
-            secure: true,
-            sameSite: "none",
-            path: "/",
-            maxAge: 3600000 * 24,
+            secure: process.env.NODE_ENV === 'production', // Only secure in production
+            sameSite: 'lax',  // Change from 'none' to 'lax'
+            path: '/',
+            maxAge: 3600000 * 24
         });
 
         const userObject = newUser.toObject();
@@ -130,11 +130,11 @@ router.post("/login", async (req, res) => {
         const token =jwt.sign({_id:user._id},process.env.JWT_KEY,{expiresIn: '1d'});
         res.cookie("token", token, {
             httpOnly: true,
-            secure: true,
-            sameSite: 'none',
-            path:'/',
-            maxAge:3600000*24
-        })
+            secure: process.env.NODE_ENV === 'production', // Only secure in production
+            sameSite: 'lax',  // Change from 'none' to 'lax'
+            path: '/',
+            maxAge: 3600000 * 24
+        });
 
         const userObj = user.toObject();
         delete userObj.password;
@@ -148,10 +148,12 @@ router.post("/login", async (req, res) => {
 })
 
 router.post("/logout", async (req, res) => {
-    res.clearCookie("token", {
+    res.cookie("token", null, {
+        expires: new Date(Date.now()),
         httpOnly: true,
-        sameSite: "lax",
-        secure: false, // ✅ if you're on localhost — set to true only in production (HTTPS)
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',  // Change from 'none'
+        path: "/"
     });
     res.status(200).json({ message: "Logged out successfully" });
 });
