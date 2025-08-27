@@ -87,8 +87,8 @@ const Sidebar = () => {
                         { label: "Batches", path: "/main/batches", icon: <FaUserGraduate /> },
                     ]}
                 />
-                <MobileNavItem icon={<FaUniversity />} to="/main/info-institute" onClick={()=>navigate('/main/info-institute')} label="Institute" />
-                <MobileNavItem icon={<FaUserGraduate />} to="/main/info-students" onClick={()=>navigate('/main/info-students')} label="Student" />
+                <MobileNavItem icon={<FaUniversity />} onClick={()=>navigate('/main/info-institute')} label="Institute" />
+                <MobileNavItem icon={<FaUserGraduate />} onClick={()=>navigate('/main/info-students')} label="Student" />
                 <MobileNavItem icon={<FiLogOut />} label="Logout" onClick={handleLogout} />
             </div>
         );
