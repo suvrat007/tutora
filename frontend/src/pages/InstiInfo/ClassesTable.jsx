@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {
     Calendar,
     BookOpen,
@@ -86,6 +86,18 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
     }, [newClassLogs]);
 
     const filteredLogs = useMemo(() => {
+        // Check for duplicate classes by date
+        newClassLogs.forEach(log => {
+            const dateMap = new Map();
+            log.classes.forEach(cls => {
+                const clsDateStr = moment.tz(cls.date, 'Asia/Kolkata').format('YYYY-MM-DD');
+                if (dateMap.has(clsDateStr)) {
+                    console.warn(`Duplicate class found for date ${clsDateStr} in log ${log._id}:`, cls);
+                }
+                dateMap.set(clsDateStr, (dateMap.get(clsDateStr) || 0) + 1);
+            });
+        });
+
         return newClassLogs.map(log => ({
             ...log,
             classes: log.classes.filter(cls => {
@@ -111,6 +123,9 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
         });
         setModalOpen(true);
     };
+
+    // Get today's date in IST
+    const todayDate = moment.tz('Asia/Kolkata').format('YYYY-MM-DD'); // e.g., 2025-09-03
 
     return (
         <motion.div
@@ -171,103 +186,103 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
                         ) : (() => {
                             let serial = 1;
                             return filteredLogs.flatMap(log =>
-                                    log.classes.map((cls, index) => {
-                                        const { text, needsReadMore } = truncateNote(cls.note);
-                                        const isExpanded = expandedNotes[cls._id];
-                                        const isZeroAttendance = cls.status === 'Conducted' && cls.attendance.length === 0;
+                                log.classes.map((cls, index) => {
+                                    const { text, needsReadMore } = truncateNote(cls.note);
+                                    const isExpanded = expandedNotes[cls._id];
+                                    const isZeroAttendance = cls.status === 'Conducted' && cls.attendance.length === 0;
 
-                                        return (
-                                            <motion.tr
-                                                key={cls._id}
-                                                custom={index}
-                                                variants={cardVariants}
-                                                initial="hidden"
-                                                animate="visible"
-                                                exit="hidden"
-                                                className="hover:bg-[#e0c4a8]/50 transition"
-                                            >
-                                                <td className="px-4 sm:px-6 py-4">{serial++}</td>
-                                                <td className="px-4 sm:px-6 py-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded-full bg-[#e6c8a8] flex items-center justify-center text-xs font-semibold text-[#5a4a3c]">
-                                                            {log.batch_id.name.charAt(0)}
-                                                        </div>
-                                                        <div>
-                                                            <p className="font-medium text-wrap">
-                                                                <div className="max-w-[120px] truncate" title={log.batch_id.name}>
-                                                                    {log.batch_id.name}
-                                                                </div>
-                                                            </p>
-                                                            <p className="text-xs text-[#7b5c4b]">Grade {log.batch_id.forStandard}</p>
-                                                        </div>
+                                    return (
+                                        <motion.tr
+                                            key={cls._id}
+                                            custom={index}
+                                            variants={cardVariants}
+                                            initial="hidden"
+                                            animate="visible"
+                                            exit="hidden"
+                                            className="hover:bg-[#e0c4a8]/50 transition"
+                                        >
+                                            <td className="px-4 sm:px-6 py-4">{serial++}</td>
+                                            <td className="px-4 sm:px-6 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 rounded-full bg-[#e6c8a8] flex items-center justify-center text-xs font-semibold text-[#5a4a3c]">
+                                                        {log.batch_id.name.charAt(0)}
                                                     </div>
-                                                </td>
-                                                <td className="px-4 sm:px-6 py-4 flex items-center gap-2">
-                                                    <BookOpen className="w-4 h-4 text-[#e6c8a8]" />
-                                                    <div className="max-w-[120px] truncate" title={getSubjectName(log.subject_id, log.batch_id)}>
-                                                        {getSubjectName(log.subject_id, log.batch_id)}
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 sm:px-6 py-4">
-                                                    <p>{moment(cls.date).format('MMM DD, YYYY')}</p>
-                                                    <p className="text-xs text-[#7b5c4b]">{moment(cls.date).format('dddd')}</p>
-                                                </td>
-                                                <td className="px-4 sm:px-6 py-4">
-                          <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(cls.status)}`}>
-                            {getStatusIcon(cls.status)} {cls.status}
-                          </span>
-                                                </td>
-                                                <td className="px-4 sm:px-6 py-4 max-w-xs">
-                                                    <div className="flex items-center gap-2">
-                                                        <p className={`${isExpanded ? '' : 'truncate'} text-sm`} title={cls.note}>
-                                                            {isExpanded ? cls.note || '—' : text}
-                                                        </p>
-                                                        {needsReadMore && (
-                                                            <button
-                                                                onClick={() => toggleNote(cls._id)}
-                                                                className="text-xs text-[#5a4a3c] hover:text-[#e0c4a8] font-medium"
-                                                            >
-                                                                {isExpanded ? 'Read Less' : 'Read More'}
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 sm:px-6 py-4">
-                                                    <div className="group relative flex items-center gap-2">
-                                                        <div
-                                                            className={`flex items-center gap-2 ${isZeroAttendance ? 'bg-red-100 px-3 py-1 rounded-lg' : ''}`}
-                                                            onClick={() => isZeroAttendance && navigate('/main/attendance')}
-                                                        >
-                                                            <Users className="w-4 h-4 text-[#e6c8a8]" />
-                                                            <div>
-                                                                <p className={`font-semibold ${isZeroAttendance ? 'text-red-700' : ''}`}>
-                                                                    {cls.attendance.length}
-                                                                </p>
-                                                                <p className="text-xs text-[#7b5c4b]">Present</p>
+                                                    <div>
+                                                        <p className="font-medium text-wrap">
+                                                            <div className="max-w-[120px] truncate" title={log.batch_id.name}>
+                                                                {log.batch_id.name}
                                                             </div>
-                                                        </div>
-                                                        {isZeroAttendance && (
-                                                            <span className="absolute left-0 -top-10 hidden group-hover:block bg-[#5a4a3c] text-white text-xs rounded-lg py-1 px-2 shadow-lg">
-                                Please Click to Mark Attendance
-                              </span>
-                                                        )}
+                                                        </p>
+                                                        <p className="text-xs text-[#7b5c4b]">Grade {log.batch_id.forStandard}</p>
                                                     </div>
-                                                </td>
-                                                <td className="px-4 sm:px-6 py-4">
-                                                    {cls.status === 'No data recorded' && !moment(cls.date).isSame(moment('2025-07-13'), 'day') && (
-                                                        <motion.button
-                                                            whileHover={{ scale: 1.05, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
-                                                            whileTap={{ scale: 0.95 }}
-                                                            onClick={() => handleEditClass(log, cls)}
-                                                            className="text-[#5a4a3c] hover:text-[#e0c4a8]"
+                                                </div>
+                                            </td>
+                                            <td className="px-4 sm:px-6 py-4 flex items-center gap-2">
+                                                <BookOpen className="w-4 h-4 text-[#e6c8a8]" />
+                                                <div className="max-w-[120px] truncate" title={getSubjectName(log.subject_id, log.batch_id)}>
+                                                    {getSubjectName(log.subject_id, log.batch_id)}
+                                                </div>
+                                            </td>
+                                            <td className="px-4 sm:px-6 py-4">
+                                                <p>{moment.tz(cls.date, 'Asia/Kolkata').format('MMM DD, YYYY')}</p>
+                                                <p className="text-xs text-[#7b5c4b]">{moment.tz(cls.date, 'Asia/Kolkata').format('dddd')}</p>
+                                            </td>
+                                            <td className="px-4 sm:px-6 py-4">
+                                                <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(cls.status)}`}>
+                                                    {getStatusIcon(cls.status)} {cls.status}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 sm:px-6 py-4 max-w-xs">
+                                                <div className="flex items-center gap-2">
+                                                    <p className={`${isExpanded ? '' : 'truncate'} text-sm`} title={cls.note}>
+                                                        {isExpanded ? cls.note || '—' : text}
+                                                    </p>
+                                                    {needsReadMore && (
+                                                        <button
+                                                            onClick={() => toggleNote(cls._id)}
+                                                            className="text-xs text-[#5a4a3c] hover:text-[#e0c4a8] font-medium"
                                                         >
-                                                            <PencilIcon className="w-5 h-5" />
-                                                        </motion.button>
+                                                            {isExpanded ? 'Read Less' : 'Read More'}
+                                                        </button>
                                                     )}
-                                                </td>
-                                            </motion.tr>
-                                        );
-                                    })
+                                                </div>
+                                            </td>
+                                            <td className="px-4 sm:px-6 py-4">
+                                                <div className="group relative flex items-center gap-2">
+                                                    <div
+                                                        className={`flex items-center gap-2 ${isZeroAttendance ? 'bg-red-100 px-3 py-1 rounded-lg' : ''}`}
+                                                        onClick={() => isZeroAttendance && navigate('/main/attendance')}
+                                                    >
+                                                        <Users className="w-4 h-4 text-[#e6c8a8]" />
+                                                        <div>
+                                                            <p className={`font-semibold ${isZeroAttendance ? 'text-red-700' : ''}`}>
+                                                                {cls.attendance.length}
+                                                            </p>
+                                                            <p className="text-xs text-[#7b5c4b]">Present</p>
+                                                        </div>
+                                                    </div>
+                                                    {isZeroAttendance && (
+                                                        <span className="absolute left-0 -top-10 hidden group-hover:block bg-[#5a4a3c] text-white text-xs rounded-lg py-1 px-2 shadow-lg">
+                                                            Please Click to Mark Attendance
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="px-4 sm:px-6 py-4">
+                                                {cls.status === 'No data recorded' && !moment.tz(cls.date, 'Asia/Kolkata').isSame(todayDate, 'day') && (
+                                                    <motion.button
+                                                        whileHover={{ scale: 1.05, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
+                                                        whileTap={{ scale: 0.95 }}
+                                                        onClick={() => handleEditClass(log, cls)}
+                                                        className="text-[#5a4a3c] hover:text-[#e0c4a8]"
+                                                    >
+                                                        <PencilIcon className="w-5 h-5" />
+                                                    </motion.button>
+                                                )}
+                                            </td>
+                                        </motion.tr>
+                                    );
+                                })
                             );
                         })()}
                     </AnimatePresence>

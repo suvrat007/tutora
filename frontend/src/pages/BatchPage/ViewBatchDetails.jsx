@@ -6,6 +6,7 @@ import { BookOpen, Users, FileText, IndianRupee } from "lucide-react";
 import { AiOutlineClose, AiOutlineEdit, AiOutlinePlus } from "react-icons/ai";
 import CreateEditBatch from "@/pages/BatchPage/CreateEditBatch.jsx";
 import AddStudentModal from "@/pages/BatchPage/AddStudentModal.jsx";
+import useFetchBatches from "@/pages/useFetchBatches.js";
 
 const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
@@ -28,11 +29,13 @@ const placeholderVariants = {
     },
 };
 
-const ViewBatchDetails = ({ viewDetails, setViewDetails }) => {
+const ViewBatchDetails = ({ viewDetails, setViewDetails,handleViewDetails }) => {
     const [showEditModal, setShowEditModal] = useState(false);
     const [showAddStudentModal, setShowAddStudentModal] = useState(false);
     const [students, setStudents] = useState(viewDetails.studentsForBatch);
+    const [rerender, setRerender] = useState(false);
     const fetchStudents = useFetchStudents();
+    const fetchBatches = useFetchBatches();
     const batch = viewDetails.batch;
     const groupedStudents = useSelector((state) => state.students.groupedStudents);
 
@@ -54,6 +57,7 @@ const ViewBatchDetails = ({ viewDetails, setViewDetails }) => {
     const handleBatchUpdated = () => {
         fetchBatches();
         setShowEditModal(false);
+        handleViewDetails;
     };
 
     const refreshStudents = async () => {
