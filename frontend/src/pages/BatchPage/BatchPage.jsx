@@ -238,6 +238,7 @@ const BatchPage = () => {
                     <CreateEditBatch
                         onClose={() => setCreateBatches(false)}
                         handleBatchUpdated={handleBatchUpdated}
+                        handleViewDetails={handleViewDetails}
                         batchToEdit={null}
                     />
                 </ModalBackdrop>
