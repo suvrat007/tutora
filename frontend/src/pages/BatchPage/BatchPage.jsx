@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import axiosInstance from "@/utilities/axiosInstance";
@@ -10,6 +10,7 @@ import { AiOutlinePlus } from "react-icons/ai";
 import ViewBatchDetails from "@/pages/BatchPage/ViewBatchDetails.jsx";
 import CreateEditBatch from "@/pages/BatchPage/CreateEditBatch.jsx";
 import ConfirmationModal from "@/pages/BatchPage/ConfirmationModal.jsx";
+import toast from "react-hot-toast";
 
 const fadeInUp = {
     hidden: { opacity: 0, y: 20 },

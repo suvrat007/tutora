@@ -27,6 +27,7 @@ const CreateEditBatch = ({ onClose, onBatchCreated, onBatchUpdated, setRerender,
         subject: [
             {
                 name: "",
+                startDate: "",
                 classSchedule: { time: "", days: [] }
             }
         ]
@@ -40,12 +41,13 @@ const CreateEditBatch = ({ onClose, onBatchCreated, onBatchUpdated, setRerender,
                 subject: batchToEdit.subject.length
                     ? batchToEdit.subject.map(sub => ({
                         ...sub,
+                        startDate: sub.startDate ? new Date(sub.startDate).toISOString().split('T')[0] : "",
                         classSchedule: {
                             time: sub.classSchedule?.time || "",
-                            days: sub.classSchedule?.days || []
+                            days: sub.classSchedule?.days ? [...sub.classSchedule.days].sort((a, b) => daysOfWeek.indexOf(a) - daysOfWeek.indexOf(b)) : []
                         }
                     }))
-                    : [{ name: "", classSchedule: { time: "", days: [] } }]
+                    : [{ name: "", startDate: "", classSchedule: { time: "", days: [] } }]
             });
         }
     }, [batchToEdit]);
@@ -69,8 +71,12 @@ const CreateEditBatch = ({ onClose, onBatchCreated, onBatchUpdated, setRerender,
 
         if (name === 'days') {
             schedule.days = checked
-                ? [...schedule.days, value]
+                ? [...schedule.days, value].sort((a, b) => daysOfWeek.indexOf(a) - daysOfWeek.indexOf(b))
                 : schedule.days.filter(day => day !== value);
+        } else if (name === 'selectAllDays') {
+            schedule.days = schedule.days.length === daysOfWeek.length
+                ? [] // Deselect all if all are selected
+                : [...daysOfWeek]; // Select all days
         } else {
             schedule[name] = value;
         }
@@ -82,7 +88,7 @@ const CreateEditBatch = ({ onClose, onBatchCreated, onBatchUpdated, setRerender,
     const addSubject = () => {
         setBatchData(prev => ({
             ...prev,
-            subject: [...prev.subject, { name: "", classSchedule: { time: "", days: [] } }]
+            subject: [...prev.subject, { name: "", startDate: "", classSchedule: { time: "", days: [] } }]
         }));
     };
 
@@ -94,19 +100,29 @@ const CreateEditBatch = ({ onClose, onBatchCreated, onBatchUpdated, setRerender,
     const isValid = () => {
         if (!batchData.name || !batchData.forStandard) return false;
         return batchData.subject.every(sub =>
-            sub.name && sub.classSchedule.time && sub.classSchedule.days.length
+            sub.name && sub.startDate && sub.classSchedule.time && sub.classSchedule.days.length
         );
     };
 
     const handleSubmit = async () => {
-        if (!isValid()) return alert("Please fill in all required fields.");
+        if (!isValid()) return alert("Please fill in all required fields, including the start date for each subject.");
         try {
+            const sortedBatchData = {
+                ...batchData,
+                subject: batchData.subject.map(sub => ({
+                    ...sub,
+                    classSchedule: {
+                        ...sub.classSchedule,
+                        days: [...sub.classSchedule.days].sort((a, b) => daysOfWeek.indexOf(a) - daysOfWeek.indexOf(b))
+                    }
+                }))
+            };
             let response;
             if (isEditMode) {
-                response = await axiosInstance.patch(`/api/batch/update-batch/${batchToEdit._id}`, batchData, { withCredentials: true });
+                response = await axiosInstance.patch(`/api/batch/update-batch/${batchToEdit._id}`, sortedBatchData, { withCredentials: true });
                 onBatchUpdated?.();
             } else {
-                response = await axiosInstance.post('/api/batch/add-new-batch', batchData, { withCredentials: true });
+                response = await axiosInstance.post('/api/batch/add-new-batch', sortedBatchData, { withCredentials: true });
                 onBatchCreated?.();
             }
             setRerender?.(prev => !prev);
@@ -201,6 +217,14 @@ const CreateEditBatch = ({ onClose, onBatchCreated, onBatchUpdated, setRerender,
                                     />
                                 </div>
                                 <div className="pt-4">
+                                    <label className="block text-sm font-medium text-[#5a4a3c] mb-1">Date of Class Commencement *</label>
+                                    <input
+                                        type="date"
+                                        name="startDate"
+                                        value={subj.startDate}
+                                        onChange={(e) => handleSubjectChange(i, e)}
+                                        className="w-full border border-[#e6c8a8] bg-[#f8ede3] rounded-lg px-3 py-2 text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] transition mb-3"
+                                    />
                                     <label className="block text-sm font-medium text-[#5a4a3c] mb-1">Class Time *</label>
                                     <input
                                         type="time"
@@ -209,7 +233,17 @@ const CreateEditBatch = ({ onClose, onBatchCreated, onBatchUpdated, setRerender,
                                         onChange={(e) => handleScheduleChange(i, e)}
                                         className="w-full border border-[#e6c8a8] bg-[#f8ede3] rounded-lg px-3 py-2 text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] transition mb-3"
                                     />
-                                    <label className="block text-sm font-medium text-[#5a4a3c] mb-1">Days *</label>
+                                    <div className="flex justify-between items-center mb-2">
+                                        <label className="block text-sm font-medium text-[#5a4a3c]">Days *</label>
+                                        <motion.button
+                                            whileHover={{ scale: 1.05, color: "#34C759" }}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={(e) => handleScheduleChange(i, { target: { name: 'selectAllDays', value: '' } })}
+                                            className="text-[#e0c4a8] hover:text-[#34C759] text-sm font-medium"
+                                        >
+                                            {subj.classSchedule.days.length === daysOfWeek.length ? 'Deselect All Days' : 'Select All Days'}
+                                        </motion.button>
+                                    </div>
                                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                                         {daysOfWeek.map(day => (
                                             <label key={day} className="flex items-center space-x-2">
@@ -229,19 +263,20 @@ const CreateEditBatch = ({ onClose, onBatchCreated, onBatchUpdated, setRerender,
                             </motion.div>
                         ))}
                     </motion.div>
-                    <div className="flex justify-end px-6 py-4 border-t border-[#e6c8a8] bg-[#f0d9c0] rounded-2xl">
-                        <motion.button
-                            whileHover={{ scale: 1.05, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={handleSubmit}
-                            className="bg-[#34C759] text-white px-6 py-2 rounded-lg hover:bg-[#2eb84c] transition"
-                        >
-                            {isEditMode ? 'Update Batch' : 'Create Batch'}
-                        </motion.button>
-                    </div>
+                </div>
+                <div className="flex justify-end px-6 py-4 border-t border-[#e6c8a8] bg-[#f0d9c0] rounded-2xl">
+                    <motion.button
+                        whileHover={{ scale: 1.05, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={handleSubmit}
+                        className="bg-[#34C759] text-white px-6 py-2 rounded-lg hover:bg-[#2eb84c] transition"
+                    >
+                        {isEditMode ? 'Update Batch' : 'Create Batch'}
+                    </motion.button>
                 </div>
             </div>
         </motion.div>
     );
 };
+
 export default CreateEditBatch;

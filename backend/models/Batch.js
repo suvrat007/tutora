@@ -12,6 +12,7 @@ const BatchSchema = new Schema({
     subject: [
         {
             name: {type: String, required: true},
+            startDate: {type:Date, required: true},
             classSchedule:
                 {
                     time: { type: String, required: true },
