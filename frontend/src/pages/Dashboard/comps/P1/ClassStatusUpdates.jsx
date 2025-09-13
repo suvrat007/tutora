@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, ChevronUp, Loader2 } from "lucide-react";
-import moment from 'moment-timezone';
+import moment from 'moment';
 import axiosInstance from "@/utilities/axiosInstance.jsx";
+import { notify } from "@/components/ui/Toast.jsx";
 import useFetchUnUpdatedClasslog from "../DashboardHooks/useFetchUnUpdatedClasslog.js";
 import useFetchClassLogs from "@/pages/useFetchClassLogs.js";
 
@@ -43,13 +44,14 @@ const ClassStatusUpdates = () => {
                 try {
                     setLoadingStates(prev => ({ ...prev, [index]: true }));
         const response = await axiosInstance.post("/api/classLog/add-class-updates", { updates: [payload] }, { withCredentials: true });
-        alert("Class updated!");
+        notify("Class updated!", "success");
         fetchClassLogs();
         setOpenIndex(null);
         setRerender(prev => !prev);
         setStatusData(prev => { const p = { ...prev }; delete p[index]; return p; });
     } catch (err) {
             console.error("Update failed:", err);
+            notify(err.response?.data?.message || "Update failed.", "error");
             setStatusData(prev => ({ ...prev, [index]: { ...prev[index], error: "Update failed." } }));
         } finally {
             setLoadingStates(prev => ({ ...prev, [index]: false }));
@@ -95,7 +97,7 @@ const ClassStatusUpdates = () => {
                                             <p className="text-sm font-semibold text-[#5a4a3c]">Batch: {cls.batchName}</p>
                                             <p className="text-xs text-[#7b5c4b]">Subject: {cls.subjectName}</p>
                                             <p className="text-xs text-[#7b5c4b]">
-                                                Date: {moment.tz(cls.date, 'Asia/Kolkata').format('YYYY-MM-DD')} | Time: {cls.scheduledTime}
+                                                Date: {moment(cls.date).format('YYYY-MM-DD')} | Time: {cls.scheduledTime}
                                             </p>
                                         </div>
                                         <button className="text-[#e0c4a8] text-sm flex items-center gap-1">

@@ -2,17 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import axiosInstance from "@/utilities/axiosInstance";
 import { CalendarDays, NotebookText } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
+import { getLocalDateYYYYMMDD } from '@/lib/utils.js';
 
 const getTodayDay = () => {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     return days[new Date().getDay()];
 };
 
-const getTodayDate = () => {
-    const date = new Date();
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-};
+const getTodayDate = () => getLocalDateYYYYMMDD();
 
 const processAllClasses = (batches) => {
     const today = getTodayDay();
@@ -78,7 +76,7 @@ const TodaysClasses = () => {
                         note: "No Data",
                     }));
 
-                    const response = await axiosInstance.post(
+                    await axiosInstance.post(
                         "/api/classLog/add-class-updates",
                         { updates: updatesToSend },
                         { withCredentials: true }

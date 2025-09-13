@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import axiosInstance from "@/utilities/axiosInstance";
 import useFetchBatches from "@/pages/useFetchBatches.js";
 import { AiOutlineClose, AiOutlinePlus, AiOutlineMinus } from "react-icons/ai";
+import { notify } from '@/components/ui/Toast.jsx';
 
 const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
@@ -105,7 +106,7 @@ const CreateEditBatch = ({ onClose, onBatchCreated, onBatchUpdated, setRerender,
     };
 
     const handleSubmit = async () => {
-        if (!isValid()) return alert("Please fill in all required fields, including the start date for each subject.");
+        if (!isValid()) { notify("Please fill in all required fields, including the start date for each subject.", "error"); return; }
         try {
             const sortedBatchData = {
                 ...batchData,
@@ -130,7 +131,7 @@ const CreateEditBatch = ({ onClose, onBatchCreated, onBatchUpdated, setRerender,
             onClose();
         } catch (err) {
             console.error("Error during batch handling:", err);
-            alert(`Failed to ${isEditMode ? 'update' : 'create'} batch.`);
+            notify(`Failed to ${isEditMode ? 'update' : 'create'} batch.`, "error");
         }
     };
 

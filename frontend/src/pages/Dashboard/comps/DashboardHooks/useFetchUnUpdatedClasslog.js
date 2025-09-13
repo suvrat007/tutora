@@ -1,22 +1,15 @@
 import { useState, useEffect } from "react";
 import moment from 'moment-timezone';
+import { getLocalDateYYYYMMDD, getLocalTimeHHMM } from '@/lib/utils.js';
 import axiosInstance from "@/utilities/axiosInstance.jsx";
 
-const getCurrentTimeString = () => {
-    return moment.tz('Asia/Kolkata').format('HH:mm');
-};
+const getCurrentTimeString = () => getLocalTimeHHMM();
 
-const getTodayDate = () => {
-    return moment.tz('Asia/Kolkata').format('YYYY-MM-DD');
-};
+const getTodayDate = () => getLocalDateYYYYMMDD();
 
 const formatDateToYYYYMMDD = (dateString) => {
     try {
-        const date = moment.tz(dateString, 'Asia/Kolkata');
-        if (!date.isValid()) {
-            throw new Error("Invalid date");
-        }
-        return date.format('YYYY-MM-DD');
+        return getLocalDateYYYYMMDD(dateString);
     } catch (error) {
         console.error("Error formatting date:", dateString, error);
         return null;

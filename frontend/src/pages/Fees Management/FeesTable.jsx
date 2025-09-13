@@ -10,6 +10,7 @@ import {
 import WrapperCard from "@/utilities/WrapperCard.jsx";
 import axiosInstance from "@/utilities/axiosInstance.jsx";
 import { useState } from "react";
+import { notify } from '@/components/ui/Toast.jsx';
 
 const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
@@ -106,7 +107,7 @@ const FeesTable = ({ batches, students, fetchStudents, monthFilter, setMonthFilt
 
     const handleMarkSelectedPaid = async () => {
         if (selectedStudentIds.length === 0) {
-            alert("Please select at least one student.");
+            notify("Please select at least one student.", "warning");
             return;
         }
 
@@ -124,13 +125,13 @@ const FeesTable = ({ batches, students, fetchStudents, monthFilter, setMonthFilt
                 },
                 { withCredentials: true }
             );
-            alert("Fee status updated successfully!");
+            notify("Fee status updated successfully!", "success");
             setSelectedStudentIds([]);
             setShowCheckboxes(false);
             await fetchStudents();
         } catch (error) {
             console.error("Error updating fee statuses:", error.message);
-            alert("Failed to update fee statuses. Please try again.");
+            notify("Failed to update fee statuses. Please try again.", "error");
         }
     };
 
