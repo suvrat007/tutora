@@ -129,7 +129,7 @@ router.post("/add-class-updates", userAuth, async (req, res) => {
 router.patch("/mark-attendance", userAuth, async (req, res) =>  {
     try {
         const adminId = req.user._id;
-        const { batch_id, subject_id, date, presentIds } = req.body;
+        const { batch_id, subject_id, date, presentIds, time } = req.body;
 
         if (
             !mongoose.Types.ObjectId.isValid(batch_id) ||
@@ -162,10 +162,9 @@ router.patch("/mark-attendance", userAuth, async (req, res) =>  {
             return res.status(400).json({ message: "No Class Entry for the given date" });
         }
 
-        const currentTime = new Date().toLocaleTimeString("en-IN", {
-            hour: "2-digit",
-            minute: "2-digit",
-        });
+        const currentTime = typeof time === 'string' && /\d{2}:\d{2}/.test(time)
+            ? time
+            : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
         // Replace existing attendance with new list
         classEntry.attendance = presentIds.map((id) => ({

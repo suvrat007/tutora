@@ -1,26 +1,43 @@
-import moment from 'moment-timezone';
+import { getLocalDateYYYYMMDD, toLocalISOSeconds } from '@/lib/utils.js';
 import { v4 as uuidv4 } from 'uuid';
 
-// Helper function to generate expected class dates based on schedule
+// Helper: format day name from Date
+const getWeekday = (date) => {
+    return ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
+};
+
+// Helper function to generate expected class dates based on schedule (LOCAL time)
 const generateExpectedDates = (startDate, endDate, days, time) => {
     const dates = [];
-    let current = moment.tz(startDate, 'Asia/Kolkata');
-    const end = moment.tz(endDate, 'Asia/Kolkata');
+    const current = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+    const end = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
 
     while (current <= end) {
-        if (days.includes(current.format('dddd'))) {
-            const classDate = moment.tz(`${current.format('YYYY-MM-DD')} ${time}`, 'YYYY-MM-DD HH:mm', 'Asia/Kolkata');
-            dates.push(classDate.format('YYYY-MM-DD HH:mm:ss'));
+        if (days.includes(getWeekday(current))) {
+            const [hh, mm] = (time || '00:00').split(':').map(Number);
+            const classDate = new Date(
+                current.getFullYear(),
+                current.getMonth(),
+                current.getDate(),
+                hh,
+                mm,
+                0,
+                0
+            );
+            dates.push(classDate);
         }
-        current.add(1, 'days');
+        // next day
+        current.setDate(current.getDate() + 1);
     }
     // Deduplicate dates (in case of overlaps)
-    return [...new Set(dates)];
+    return [...new Set(dates.map(d => d.getTime()))].map(ts => new Date(ts));
 };
 
 const useClassLogProcessor = (classLogs, batches) => {
-    // Use the end of the current day as end date to include all of today
-    const endDate = moment.tz('Asia/Kolkata').endOf('day'); // e.g., September 06, 2025, 23:59:59 IST
+    // Use the end of the current day as end date to include all of today (LOCAL)
+    console.log("useClassLogProcessor called with classLogs:", batches, classLogs);
+    const endDate = new Date();
+    endDate.setHours(23, 59, 59, 999);
 
     const processedLogs = classLogs.map(log => {
         // Find corresponding batch
@@ -37,27 +54,36 @@ const useClassLogProcessor = (classLogs, batches) => {
             return null; // Return null to filter out invalid subjects
         }
 
-        const scheduleDays = subject.classSchedule.days;
-        const scheduleTime = subject.classSchedule.time;
-        const batchStartDate = moment.tz(subject.startDate, 'Asia/Kolkata').isValid()
-            ? moment.tz(subject.startDate, 'Asia/Kolkata')
-            : moment.tz('Asia/Kolkata').startOf('day'); // Fallback to today if startDate is invalid
+        const scheduleDays = subject.classSchedule.days || [];
+        const scheduleTime = subject.classSchedule.time || '00:00';
+        // Determine a reasonable local start date - prioritize subject.startDate
+        let batchStartDate;
+        if (subject.startDate) {
+            // Parse ISO string to Date object
+            batchStartDate = new Date(subject.startDate);
+            // Ensure it's at the start of the day in local time
+            batchStartDate.setHours(0, 0, 0, 0);
+        } else {
+            // Fallback to other candidates if no startDate
+            const candidates = [];
+            const firstExistingClass = Array.isArray(log.classes) && log.classes.length > 0 ? new Date(log.classes[0].date) : null;
+            if (firstExistingClass) candidates.push(firstExistingClass);
+            if (batch.createdAt) candidates.push(new Date(batch.createdAt));
+            // default to 60 days back
+            const sixtyDaysBack = new Date();
+            sixtyDaysBack.setDate(sixtyDaysBack.getDate() - 60);
+            candidates.push(sixtyDaysBack);
+            batchStartDate = new Date(Math.min(...candidates.map(d => d.getTime())));
+            batchStartDate.setHours(0,0,0,0);
+        }
 
         // Generate all expected class dates up to the end of today
-        const expectedDates = generateExpectedDates(
-            batchStartDate,
-            endDate,
-            scheduleDays,
-            scheduleTime
-        );
+        const expectedDates = generateExpectedDates(batchStartDate, endDate, scheduleDays, scheduleTime);
 
         const newClasses = expectedDates.map(date => {
-            const classDate = moment.tz(date, 'Asia/Kolkata');
-            const clsDateStr = classDate.format('YYYY-MM-DD');
+            const clsDateStr = getLocalDateYYYYMMDD(date);
             // Check for multiple classes on the same date
-            const matchingClasses = log.classes.filter(cls =>
-                moment.tz(cls.date, 'Asia/Kolkata').format('YYYY-MM-DD') === clsDateStr
-            );
+            const matchingClasses = (log.classes || []).filter(cls => getLocalDateYYYYMMDD(cls.date) === clsDateStr);
 
             if (matchingClasses.length > 1) {
                 console.warn(`Multiple classes found for date ${clsDateStr} in log ${log._id}:`, matchingClasses);
@@ -67,7 +93,7 @@ const useClassLogProcessor = (classLogs, batches) => {
 
             if (existingClass) {
                 // Validate existing class date matches schedule
-                const dayOfWeek = moment.tz(existingClass.date, 'Asia/Kolkata').format('dddd');
+                const dayOfWeek = getWeekday(new Date(existingClass.date));
                 if (!scheduleDays.includes(dayOfWeek)) {
                     return {
                         ...existingClass,
@@ -86,7 +112,7 @@ const useClassLogProcessor = (classLogs, batches) => {
 
             // Create a new class for expected date not in database
             return {
-                date,
+                date: toLocalISOSeconds(date),
                 hasHeld: false,
                 note: 'No Data',
                 attendance: [],
@@ -100,7 +126,7 @@ const useClassLogProcessor = (classLogs, batches) => {
         const uniqueClasses = [];
         const seenDates = new Set();
         newClasses.forEach(cls => {
-            const clsDateStr = moment.tz(cls.date, 'Asia/Kolkata').format('YYYY-MM-DD');
+            const clsDateStr = getLocalDateYYYYMMDD(cls.date);
             if (!seenDates.has(clsDateStr)) {
                 seenDates.add(clsDateStr);
                 uniqueClasses.push(cls);
@@ -111,7 +137,7 @@ const useClassLogProcessor = (classLogs, batches) => {
 
         return {
             ...log,
-            classes: uniqueClasses.sort((a, b) => moment.tz(a.date, 'Asia/Kolkata') - moment.tz(b.date, 'Asia/Kolkata'))
+            classes: uniqueClasses.sort((a, b) => new Date(a.date) - new Date(b.date))
         };
     }).filter(log => log !== null); // Filter out null entries for invalid subjects
 

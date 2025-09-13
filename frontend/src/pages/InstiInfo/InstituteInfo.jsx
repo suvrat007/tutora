@@ -26,10 +26,21 @@ const InstituteInfo = () => {
     const batches = useSelector((state) => state.batches);
     const userData = useSelector((state) => state.user);
     const instiData = userData?.institute_info || { contact_info: {} };
+    // const fetchBatches = useFetchBatches();
+    // const fetchStudents = useFetchStudents();   
+    // const fetchAttendanceSummary = useFetchAttendanceSummary();
+    const fetchClassLogs = useFetchClassLogs();
+
+
+    // useEffect(() => {
+    //     fetchBatches();
+    //     fetchStudents();
+    //     fetchAttendanceSummary();
+    //     fetchClassLogs();
+    // }, []);
 
     const [showEditModal, setShowEditModal] = useState(false);
 
-    const fetchClassLogs = useFetchClassLogs();
 
     const newClassLogs = useClassLogProcessor(classLogs, batches);
 
@@ -40,6 +51,8 @@ const InstituteInfo = () => {
     const [loaded, setLoaded] = useState(false);
 
     if (!loaded) return <LoadingPage onDone={() => setLoaded(true)} />;
+
+    // console.log("Institute Data:", newClassLogs);
 
     return (
         <div className="h-screen p-6 overflow-y-auto">

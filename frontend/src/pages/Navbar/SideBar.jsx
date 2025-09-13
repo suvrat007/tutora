@@ -66,7 +66,7 @@ const Sidebar = () => {
 
         return (
             <div className="fixed bottom-0 left-0 right-0 bg-[#e7c6a5] shadow-inner flex md:hidden justify-around py-2 z-50">
-                <MobileNavItem icon={<FaHome />} to="/main" label="Home" />
+                <MobileNavItem icon={<FaHome />}  onClick={()=>navigate('/main')} label="Home" />
                 <MobileNavDropdown
                     icon={<FaUserCog />}
                     label="Manage"

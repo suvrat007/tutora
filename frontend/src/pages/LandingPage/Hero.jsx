@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button.jsx";
 import { ArrowRight, Sparkles, Play, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AnimatedGradientText } from "../../components/ui/AnimatedGradientText.jsx";
+import { motion } from "framer-motion";
 
 const Hero = ({ currentWord, rotatingWords, user, setIsModalOpen }) => {
     const navigate = useNavigate();
@@ -43,15 +44,31 @@ const Hero = ({ currentWord, rotatingWords, user, setIsModalOpen }) => {
     ];
 
     return (
-        <section className="bg-gradient-to-br from-[#fdf5ec] to-[#f5e8dc] flex flex-col items-center justify-center min-h-[90vh] px-4 sm:px-6 md:px-8">
-            <div className="text-center max-w-6xl mx-auto">
+        <section className="bg-gradient-to-br from-[#fdf5ec] to-[#f5e8dc] flex flex-col items-center justify-center min-h-[90vh] px-4 sm:px-6 md:px-8 overflow-hidden">
+            <div className="text-center max-w-6xl mx-auto relative">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                    className="absolute inset-0 -z-10"
+                >
+                    <div className="pointer-events-none select-none">
+                        <div className="absolute -top-24 -left-24 w-72 h-72 bg-[#e7c6a5]/40 rounded-full blur-3xl" />
+                        <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-[#e0c4a8]/40 rounded-full blur-3xl" />
+                    </div>
+                </motion.div>
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-sm rounded-full border border-[#e7c6a5]/50 shadow-lg mb-6">
                     <Sparkles className="w-4 h-4 text-[#4a3a2c]" />
                     <span className="text-sm font-medium text-[#4a3a2c]">
                         Trusted by 10,000+ educators worldwide
                     </span>
                 </div>
-                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-[#4a3a2c] mb-6 leading-tight">
+                <motion.h1
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, ease: "easeOut", delay: 0.05 }}
+                    className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-[#4a3a2c] mb-6 leading-tight"
+                >
                     Your Personal{" "}
                     <span className="relative inline-block">
                         <AnimatedGradientText className="inline-block bg-gradient-to-r from-[#4a3a2c] via-[#6b5b4f] to-[#4a3a2c] bg-clip-text text-transparent">
@@ -76,13 +93,18 @@ const Hero = ({ currentWord, rotatingWords, user, setIsModalOpen }) => {
                             }
                         `}</style>
                     </span>
-                </h1>
+                </motion.h1>
                 <p className="text-base sm:text-lg md:text-xl text-[#9b8778] max-w-3xl mx-auto mb-8 leading-relaxed">
                     The all-in-one platform built for{" "}
                     <span className="font-semibold text-[#4a3a2c]">solo educators</span>.
                     Manage students, classes, and schedules with elegance and ease.
                 </p>
-                <div className="flex flex-col sm:flex-row justify-center gap-4 mb-12">
+                <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }}
+                    className="flex flex-col sm:flex-row justify-center gap-4 mb-12"
+                >
                     <Button
                         size="lg"
                         className="group cursor-pointer bg-[#4a3a2c] text-white hover:bg-[#3e2f23] transition-all duration-300 shadow-lg hover:shadow-xl px-8 py-4 text-base font-semibold rounded-xl border border-[#6b5b4f]/20"
@@ -102,7 +124,7 @@ const Hero = ({ currentWord, rotatingWords, user, setIsModalOpen }) => {
                         {user ? "Watch Demo" : "Watch Demo Video"}
                         <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                     </Button>
-                </div>
+                </motion.div>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-6 text-[#9b8778]">
                     <div className="flex items-center gap-2">
                         <div className="flex -space-x-2">

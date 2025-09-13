@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X, Loader2 } from "lucide-react";
 import axiosInstance from "@/utilities/axiosInstance";
 import moment from 'moment';
+import { notify } from '@/components/ui/Toast.jsx';
 
 const EditClassModal = ({ isOpen, onClose, classInfo, onUpdate }) => {
     const [statusData, setStatusData] = useState({
@@ -68,11 +69,12 @@ const EditClassModal = ({ isOpen, onClose, classInfo, onUpdate }) => {
         try {
             setLoading(true);
             const response = await axiosInstance.post("/api/classLog/add-class-updates", payload, { withCredentials: true });
-            alert("Class updated successfully!");
+            notify("Class updated successfully!", "success");
             onUpdate();
             onClose();
         } catch (err) {
             console.error("Update failed:", err);
+            notify(err.response?.data?.message || "Update failed.", "error");
             setStatusData(prev => ({ ...prev, error: err.response?.data?.message || "Update failed." }));
         } finally {
             setLoading(false);
