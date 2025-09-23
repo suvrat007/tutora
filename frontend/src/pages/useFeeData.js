@@ -1,7 +1,7 @@
 import axios from 'axios';
 import axiosInstance from "@/utilities/axiosInstance.jsx";
 
-const useFeeData = async (groupedStudents, batches) => {
+const useFeeData = async (groupedStudents, batches, month) => {
   // Early return if inputs are invalid
   if (!groupedStudents || !Array.isArray(groupedStudents) || !batches || !Array.isArray(batches)) {
     console.warn('useFeeData: Invalid input - groupedStudents or batches is missing or not an array');
@@ -41,8 +41,8 @@ const useFeeData = async (groupedStudents, batches) => {
               ? student.fee_status.feeStatus.sort((a, b) => new Date(b.date) - new Date(a.date))[0]
               : null;
           const isPaidThisMonth = latestFeeStatus
-              ? new Date(latestFeeStatus.date).getMonth() === new Date().getMonth() &&
-              new Date(latestFeeStatus.date).getFullYear() === new Date().getFullYear() &&
+              ? new Date(latestFeeStatus.date).getMonth() === new Date(month).getMonth() &&
+              new Date(latestFeeStatus.date).getFullYear() === new Date(month).getFullYear() &&
               latestFeeStatus.paid
               : false;
 

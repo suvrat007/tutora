@@ -9,11 +9,11 @@ import {
 import WrapperCard from "@/utilities/WrapperCard.jsx";
 import useFetchStudents from "@/pages/useFetchStudents.js";
 import FeesTable from "@/pages/Fees Management/FeesTable.jsx";
-
+import { useState } from "react";
 
 const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
+    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
 };
 
 const placeholderVariants = {
@@ -25,30 +25,45 @@ const placeholderVariants = {
 
 const Fees = () => {
     const { batches, students, totalInstituteFees } = useSelector((state) => state.fees);
-    const isLoading = !batches || batches.length === 0;
+    const currentMonth = `${new Date().toLocaleString("default", { month: "long" })} ${new Date().getFullYear()}`;
+    const [monthFilter, setMonthFilter] = useState(currentMonth); // Default to present month
+    const isNoData =
+        !batches ||
+        batches.length === 0 ||
+        !students ||
+        students.length === 0 ||
+        totalInstituteFees === undefined ||
+        totalInstituteFees === 0;
     const fetchStudents = useFetchStudents();
 
+    // Calculate total paid amount for the selected month (or present month by default)
     const totalPaidAmount = students.reduce((sum, student) => {
-        return student.isPaidThisMonth ? sum + (student.amount || 0) : sum;
+        const effectiveMonth = monthFilter === "Present Month" ? currentMonth : monthFilter;
+        const paidInMonth = (student.feeStatus || []).some((status) => {
+            const date = new Date(status.date);
+            const monthYear = `${date.toLocaleString("default", { month: "long" })} ${date.getFullYear()}`;
+            return monthYear === effectiveMonth && status.paid;
+        });
+        return paidInMonth ? sum + (student.amount || 0) : sum;
     }, 0);
 
-    if (isLoading) {
+    if (isNoData) {
         return (
-            <div className="min-h-screen  flex items-center justify-center">
+            <div className="h-full m-4 flex items-center justify-center">
                 <motion.div
                     variants={placeholderVariants}
                     animate="pulse"
                     className="text-center"
                 >
                     <DollarSign className="w-12 h-12 text-[#e0c4a8] mx-auto mb-4" />
-                    <p className="text-lg text-[#7b5c4b]">Loading fee data...</p>
+                    <p className="text-lg text-[#7b5c4b]">No fee data available</p>
                 </motion.div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen  p-4 sm:p-6 overflow-y-auto">
+        <div className="min-h-screen p-4 sm:p-6 overflow-y-auto">
             <div className="space-y-6">
                 <div className="flex flex-col w-full items-center justify-center">
                     <div className="flex items-center gap-3 sm:justify-left">
@@ -81,7 +96,9 @@ const Fees = () => {
                                         <p className="text-2xl font-bold text-[#5a4a3c] mt-2">
                                             ₹{totalPaidAmount.toLocaleString()}
                                         </p>
-                                        <p className="text-sm text-[#7b5c4b] mt-1">Collected</p>
+                                        <p className="text-sm text-[#7b5c4b] mt-1">
+                                            Collected {monthFilter === "Present Month" ? "this month" : `in ${monthFilter}`}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -125,7 +142,7 @@ const Fees = () => {
                     transition={{ delay: 0.2, duration: 0.5 }}
                 >
                     <WrapperCard>
-                        <div className="bg-[#f8ede3] w-full  rounded-3xl p-6">
+                        <div className="bg-[#f8ede3] w-full rounded-3xl p-6">
                             <div className="flex items-center gap-2 mb-4">
                                 <GraduationCap className="w-5 h-5 text-[#5a4a3c]" />
                                 <h3 className="text-xl font-semibold text-[#5a4a3c]">Batch-wise Fee Distribution</h3>
@@ -183,9 +200,10 @@ const Fees = () => {
                         batches={batches}
                         students={students}
                         fetchStudents={fetchStudents}
+                        monthFilter={monthFilter}
+                        setMonthFilter={setMonthFilter}
                     />
                 </div>
-
             </div>
         </div>
     );
