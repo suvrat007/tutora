@@ -4,6 +4,7 @@ import axiosInstance from "@/utilities/axiosInstance";
 import { CalendarDays, NotebookText } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import { getLocalDateYYYYMMDD } from '@/lib/utils.js';
+import {motion} from "framer-motion";
 
 const getTodayDay = () => {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];

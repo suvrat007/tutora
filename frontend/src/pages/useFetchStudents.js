@@ -15,6 +15,7 @@ const useFetchStudents = () => {
                 withCredentials: true,
             });
             const groupedStudents = response.data;
+            console.log(groupedStudents);
             dispatch(setGroupedStudents(groupedStudents));
 
             const feeData = await useFeeData(groupedStudents, batches, month);
