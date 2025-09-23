@@ -6,6 +6,7 @@ import TimePicker from "react-time-picker";
 import 'react-time-picker/dist/TimePicker.css';
 import 'react-clock/dist/Clock.css';
 import useFetchAllBatch from "@/pages/BatchPage/Functions/useFetchAllBatch.jsx";
+import { notify } from '@/components/ui/Toast.jsx';
 
 const ReminderModal = ({ setShowModal, value }) => {
     const [batchName, setBatchName] = useState("");
@@ -35,13 +36,13 @@ const ReminderModal = ({ setShowModal, value }) => {
 
     const handleSubmitReminder = async () => {
         if (!reminderText.trim()) {
-            return alert("❌ Reminder text is required.");
+            return notify("Reminder text is required.", "warning");
         }
         if (!time) {
-            return alert("❌ Please select a time.");
+            return notify("Please select a time.", "warning");
         }
         if (!isValidDate(reminderDate)) {
-            return alert("❌ Invalid or missing date.");
+            return notify("Invalid or missing date.", "error");
         }
 
         const [hour, minute] = time.split(":").map(Number);
@@ -66,11 +67,11 @@ const ReminderModal = ({ setShowModal, value }) => {
 
         try {
             await axiosInstance.post('/api/reminder/add-reminder', payload, { withCredentials: true });
-            alert(`✅ Reminder Set!\n\nDate: ${reminderDate.toDateString()}\nTime: ${time}\nNote: ${reminderText}`);
+            notify(`Reminder set for ${reminderDate.toDateString()} ${time}`, "success");
             setShowModal(false);
         } catch (err) {
             console.error(err);
-            alert("❌ Failed to set reminder. Try again.");
+            notify("Failed to set reminder. Try again.", "error");
         }
     };
 

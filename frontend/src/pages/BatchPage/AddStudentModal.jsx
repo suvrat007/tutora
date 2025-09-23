@@ -6,6 +6,7 @@ import useFetchBatches from "@/pages/useFetchBatches.js";
 import useFetchStudents from "@/pages/useFetchStudents.js";
 import {  Users} from "lucide-react";
 import { AiOutlineClose } from "react-icons/ai";
+import toast from 'react-hot-toast';
 
 
 const fadeInUp = {
@@ -27,7 +28,7 @@ const placeholderVariants = {
     },
 };
 
-const AddStudentModal = ({ onClose, setRerender, batch, refreshStudents }) => {
+const AddStudentModal = ({ onClose, batch, refreshStudents }) => {
     const groupedStudents = useSelector((state) => state.students.groupedStudents);
     const [noBatchStudents, setNoBatchStudents] = useState([]);
     const [selectedStudents, setSelectedStudents] = useState([]);
@@ -43,27 +44,35 @@ const AddStudentModal = ({ onClose, setRerender, batch, refreshStudents }) => {
     }, [groupedStudents, batch]);
 
     const handleSelectStudent = (studentId) => {
-        const isAlreadySelected = selectedStudents.find((s) => s.id === studentId);
-        if (isAlreadySelected) {
-            setSelectedStudents((prev) => prev.filter((s) => s.id !== studentId));
-        } else {
-            setSelectedStudents((prev) => [...prev, { id: studentId, subjectIds: [] }]);
+        try {
+            const isAlreadySelected = selectedStudents.find((s) => s.id === studentId);
+            if (isAlreadySelected) {
+                setSelectedStudents((prev) => prev.filter((s) => s.id !== studentId));
+            } else {
+                setSelectedStudents((prev) => [...prev, { id: studentId, subjectIds: [] }]);
+            }
+        } catch (error) {
+            toast.error("An error occurred while selecting a student.");
         }
     };
 
     const handleSubjectToggle = (studentId, subjectId) => {
-        setSelectedStudents((prev) =>
-            prev.map((student) => {
-                if (student.id === studentId) {
-                    const exists = student.subjectIds.includes(subjectId);
-                    const updatedSubjects = exists
-                        ? student.subjectIds.filter((sid) => sid !== subjectId)
-                        : [...student.subjectIds, subjectId];
-                    return { ...student, subjectIds: updatedSubjects };
-                }
-                return student;
-            })
-        );
+        try {
+            setSelectedStudents((prev) =>
+                prev.map((student) => {
+                    if (student.id === studentId) {
+                        const exists = student.subjectIds.includes(subjectId);
+                        const updatedSubjects = exists
+                            ? student.subjectIds.filter((sid) => sid !== subjectId)
+                            : [...student.subjectIds, subjectId];
+                        return { ...student, subjectIds: updatedSubjects };
+                    }
+                    return student;
+                })
+            );
+        } catch (error) {
+            toast.error("An error occurred while toggling a subject.");
+        }
     };
 
     const fetchStudents = useFetchStudents();
@@ -75,7 +84,7 @@ const AddStudentModal = ({ onClose, setRerender, batch, refreshStudents }) => {
 
     const handleUpdateStudents = async () => {
         if (!isValidSelection()) {
-            alert("Please select at least one subject for each selected student.");
+            toast.error("Please select at least one subject for each selected student.");
             return;
         }
 
@@ -89,12 +98,10 @@ const AddStudentModal = ({ onClose, setRerender, batch, refreshStudents }) => {
 
             await fetchStudents();
             await fetchBatches();
-            setRerender((prev) => !prev);
             refreshStudents();
             onClose();
         } catch (err) {
-            console.error("Error updating students:", err);
-            alert("Failed to assign students to batch.");
+            toast.error(err.response?.data?.message || "Failed to assign students to batch.");
         }
     };
 
@@ -156,7 +163,7 @@ const AddStudentModal = ({ onClose, setRerender, batch, refreshStudents }) => {
                                 <li key={student._id} className="py-3 px-4">
                                     <div
                                         onClick={() => handleSelectStudent(student._id)}
-                                        className={`cursor-pointer rounded-lg transition ${isSelected ? 'bg-[#f0d9c0]' : 'hover:bg-[#f0d9c0]'}`}
+                                        className={`cursor-pointer px-5 p-2 rounded-lg transition ${isSelected ? 'bg-[#f0d9c0]' : 'hover:bg-[#f0d9c0]'}`}
                                     >
                                         <div className="flex flex-col">
                                             <span className="font-semibold text-[#5a4a3c]">{student.name}</span>

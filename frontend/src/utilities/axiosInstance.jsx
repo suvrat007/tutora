@@ -20,6 +20,19 @@ axiosInstance.interceptors.request.use(
         return Promise.reject(error);
     }
 );
+
+axiosInstance.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response && error.response.status === 401) {
+            // Handle 401 Unauthorized errors (e.g., redirect to login)
+            // You can dispatch a logout action here or redirect to the login page
+            window.location.href = '/';
+        }
+        return Promise.reject(error);
+    }
+);
+
 export default axiosInstance;
 
 

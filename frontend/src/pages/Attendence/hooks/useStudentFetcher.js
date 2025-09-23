@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { getLocalDateYYYYMMDD } from '@/lib/utils.js';
 
 export const useStudentFetcher = (
     batches,
@@ -10,12 +11,7 @@ export const useStudentFetcher = (
     setSuccess,
     setError
 ) => {
-    const formatDateToYYYYMMDD = useCallback((dateInput) => {
-        const d = new Date(dateInput);
-        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
-            d.getDate()
-        ).padStart(2, "0")}`;
-    }, []);
+    const formatDateToYYYYMMDD = useCallback((dateInput) => getLocalDateYYYYMMDD(dateInput), []);
 
     const fetchStudents = useCallback((batchName, subjectName, date, isValidDateTime, errorMessage) => {
         try {

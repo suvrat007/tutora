@@ -98,12 +98,12 @@ export const AttendancePage = () => {
   }, [batchName, subjectName, date, classLogs.length, classLogs]);
 
   return (
-      <div className="min-h-screen py-3 px-5 sm:px-6 flex flex-col gap-6 flex-1 overflow-y-auto">
+      <div className=" py-3 px-5 sm:px-6 flex flex-col gap-6 flex-1 overflow-y-auto">
         <motion.div
             initial={{opacity: 0, y: 20}}
             animate={{opacity: 1, y: 0}}
             transition={{duration: 0.5, ease: "easeInOut"}}
-            className="flex flex-col sm:flex-row gap-6 h-auto sm:h-[37vh]"
+            className="flex flex-col lg:flex-row gap-6 h-auto sm:h-[45%]"
         >
           <div className="flex-1 order-2 sm:order-1">
             <WrapperCard>
@@ -143,7 +143,7 @@ export const AttendancePage = () => {
             initial={{opacity: 0, y: 20}}
             animate={{opacity: 1, y: 0}}
             transition={{duration: 0.5, ease: "easeInOut", delay: 0.2}}
-            className="flex flex-col md:flex-row gap-6 sm:h-[37vh] h-full mb-50 sm:mb-0"
+            className="flex flex-col lg:flex-row gap-6 max-h-[18rem]"
         >
           <WrapperCard>
             <StudentList

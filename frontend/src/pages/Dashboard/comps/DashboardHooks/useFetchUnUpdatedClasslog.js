@@ -1,28 +1,15 @@
 import { useState, useEffect } from "react";
+import moment from 'moment-timezone';
+import { getLocalDateYYYYMMDD, getLocalTimeHHMM } from '@/lib/utils.js';
 import axiosInstance from "@/utilities/axiosInstance.jsx";
 
-const getCurrentTimeString = () => {
-    const now = new Date();
-    const hours = String(now.getHours()).padStart(2, "0");
-    const minutes = String(now.getMinutes()).padStart(2, "0");
-    return `${hours}:${minutes}`;
-};
+const getCurrentTimeString = () => getLocalTimeHHMM();
 
-const getTodayDate = () => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const day = String(now.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-};
+const getTodayDate = () => getLocalDateYYYYMMDD();
 
 const formatDateToYYYYMMDD = (dateString) => {
     try {
-        const date = new Date(dateString);
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const day = String(date.getDate()).padStart(2, "0");
-        return `${year}-${month}-${day}`;
+        return getLocalDateYYYYMMDD(dateString);
     } catch (error) {
         console.error("Error formatting date:", dateString, error);
         return null;
@@ -45,9 +32,8 @@ const useFetchUnUpdatedClasslog = (rerenderKey = false) => {
                 });
 
                 const allLogs = response.data;
-                const nowTime = getCurrentTimeString();
-                const todayDate = getTodayDate();
-                // console.log(allLogs);
+                const nowTime = getCurrentTimeString(); // e.g., "01:28"
+                const todayDate = getTodayDate(); // e.g., "2025-09-03"
                 const result = [];
 
                 allLogs.forEach(log => {
@@ -72,17 +58,16 @@ const useFetchUnUpdatedClasslog = (rerenderKey = false) => {
                     log.classes.forEach(cls => {
                         // Convert the date string to YYYY-MM-DD format
                         const clsDateStr = formatDateToYYYYMMDD(cls.date);
-                        // console.log(clsDateStr)
                         if (!clsDateStr) {
                             console.warn("Invalid date format:", cls.date);
                             return;
                         }
 
+                        // Only include un-updated classes for today where scheduled time has passed
                         const isToday = clsDateStr === todayDate;
-                        const isPastOrToday = clsDateStr <= todayDate;
-                        const isTimePassed = isPastOrToday && (!isToday || time <= nowTime);
+                        const isTimePassed = isToday && time <= nowTime;
 
-                        if (cls?.updated === false && isTimePassed) {
+                        if (cls?.updated === false && isToday && isTimePassed) {
                             result.push({
                                 logId: log._id,
                                 classId: cls._id,

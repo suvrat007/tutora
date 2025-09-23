@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import axiosInstance from "@/utilities/axiosInstance";
@@ -10,6 +10,7 @@ import { AiOutlinePlus } from "react-icons/ai";
 import ViewBatchDetails from "@/pages/BatchPage/ViewBatchDetails.jsx";
 import CreateEditBatch from "@/pages/BatchPage/CreateEditBatch.jsx";
 import ConfirmationModal from "@/pages/BatchPage/ConfirmationModal.jsx";
+import toast from "react-hot-toast";
 
 const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
@@ -44,7 +45,6 @@ const BatchPage = () => {
     const [batchToDelete, setBatchToDelete] = useState(null);
     const [viewDetails, setViewDetails] = useState({ display: false, batch: null });
     const [isLoading, setIsLoading] = useState(false);
-    const [rerender, setRerender] = useState(false);
 
     const adminData = useSelector((state) => state.user);
     const batches = useSelector((state) => state.batches);
@@ -52,9 +52,7 @@ const BatchPage = () => {
     const dispatch = useDispatch();
     const fetchBatches = useFetchBatches();
 
-    useEffect(() => {
-        fetchBatches();
-    }, [rerender]);
+    
 
     const handleDelete = async (id, shouldDeleteStudents) => {
         setBatchToDelete(null);
@@ -67,10 +65,10 @@ const BatchPage = () => {
 
             if (response.status !== 200) throw new Error("Failed to delete the batch");
 
-            alert("Batch successfully deleted.");
+            toast.success("Batch successfully deleted.");
             await fetchBatches();
         } catch (error) {
-            alert(error?.response?.data?.message || "Something went wrong during deletion.");
+            toast.error(error?.response?.data?.message || "Something went wrong during deletion.");
         } finally {
             setIsLoading(false);
         }
@@ -204,11 +202,11 @@ const BatchPage = () => {
                 <motion.div
                     variants={placeholderVariants}
                     animate="pulse"
-                    className="text-center py-12"
+                    onClick={() => !isLoading && setCreateBatches(true)}
+                    className="text-center py-12 cursor-pointer mx-10 "
                 >
-                    <BookOpen className="text-6xl text-[#e0c4a8] mb-4" />
                     <h3 className="text-xl font-semibold text-[#5a4a3c] mb-2">No batches yet</h3>
-                    <p className="text-[#7b5c4b]">Create your first batch to get started</p>
+                    <p className="text-[#7b5c4b]">Click here and create your first batch to get started</p>
                 </motion.div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -225,12 +223,11 @@ const BatchPage = () => {
 
     return (
         <div className="h-full p-4 overflow-y-auto">
-            <WrapperCard className="h-auto w-full">
+            <WrapperCard className="h-full w-full">
                 {viewDetails.display ? (
                     <ViewBatchDetails
                         viewDetails={viewDetails}
                         setViewDetails={setViewDetails}
-                        setRerender={setRerender}
                         onClose={closeViewDetails}
                     />
                 ) : (
@@ -242,15 +239,14 @@ const BatchPage = () => {
                     <CreateEditBatch
                         onClose={() => setCreateBatches(false)}
                         handleBatchUpdated={handleBatchUpdated}
+                        handleViewDetails={handleViewDetails}
                         batchToEdit={null}
-                        setRerender={setRerender}
                     />
                 </ModalBackdrop>
             )}
             {batchToDelete && (
                 <ConfirmationModal
                     closeModal={() => setBatchToDelete(null)}
-                    setRerender={setRerender}
                     onClose={(shouldDeleteStudents) => handleDelete(batchToDelete, shouldDeleteStudents)}
                 />
             )}

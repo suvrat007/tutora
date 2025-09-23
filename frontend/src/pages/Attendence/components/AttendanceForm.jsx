@@ -18,19 +18,12 @@ export const AttendanceForm = ({
                                }) => {
     const selectedBatch = batches.find((b) => b.name === batchName);
 
-    const placeholderVariants = {
-        pulse: {
-            scale: [1, 1.1, 1],
-            transition: { duration: 1.5, repeat: Infinity, ease: "easeInOut" },
-        },
-    };
-
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeInOut" }}
-            className="bg-[#f8ede3] p-4 rounded-3xl shadow-[0_8px_24px_rgba(0,0,0,0.15)] flex-1 w-full h-full overflow-hidden"
+            className="bg-[#f8ede3] p-4 rounded-3xl shadow-[0_8px_24px_rgba(0,0,0,0.15)] flex-1 w-full h-full overflow-y-auto"
         >
             <div className="flex flex-col gap-4 h-full">
                 <select
@@ -104,16 +97,7 @@ export const AttendanceForm = ({
                         Clear
                     </motion.button>
                 </div>
-                {!batchName && !subjectName && !date && (
-                    <motion.div
-                        variants={placeholderVariants}
-                        animate="pulse"
-                        className="flex flex-col items-center justify-center h-full text-[#7b5c4b]"
-                    >
-                        {/*<FiCalendar className="w-12 h-12 text-[#e0c4a8] mb-3" />*/}
-                        <p className="text-sm text-center">Select a batch, subject, and date to start!</p>
-                    </motion.div>
-                )}
+
             </div>
         </motion.div>
     );

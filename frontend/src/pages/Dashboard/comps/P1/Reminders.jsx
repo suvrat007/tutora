@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "@/utilities/axiosInstance";
 import { AnimatePresence, motion } from "framer-motion";
+import { notify } from '@/components/ui/Toast.jsx';
 
 const Reminders = () => {
     const [reminders, setReminders] = useState([]);
@@ -70,7 +71,7 @@ const Reminders = () => {
             setMarkedDoneIds([]);
         } catch (err) {
             console.error("Failed to delete reminders", err);
-            alert("Some deletions failed.");
+            notify("Some deletions failed.", "error");
         } finally {
             setIsSaving(false);
         }

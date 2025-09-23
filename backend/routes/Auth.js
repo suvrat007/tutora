@@ -5,18 +5,69 @@ const jwt = require('jsonwebtoken');
 const Admin = require('../models/Admin');
 const {signupValidation,logInValidation} = require('../utils/validations');
 const Institute = require("../models/Institutes");
+const {OAuth2Client} = require("google-auth-library");
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
+router.post('/google-auth',async (req, res) => {
+    try {
+        const { credential } = req.body; // Google ID token from frontend
+
+        // Verify the Google token
+        const ticket = await client.verifyIdToken({
+            idToken: credential,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+
+        const payload = ticket.getPayload();
+        const { email, given_name, picture } = payload;
+
+        // Check if user exists or create new one
+        let user = await Admin.findOne({ emailId: email });
+
+        if (!user) {
+            user = new Admin({
+                name: given_name,
+                emailId: email,
+                adminPicURL: picture,
+                isGoogleAuth: true // Add this field to your User model
+            });
+            await user.save();
+        }
+
+        // Generate JWT token (same as your existing flow)
+        const token = jwt.sign({_id: user._id}, process.env.JWT_KEY, {expiresIn: '1d'});
+
+        res.cookie("token",token,{
+            httpOnly: true,
+            secure: true,
+            sameSite: 'none',
+            path:'/',
+            maxAge:3600000*24
+        })
+
+        const userObj = user.toObject();
+        delete userObj.password;
+
+        res.status(200).json({
+            message: 'Google authentication successful',
+            user: userObj
+        });
+
+    } catch (error) {
+        console.error('Google auth error:', error);
+        res.status(401).json({ message: 'Invalid Google token' });
+    }
+});
 
 router.post("/signup", async (req, res) => {
     const { error } = signupValidation.validate(req.body);
     if (error) return res.status(400).json({ message: error.details[0].message });
 
-    const { admin } = req.body;
-    if (!admin || !admin.name || !admin.emailId || !admin.password) {
+    if (!req.body || !req.body.name || !req.body.emailId || !req.body.password) {
         return res.status(400).json({ message: "Incomplete admin credentials" });
     }
 
-    const { name, emailId, password } = admin;
+    const { name, emailId, password } = req.body;
 
     try {
         const existingUser = await Admin.findOne({ emailId });
@@ -28,11 +79,11 @@ router.post("/signup", async (req, res) => {
 
         const newInstitute = new Institute({
             adminId: newUser._id,
-            name: req.body.instiName,
-            logo_URL: req.body.logo_URL,
+            name: req.body.institute_info.instiName,
+            logo_URL: req.body.institute_info.logo_URL,
             contact_info: {
-                emailId: req.body.instituteEmailId,
-                phone_number: req.body.phone_number,
+                emailId: req.body.institute_info.instituteEmailId,
+                phone_number: req.body.institute_info.phone_number,
             },
         });
 
@@ -43,13 +94,13 @@ router.post("/signup", async (req, res) => {
 
         const token = jwt.sign({ _id: newUser._id }, process.env.JWT_KEY, { expiresIn: "1d" });
 
-        res.cookie("token", token, {
+        res.cookie("token",token,{
             httpOnly: true,
             secure: true,
-            sameSite: "none",
-            path: "/",
-            maxAge: 3600000 * 24,
-        });
+            sameSite: 'none',
+            path:'/',
+            maxAge:3600000*24
+        })
 
         const userObject = newUser.toObject();
         delete userObject.password;
@@ -77,7 +128,7 @@ router.post("/login", async (req, res) => {
         }
 
         const token =jwt.sign({_id:user._id},process.env.JWT_KEY,{expiresIn: '1d'});
-        res.cookie("token", token, {
+        res.cookie("token",token,{
             httpOnly: true,
             secure: true,
             sameSite: 'none',
@@ -97,11 +148,9 @@ router.post("/login", async (req, res) => {
 })
 
 router.post("/logout", async (req, res) => {
-    res.clearCookie("token", {
-        httpOnly: true,
-        sameSite: "lax",
-        secure: false, // ✅ if you're on localhost — set to true only in production (HTTPS)
-    });
+    res.cookie("token",null,{
+        expires:new Date(Date.now())
+    })
     res.status(200).json({ message: "Logged out successfully" });
 });
 

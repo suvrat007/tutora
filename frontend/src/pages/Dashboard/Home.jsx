@@ -12,7 +12,7 @@ const Home = () => {
     if (!loaded) return <LoadingPage onDone={() => setLoaded(true)} />;
 
     return (
-        <div className="min-h-screen  py-3 px-5 pb-24 overflow-y-auto flex flex-col gap-6">
+        <div className=" py-3 px-5 overflow-y-auto flex flex-col gap-6">
             {/* Top Row */}
             <div className="flex flex-col sm:flex-row gap-6 h-auto sm:h-[37vh]">
                 <div className="w-full sm:w-[80%]">
@@ -30,7 +30,7 @@ const Home = () => {
             </div>
 
             {/* Bottom Row */}
-            <div className="flex flex-col sm:flex-row gap-6 h-auto sm:h-[37vh]">
+            <div className="flex flex-col sm:flex-row gap-6 h-[45rem]">
                 <div className="w-full sm:w-1/2">
                     <WrapperCard className="h-full">
                         <div className="h-[30em] sm:h-full">

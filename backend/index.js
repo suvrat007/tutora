@@ -6,8 +6,8 @@ const cookieParser=require('cookie-parser')
 const StudentRouter = require("./routes/Student.js");
 const BatchRouter = require("./routes/Batch.js");
 const ReminderRouter = require("./routes/Reminders.js");
-const ClassLogRouter  =require("./routes/ClassLogs.js");
-const AdminRouter  =require("./routes/Admin.js");
+const ClassLogRouter = require("./routes/ClassLogs.js");
+const AdminRouter = require("./routes/Admin.js");
 const AuthRouter = require("./routes/Auth.js");
 const InstituteRouter = require("./routes/Institute.js");
 
@@ -28,11 +28,13 @@ app.use('/api/admin', AdminRouter);
 app.use('/api/auth', AuthRouter)
 app.use('/api/institute',InstituteRouter)
 
-
 connectDb().then(()=>{
     console.log("connected to database")
-    app.listen(8000,()=>console.log("Server is running on port 8000"))
+    if(require.main === module){
+        app.listen(8000,()=>console.log("Server is running on port 8000"))
+    }
 }).catch(()=>{
     console.log("Error while connecting to database")
 })
 
+module.exports = app;

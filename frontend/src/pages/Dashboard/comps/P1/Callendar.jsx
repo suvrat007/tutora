@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FiCalendar } from "react-icons/fi";
 import { AiOutlinePlus } from "react-icons/ai";
 import ReminderModal from "@/pages/Dashboard/comps/P1/ReminderModal.jsx";
+import { notify } from '@/components/ui/Toast.jsx';
 
 const Callendar = () => {
     const [value, setValue] = useState(new Date());
@@ -16,7 +17,7 @@ const Callendar = () => {
         today.setHours(0, 0, 0, 0);
         selected.setHours(0, 0, 0, 0);
         if (selected < today) {
-            return alert("❌ Cannot set a reminder for a past date.");
+            return notify("Cannot set a reminder for a past date.", "warning");
         }
         setShowModal(true);
     };

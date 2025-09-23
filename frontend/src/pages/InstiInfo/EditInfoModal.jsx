@@ -282,13 +282,11 @@ const EditInfoModal = ({ isOpen, onClose, initialData }) => {
                                 </label>
                                 <input
                                     id="emailId"
+                                    readOnly={true}
                                     type="email"
                                     name="emailId"
                                     placeholder="e.g., admin@institute.com"
                                     value={formData.emailId}
-                                    onChange={handleChange}
-                                    required
-                                    disabled={isSubmitting}
                                     className="w-full px-4 py-2 border border-[#e6c8a8] rounded-lg focus:ring-[#e0c4a8] focus:border-[#e0c4a8] transition duration-150 ease-in-out bg-[#f0d9c0] text-[#5a4a3c] disabled:opacity-50"
                                 />
                             </div>

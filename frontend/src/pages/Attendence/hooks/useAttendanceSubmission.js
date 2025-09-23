@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import axiosInstance from "@/utilities/axiosInstance.jsx";
+import { getLocalTimeHHMM } from '@/lib/utils.js';
 
 export const useAttendanceSubmission = (
     batches,
@@ -39,6 +40,7 @@ export const useAttendanceSubmission = (
                     subject_id: selectedSubject._id,
                     date,
                     presentIds: [...presentIds] || [],
+                    time: getLocalTimeHHMM(),
                 },
                 { withCredentials: true }
             );

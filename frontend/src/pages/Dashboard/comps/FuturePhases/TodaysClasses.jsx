@@ -2,17 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import axiosInstance from "@/utilities/axiosInstance";
 import { CalendarDays, NotebookText } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
+import { getLocalDateYYYYMMDD } from '@/lib/utils.js';
 
 const getTodayDay = () => {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     return days[new Date().getDay()];
 };
 
-const getTodayDate = () => {
-    const date = new Date();
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-};
+const getTodayDate = () => getLocalDateYYYYMMDD();
 
 const processAllClasses = (batches) => {
     const today = getTodayDay();
@@ -78,7 +76,7 @@ const TodaysClasses = () => {
                         note: "No Data",
                     }));
 
-                    const response = await axiosInstance.post(
+                    await axiosInstance.post(
                         "/api/classLog/add-class-updates",
                         { updates: updatesToSend },
                         { withCredentials: true }
@@ -147,7 +145,7 @@ const TodaysClasses = () => {
                         ))}
                     </AnimatePresence>
                 ) : (
-                    <div className="flex flex-col items-center justify-center text-[#7b5c4b] animate-pulse mt-12">
+                    <div className="flex flex-col items-center justify-center text-[#7b5c4b] animate-pulse ">
                         <NotebookText className="w-12 h-12 mb-3 text-[#e0c4a8]" />
                         <p className="text-lg font-medium">Yay! No classes scheduled for today.</p>
                         <p className="text-sm text-[#7b5c4b] mt-2">Take a break or plan ahead 📘</p>
