@@ -17,6 +17,7 @@ import MainLayout from "./pages/MainLayout.jsx";
 import LandingPage from "@/pages/LandingPage.jsx";
 import InstituteInfo from "@/pages/InstiInfo/InstituteInfo.jsx";
 import Fees from "@/pages/Fees Management/Fees.jsx";
+import TestManagementPage from "@/pages/TestManagement/TestManagementPage.jsx";
 
 const appRouter = createBrowserRouter([
     {
@@ -66,6 +67,10 @@ const appRouter = createBrowserRouter([
                     {
                         path: "info-institute",
                         element: <InstituteInfo />,
+                    },
+                    {
+                        path: "tests",
+                        element: <TestManagementPage />,
                     },
                 ],
             },

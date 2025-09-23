@@ -10,6 +10,7 @@ const ClassLogRouter = require("./routes/ClassLogs.js");
 const AdminRouter = require("./routes/Admin.js");
 const AuthRouter = require("./routes/Auth.js");
 const InstituteRouter = require("./routes/Institute.js");
+const TestRouter = require("./routes/Test.js");
 
 app.use(cors({
     origin:['http://localhost:5173','https://tutor-a.vercel.app'],
@@ -27,6 +28,7 @@ app.use('/api/classLog', ClassLogRouter);
 app.use('/api/admin', AdminRouter);
 app.use('/api/auth', AuthRouter)
 app.use('/api/institute',InstituteRouter)
+app.use('/api/test', TestRouter);
 
 connectDb().then(()=>{
     console.log("connected to database")

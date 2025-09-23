@@ -7,12 +7,14 @@ import useFetchClassLogs from "@/pages/useFetchClassLogs.js";
 import useFetchAttendanceSummary from "@/pages/useFetchAttendanceSummary.js";
 import { FaUniversity, FaUserCheck, FaUserGraduate } from "react-icons/fa";
 import { HiOutlineClipboardList } from "react-icons/hi";
+import useFetchTests from "@/pages/useFetchTests.js";
 
 const LoadingPage = ({ onDone }) => {
     const fetchBatches = useFetchBatches();
     const fetchGroupedStudents = useFetchStudents();
     const fetchClassLogs = useFetchClassLogs();
     const fetchAttendanceSummary = useFetchAttendanceSummary();
+    useFetchTests();
 
     const [currentStep, setCurrentStep] = useState(0);
 
