@@ -1,16 +1,9 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-
-
-.react-calendar__tile--active {
-    background-color: #3b82f6; /* Tailwind bg-blue-500 */
-    color: #fff; /* Tailwind text-white */
-}
 .add-student-inputbar {
     @apply border border-gray-300 rounded-xl text-base px-3 py-2 w-full mb-2 focus:outline-none focus:ring-2 focus:ring-blue-500;
 }
+
 /* Custom styles for react-calendar */
 .react-calendar {
     border: none !important;
