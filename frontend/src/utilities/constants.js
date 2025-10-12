@@ -1,2 +1,3 @@
 // export const BASE_URL = 'http://localhost:8000/';
-export const BASE_URL = 'https://tutora-1.onrender.com';
+export const BASE_URL = '';
+// export const BASE_URL = 'https://tutora-backend.vercel.app/';
