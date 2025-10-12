@@ -17,6 +17,7 @@ import MainLayout from "./pages/MainLayout.jsx";
 import LandingPage from "@/pages/LandingPage.jsx";
 import InstituteInfo from "@/pages/InstiInfo/InstituteInfo.jsx";
 import Fees from "@/pages/Fees Management/Fees.jsx";
+import { Analytics } from "@vercel/analytics/next"
 
 const appRouter = createBrowserRouter([
     {
@@ -82,6 +83,7 @@ function App() {
             disableTransitionOnChange
         >
             <Provider store={store}>
+                <Analytics/>
                 <RouterProvider router={appRouter} />
             </Provider>
         </ThemeProvider>
