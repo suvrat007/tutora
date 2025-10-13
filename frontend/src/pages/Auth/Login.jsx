@@ -198,12 +198,14 @@ const Login = () => {
                                     {isSignup ? "Login" : "Sign up"}
                                 </button>
                             </p>
+                            <div className="mt-2 w-full flex flex-col items-center">
+                                <GoogleLogin
+                                    onSuccess={handleGoogleLogin}
+                                    onError={()=>{toast.error('Google Login Failed')}}
+                                    useOneTap
+                                />
+                            </div>
 
-                            <GoogleLogin
-                                onSuccess={handleGoogleLogin}
-                                onError={()=>{toast.error('Google Login Failed')}}
-                                useOneTap
-                            />
                         </CardContent>
                     </Card>
                 </motion.div>
