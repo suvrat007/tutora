@@ -35,6 +35,7 @@ const Fees = () => {
         totalInstituteFees === undefined ||
         totalInstituteFees === 0;
     const fetchStudents = useFetchStudents();
+    console.log(batches);
 
     // Calculate total paid amount for the selected month (or present month by default)
     const totalPaidAmount = students.reduce((sum, student) => {

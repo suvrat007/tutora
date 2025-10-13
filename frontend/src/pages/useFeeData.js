@@ -29,7 +29,7 @@ const useFeeData = async (groupedStudents, batches, month) => {
 
   const feeData = groupedStudents.map((batch) => {
     const batchDetails = batches.find((b) => b._id === batch.batchId) || {
-      name: batch.batchId || 'No Batch',
+      name: batch.batchName || 'No Batch',
       subject: [],
       forStandard: batch.forStandard || ""
     };
