@@ -26,8 +26,8 @@ const Sidebar = () => {
 
     const DesktopSidebar = () => (
         <div
-            className={`bg-[#e7c6a5] shadow-2xl rounded-3xl transition-all duration-300 ease-in-out ml-4 my-4 px-4 py-6 flex-col justify-between hidden md:flex ${
-                isHovered ? "w-[17.5em]" : "w-[4.5em]"
+            className={`bg-[#e7c6a5] shadow-2xl rounded-3xl transition-all duration-300 ease-in-out ml-4 my-4 px-4 py-6 flex-col justify-between hidden md:flex font-['Outfit',sans-serif] ${
+                isHovered ? "w-[17.5em]" : "w-[4.5em] "
             }`}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
@@ -65,7 +65,7 @@ const Sidebar = () => {
         const [expand, setExpand] = useState(null); // 'management' | 'register' | null
 
         return (
-            <div className="fixed bottom-0 left-0 right-0 bg-[#e7c6a5] shadow-inner flex md:hidden justify-around py-2 z-50">
+            <div className="fixed bottom-0 left-0 right-0 bg-[#e7c6a5] shadow-inner flex md:hidden justify-around py-2 z-50 font-['Outfit',sans-serif]">
                 <MobileNavItem icon={<FaHome />}  onClick={()=>navigate('/main')} label="Home" />
                 <MobileNavDropdown
                     icon={<FaUserCog />}
