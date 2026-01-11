@@ -69,7 +69,7 @@ const LoadingPage = ({ onDone }) => {
     }, []);
 
     return (
-        <div className="flex items-center justify-center h-full w-full relative overflow-hidden">
+        <div className="flex items-center justify-center h-full w-full relative overflow-hidden font-['Outfit',sans-serif]">
             {/* Glowing Background Effects */}
             <div className="absolute inset-0 opacity-5">
                 <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-orange-300 rounded-full blur-3xl animate-pulse"></div>

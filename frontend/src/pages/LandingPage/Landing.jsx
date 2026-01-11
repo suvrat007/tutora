@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import {
     Calendar, Users, DollarSign, FileText, Clock, Play,
@@ -143,7 +142,7 @@ const Landing = () => {
     ];
 
     return (
-        <div className="bg-gradient-to-br from-[#fdf5ec] to-[#f5e8dc] min-h-screen font-['Inter',sans-serif]">
+        <div className="bg-gradient-to-br from-[#fdf5ec] to-[#f5e8dc] min-h-screen font-['Outfit',sans-serif]">
             <Hero
                 currentWord={currentWord}
                 rotatingWords={rotatingWords}

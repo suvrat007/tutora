@@ -5,7 +5,7 @@ const Navbar = () => {
     const adminData = useSelector((state) => state.user);
     const navigate = useNavigate();
     return (
-        <header className="bg-[#e7c6a5] min-h-20 mx-4 mt-4 mb-2 rounded-3xl shadow-md px-6  flex items-center justify-between">
+        <header className="bg-[#e7c6a5] min-h-20 mx-4 mt-4 mb-2 rounded-3xl shadow-md px-6  flex items-center justify-between font-['Outfit',sans-serif]">
 
             <div className="flex items-center cursor-pointer" onClick={()=> navigate('/')}>
                 {adminData?.institute_info?.logo_URL ? (
