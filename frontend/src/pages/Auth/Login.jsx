@@ -55,17 +55,20 @@ const Login = () => {
         }
     };
 
-    const handleGoogleLogin=async (credentialResponse)=>{
-        try{
+    const handleGoogleLogin = async (credentialResponse) => {
+        try {
             setIsLoading(true);
-            const response=await axiosInstance.post('/api/auth/google-auth',{credential: credentialResponse.credential},{withCredentials:true})
-            await fetchUser();
-            navigate('/main');
-            // toast.success("Google login successful!");
-        }
-        catch (err) {
+            const response = await axiosInstance.post('/api/auth/google-auth', { credential: credentialResponse.credential }, { withCredentials: true });
+            if (response.data.isNewUser) {
+                // New Google user — needs to set up their institute
+                setSignupCreds({ isGoogleUser: true });
+            } else {
+                await fetchUser();
+                navigate('/main');
+            }
+        } catch (err) {
             if (axios.isAxiosError(err)) {
-                toast.error(err.response?.data.message || err.message);
+                toast.error(err.response?.data?.message || err.message);
             } else {
                 toast.error("Internal server error");
             }

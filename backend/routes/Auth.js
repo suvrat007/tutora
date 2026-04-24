@@ -6,6 +6,7 @@ const Admin = require('../models/Admin');
 const {signupValidation,logInValidation} = require('../utils/validations');
 const Institute = require("../models/Institutes");
 const {OAuth2Client} = require("google-auth-library");
+const userAuth = require("../middleware/userAuth");
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 router.post('/google-auth',async (req, res) => {
@@ -23,15 +24,17 @@ router.post('/google-auth',async (req, res) => {
 
         // Check if user exists or create new one
         let user = await Admin.findOne({ emailId: email });
+        let isNewUser = false;
 
         if (!user) {
             user = new Admin({
                 name: given_name,
                 emailId: email,
                 adminPicURL: picture,
-                isGoogleAuth: true // Add this field to your User model
+                isGoogleAuth: true,
             });
             await user.save();
+            isNewUser = true;
         }
 
         // Generate JWT token (same as your existing flow)
@@ -50,7 +53,8 @@ router.post('/google-auth',async (req, res) => {
 
         res.status(200).json({
             message: 'Google authentication successful',
-            user: userObj
+            user: userObj,
+            isNewUser,
         });
 
     } catch (error) {
@@ -154,5 +158,41 @@ router.post("/logout", async (req, res) => {
     res.status(200).json({ message: "Logged out successfully" });
 });
 
+
+// Called after Google OAuth for new users who haven't set up an institute yet
+router.post('/complete-onboarding', userAuth, async (req, res) => {
+    try {
+        const admin = req.user;
+
+        if (admin.institute_info) {
+            return res.status(400).json({ message: 'Institute already exists' });
+        }
+
+        const { instiName, logo_URL, instituteEmailId, phone_number } = req.body;
+
+        const newInstitute = new Institute({
+            adminId: admin._id,
+            name: instiName,
+            logo_URL: logo_URL || '',
+            contact_info: {
+                emailId: instituteEmailId,
+                phone_number,
+            },
+        });
+
+        await newInstitute.save();
+        admin.institute_info = newInstitute._id;
+        await admin.save();
+
+        const updatedAdmin = await Admin.findById(admin._id).populate('institute_info');
+        const userObj = updatedAdmin.toObject();
+        delete userObj.password;
+
+        res.status(201).json({ message: 'Onboarding complete', user: userObj });
+    } catch (err) {
+        console.error('complete-onboarding error:', err);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
 
 module.exports = router

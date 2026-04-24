@@ -37,6 +37,7 @@ const OnboardingForm = ({ adminCreds }) => {
 
     const [uploading, setUploading] = useState(false);
     const [localPreview, setLocalPreview] = useState(null);
+    const [error, setError] = useState(null);
     const navigate = useNavigate();
 
     const cloudName = import.meta.env.VITE_CLOUD_NAME;
@@ -79,26 +80,27 @@ const OnboardingForm = ({ adminCreds }) => {
         e.preventDefault();
         setError(null);
 
-        if (!adminCreds || !adminCreds.name || !adminCreds.emailId || !adminCreds.password) {
-            setError("Admin credentials are missing. Cannot proceed with onboarding.");
-            return;
-        }
-
         try {
-            const response = await axiosInstance.post("/api/auth/signup", {
-                name: adminCreds.name,
-                emailId: adminCreds.emailId,
-                password: adminCreds.password,
-                institute_info:{
-                    ...formData,
+            if (adminCreds?.isGoogleUser) {
+                // Google user already has an account — just create the institute
+                await axiosInstance.post("/api/auth/complete-onboarding", { ...formData }, { withCredentials: true });
+            } else {
+                if (!adminCreds?.name || !adminCreds?.emailId || !adminCreds?.password) {
+                    setError("Admin credentials are missing. Cannot proceed with onboarding.");
+                    return;
                 }
-            }, { withCredentials: true });
+                await axiosInstance.post("/api/auth/signup", {
+                    name: adminCreds.name,
+                    emailId: adminCreds.emailId,
+                    password: adminCreds.password,
+                    institute_info: { ...formData },
+                }, { withCredentials: true });
+            }
 
-            // console.log("Signup successful:", response.data);
             await fetchUser();
             navigate("/main");
         } catch (err) {
-            console.error("Signup error:", err);
+            console.error("Onboarding error:", err);
             toast.error(err.response?.data?.message || "An unexpected error occurred during signup.");
         }
     };
