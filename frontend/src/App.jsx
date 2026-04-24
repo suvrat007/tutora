@@ -17,7 +17,6 @@ const BatchPage = lazy(() => import('./pages/BatchPage/BatchPage.jsx'));
 const Landing = lazy(() => import('./pages/LandingPage/Landing'));
 const CompleteInformationDisplay = lazy(() => import('./pages/InfoCenter/CompleteInformationDisplay'));
 const Login = lazy(() => import('@/pages/Auth/Login.jsx'));
-const LandingPage = lazy(() => import('@/pages/LandingPage.jsx'));
 const InstituteInfo = lazy(() => import('@/pages/InstiInfo/InstituteInfo.jsx'));
 const Fees = lazy(() => import('@/pages/Fees Management/Fees.jsx'));
 const TestManagementPage = lazy(() => import('@/pages/TestManagement/TestManagementPage.jsx'));
