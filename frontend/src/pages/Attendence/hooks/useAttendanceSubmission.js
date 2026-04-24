@@ -1,61 +1,36 @@
 import { useCallback } from "react";
 import axiosInstance from "@/utilities/axiosInstance.jsx";
 import { getLocalTimeHHMM } from '@/lib/utils.js';
+import toast from "react-hot-toast";
 
-export const useAttendanceSubmission = (
-    batches,
-    fetchAllClassLogs,
-    fetchAttendance,
-    setLoading,
-    setError,
-    setSuccess
-) => {
-    const submit = useCallback(async (
-        batchName,
-        subjectName,
-        date,
-        presentIds,
-        isValidDateTime,
-        errorMessage,
-        refetchStudents
-    ) => {
+export const useAttendanceSubmission = (batches) => {
+    const submit = useCallback(async (batchName, subjectName, date, presentIds, isValidDateTime, onSuccess) => {
+        if (!batchName || !subjectName || !date || !isValidDateTime()) return false;
+
+        const selectedBatch = batches.find((b) => b.name === batchName);
+        const selectedSubject = selectedBatch?.subject.find((s) => s.name === subjectName);
+        if (!selectedBatch || !selectedSubject) return false;
+
         try {
-            if (!batchName || !subjectName || !date) {
-                return setError("All fields required");
-            }
-
-            if (!isValidDateTime()) {
-                return setError(errorMessage);
-            }
-
-            setLoading(true);
-
-            const selectedBatch = batches.find((b) => b.name === batchName);
-            const selectedSubject = selectedBatch?.subject.find((s) => s.name === subjectName);
-
-            const res = await axiosInstance.patch(
+            await axiosInstance.patch(
                 "api/classLog/mark-attendance",
                 {
                     batch_id: selectedBatch._id,
                     subject_id: selectedSubject._id,
                     date,
-                    presentIds: [...presentIds] || [],
+                    presentIds: [...presentIds],
                     time: getLocalTimeHHMM(),
                 },
                 { withCredentials: true }
             );
-
-            setSuccess(res.data.message || "Attendance marked successfully");
-            await fetchAllClassLogs();
-            await fetchAttendance();
-            refetchStudents();
+            if (onSuccess) onSuccess();
+            return true;
         } catch (err) {
             console.error(err);
-            setError(err.response?.data?.message || "Failed to submit attendance");
-        } finally {
-            setLoading(false);
+            toast.error(err.response?.data?.message || "Failed to save attendance");
+            return false;
         }
-    }, [batches, fetchAttendance, fetchAllClassLogs, setLoading, setError, setSuccess]);
+    }, [batches]);
 
     return { submit };
 };

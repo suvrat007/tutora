@@ -5,9 +5,13 @@ import {setUser} from "@/utilities/redux/userSlice.js";
 const useFetchUser = () => {
     const dispatch = useDispatch();
     const getUser = async () => {
-        const response  =await axiosInstance.get("/api/admin/get",{withCredentials: true});
-        dispatch(setUser(response.data.data));
-    }
+        try {
+            const response = await axiosInstance.get("/api/admin/get", { withCredentials: true });
+            dispatch(setUser(response.data.data));
+        } catch (error) {
+            console.error("Failed to fetch user session, clearing user state.");
+        }
+    };
     return getUser;
 }
 export default useFetchUser

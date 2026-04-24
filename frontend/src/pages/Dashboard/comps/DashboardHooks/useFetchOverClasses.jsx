@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useMemo } from "react";
 import { useSelector } from "react-redux";
 
 const getTodayDay = () => {
@@ -43,13 +43,7 @@ const processOverBatches = (batches) => {
 
 const useFetchOverClasses = () => {
     const batches = useSelector((state) => state.batches);
-    const [overClasses, setOverClasses] = useState([]);
-
-    useEffect(() => {
-        const processedBatches = processOverBatches(batches);
-        setOverClasses(processedBatches);
-    }, [batches]);
-
+    const overClasses = useMemo(() => processOverBatches(batches), [batches]);
     return { overClasses };
 };
 

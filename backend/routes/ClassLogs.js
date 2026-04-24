@@ -3,6 +3,7 @@ const router = express.Router();
 const ClassLog = require("../models/ClassLogSchema.js");
 const userAuth = require("../middleware/userAuth.js");
 const mongoose = require("mongoose");
+const Student = require("../models/Student.js");
 
 const formatDateToYYYYMMDD = (dateInput) => {
     try {
@@ -146,20 +147,23 @@ router.patch("/mark-attendance", userAuth, async (req, res) =>  {
             return res.status(400).json({ message: "Invalid date format" });
         }
 
-        let classLog = await ClassLog.findOne({
-            adminId,
-            batch_id,
-            subject_id,
-        }).populate('classes.attendance.studentIds');
+        let classLog = await ClassLog.findOne({ adminId, batch_id, subject_id });
 
         if (!classLog) {
-            return res.status(400).json({ message: "No Class Logs for the given data" });
+            classLog = new ClassLog({ adminId, batch_id, subject_id, classes: [] });
         }
 
         let classEntry = classLog.classes.find((c) => formatDateToYYYYMMDD(c.date) === formattedDate);
 
         if (!classEntry) {
-            return res.status(400).json({ message: "No Class Entry for the given date" });
+            classLog.classes.push({
+                date: new Date(formattedDate),
+                hasHeld: true,
+                note: "No Data",
+                attendance: [],
+                updated: false,
+            });
+            classEntry = classLog.classes[classLog.classes.length - 1];
         }
 
         const currentTime = typeof time === 'string' && /\d{2}:\d{2}/.test(time)
@@ -201,6 +205,115 @@ router.get('/getAllClasslogs', userAuth, async (req, res) => {
     } catch (error) {
         console.error("Error fetching class logs:", error);
         return res.status(500).json({ message: "Internal Server Error" });
+    }
+});
+
+router.get('/attendance-status', userAuth, async (req, res) => {
+    try {
+        const adminId = req.user._id;
+        const { batchId, subjectId, date } = req.query;
+
+        if (!mongoose.Types.ObjectId.isValid(batchId) ||
+            !mongoose.Types.ObjectId.isValid(subjectId) ||
+            !date) {
+            return res.status(400).json({ message: "Invalid batch, subject, or date query parameters." });
+        }
+
+        const formattedDate = formatDateToYYYYMMDD(date);
+        if (!formattedDate) {
+            return res.status(400).json({ message: "Invalid date format." });
+        }
+
+        const [students, classLog] = await Promise.all([
+            Student.find({
+                adminId: new mongoose.Types.ObjectId(adminId),
+                batchId: new mongoose.Types.ObjectId(batchId),
+                subjectId: new mongoose.Types.ObjectId(subjectId)
+            }, "_id name"),
+            ClassLog.findOne({
+                adminId: new mongoose.Types.ObjectId(adminId),
+                batch_id: new mongoose.Types.ObjectId(batchId),
+                subject_id: new mongoose.Types.ObjectId(subjectId)
+            })
+        ]);
+
+        const attendanceMap = new Map();
+        const presentIds = [];
+
+        if (classLog) {
+            const classEntry = classLog.classes.find(c => formatDateToYYYYMMDD(c.date) === formattedDate);
+            if (classEntry?.attendance?.length) {
+                for (const att of classEntry.attendance) {
+                    attendanceMap.set(att.studentIds.toString(), att.time);
+                    presentIds.push(att.studentIds.toString());
+                }
+            }
+        }
+
+        const markedPresentStudents = [];
+        const payloadStudents = students.map(st => {
+            const isPresent = attendanceMap.has(st._id.toString());
+            const obj = { _id: st._id, name: st.name, isPresent, time: isPresent ? attendanceMap.get(st._id.toString()) : null };
+            if (isPresent) markedPresentStudents.push(obj);
+            return obj;
+        });
+
+        return res.status(200).json({ students: payloadStudents, presentIds, markedPresentStudents });
+    } catch (error) {
+        console.error("Error fetching attendance status:", error);
+        return res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+});
+
+router.get('/today-pending', userAuth, async (req, res) => {
+    try {
+        const adminId = req.user._id;
+        const { localDate, localTime } = req.query;
+
+        if (!localDate || !localTime) {
+            return res.status(400).json({ message: "localDate and localTime query params are required" });
+        }
+
+        const logs = await ClassLog.find({ adminId }).populate('batch_id');
+        const result = [];
+
+        for (const log of logs) {
+            const batch = log.batch_id;
+            if (!batch?.subject) continue;
+
+            const subject = batch.subject.find(
+                s => s._id.toString() === log.subject_id.toString()
+            );
+            if (!subject?.classSchedule?.time) continue;
+
+            const { time } = subject.classSchedule;
+            if (time > localTime) continue;
+
+            for (const cls of log.classes) {
+                const clsDate = formatDateToYYYYMMDD(cls.date);
+                if (clsDate === localDate && cls.updated === false) {
+                    result.push({
+                        logId: log._id,
+                        classId: cls._id,
+                        batchId: batch._id,
+                        batchName: batch.name,
+                        subjectId: subject._id,
+                        subjectName: subject.name,
+                        hasHeld: cls.hasHeld,
+                        note: cls.note,
+                        attendance: cls.attendance || [],
+                        date: clsDate,
+                        scheduledTime: time,
+                        originalDate: cls.date
+                    });
+                }
+            }
+        }
+
+        return res.status(200).json(result);
+    } catch (error) {
+        console.error("Error fetching today-pending logs:", error);
+        return res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 });
 

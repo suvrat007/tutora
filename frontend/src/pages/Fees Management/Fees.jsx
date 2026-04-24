@@ -1,4 +1,4 @@
-import { useSelector } from "react-redux";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     DollarSign,
@@ -7,9 +7,8 @@ import {
     GraduationCap,
 } from "lucide-react";
 import WrapperCard from "@/utilities/WrapperCard.jsx";
-import useFetchStudents from "@/pages/useFetchStudents.js";
 import FeesTable from "@/pages/Fees Management/FeesTable.jsx";
-import { useState } from "react";
+import axiosInstance from "@/utilities/axiosInstance.jsx";
 
 const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
@@ -24,40 +23,39 @@ const placeholderVariants = {
 };
 
 const Fees = () => {
-    const { batches, students, totalInstituteFees } = useSelector((state) => state.fees);
     const currentMonth = `${new Date().toLocaleString("default", { month: "long" })} ${new Date().getFullYear()}`;
-    const [monthFilter, setMonthFilter] = useState(currentMonth); // Default to present month
-    const isNoData =
-        !batches ||
-        batches.length === 0 ||
-        !students ||
-        students.length === 0 ||
-        totalInstituteFees === undefined ||
-        totalInstituteFees === 0;
-    const fetchStudents = useFetchStudents();
-    console.log(batches);
+    const [monthFilter, setMonthFilter] = useState(currentMonth);
 
-    // Calculate total paid amount for the selected month (or present month by default)
-    const totalPaidAmount = students.reduce((sum, student) => {
-        const effectiveMonth = monthFilter === "Present Month" ? currentMonth : monthFilter;
-        const paidInMonth = (student.feeStatus || []).some((status) => {
-            const date = new Date(status.date);
-            const monthYear = `${date.toLocaleString("default", { month: "long" })} ${date.getFullYear()}`;
-            return monthYear === effectiveMonth && status.paid;
-        });
-        return paidInMonth ? sum + (student.amount || 0) : sum;
-    }, 0);
+    const [loading, setLoading] = useState(true);
+    const [summary, setSummary] = useState({
+        globalStats: { totalInstituteFees: 0, totalPaidAmount: 0, studentsCount: 0 },
+        batchWise: []
+    });
 
-    if (isNoData) {
+    const fetchSummary = useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await axiosInstance.get(`/api/student/fees/dashboard-summary?month=${encodeURIComponent(monthFilter === "Present Month" ? currentMonth : monthFilter)}`, { withCredentials: true });
+            setSummary(response.data);
+        } catch (error) {
+            console.error("Failed to fetch fee dashboard summary", error);
+        } finally {
+            setLoading(false);
+        }
+    }, [monthFilter, currentMonth]);
+
+    useEffect(() => {
+        fetchSummary();
+    }, [fetchSummary]);
+
+    const { globalStats, batchWise } = summary;
+
+    if (loading && !globalStats.totalInstituteFees) {
         return (
             <div className="h-full m-4 flex items-center justify-center">
-                <motion.div
-                    variants={placeholderVariants}
-                    animate="pulse"
-                    className="text-center"
-                >
-                    <DollarSign className="w-12 h-12 text-[#e0c4a8] mx-auto mb-4" />
-                    <p className="text-lg text-[#7b5c4b]">No fee data available</p>
+                <motion.div variants={placeholderVariants} animate="pulse" className="text-center">
+                    <DollarSign className="w-12 h-12 text-[#e0c4a8] mx-auto mb-4 animate-spin-slow" />
+                    <p className="text-lg text-[#7b5c4b]">Loading beautiful analytics...</p>
                 </motion.div>
             </div>
         );
@@ -81,7 +79,8 @@ const Fees = () => {
                 >
                     <motion.div variants={fadeInUp}>
                         <WrapperCard>
-                            <div className="bg-[#f8ede3] rounded-3xl h-full p-6 flex items-center justify-center">
+                            <div className="bg-[#f8ede3] rounded-3xl h-full p-6 flex items-center justify-center relative overflow-hidden">
+                                {loading && <div className="absolute inset-0 bg-white/40 backdrop-blur-sm z-10 flex items-center justify-center"><div className="w-6 h-6 border-2 border-[#5a4a3c] rounded-full border-t-transparent animate-spin"></div></div>}
                                 <div className="text-center flex gap-5">
                                     <div>
                                         <div className="w-16 h-16 bg-[#e0c4a8] rounded-full flex items-center justify-center mx-auto mb-4">
@@ -91,11 +90,11 @@ const Fees = () => {
                                     </div>
                                     <div className="flex flex-col justify-center items-center">
                                         <p className="text-2xl font-bold text-[#5a4a3c]">
-                                            ₹{totalInstituteFees.toLocaleString()}
+                                            ₹{globalStats.totalInstituteFees.toLocaleString()}
                                         </p>
                                         <p className="text-sm text-[#7b5c4b] mt-1">To Collect</p>
-                                        <p className="text-2xl font-bold text-[#5a4a3c] mt-2">
-                                            ₹{totalPaidAmount.toLocaleString()}
+                                        <p className="text-2xl font-bold text-[#2fb344] mt-2 border-t border-[#e0c4a8] pt-2">
+                                            ₹{globalStats.totalPaidAmount.toLocaleString()}
                                         </p>
                                         <p className="text-sm text-[#7b5c4b] mt-1">
                                             Collected {monthFilter === "Present Month" ? "this month" : `in ${monthFilter}`}
@@ -108,13 +107,14 @@ const Fees = () => {
 
                     <motion.div variants={fadeInUp}>
                         <WrapperCard>
-                            <div className="bg-[#f8ede3] rounded-3xl h-full p-6 flex items-center justify-center">
+                            <div className="bg-[#f8ede3] rounded-3xl h-full p-6 flex items-center justify-center relative overflow-hidden">
+                                {loading && <div className="absolute inset-0 bg-white/40 backdrop-blur-sm z-10 flex items-center justify-center"><div className="w-6 h-6 border-2 border-[#5a4a3c] rounded-full border-t-transparent animate-spin"></div></div>}
                                 <div className="text-center">
                                     <div className="w-16 h-16 bg-[#e0c4a8] rounded-full flex items-center justify-center mx-auto mb-4">
                                         <Users className="w-8 h-8 text-[#5a4a3c]" />
                                     </div>
                                     <h2 className="text-lg font-semibold text-[#5a4a3c] mb-2">Students</h2>
-                                    <p className="text-2xl font-bold text-[#5a4a3c]">{students.length}</p>
+                                    <p className="text-2xl font-bold text-[#5a4a3c]">{globalStats.studentsCount}</p>
                                     <p className="text-sm text-[#7b5c4b] mt-1">Total Enrolled</p>
                                 </div>
                             </div>
@@ -123,13 +123,14 @@ const Fees = () => {
 
                     <motion.div variants={fadeInUp}>
                         <WrapperCard>
-                            <div className="bg-[#f8ede3] rounded-3xl h-full p-6 flex items-center justify-center">
+                            <div className="bg-[#f8ede3] rounded-3xl h-full p-6 flex items-center justify-center relative overflow-hidden">
+                                {loading && <div className="absolute inset-0 bg-white/40 backdrop-blur-sm z-10 flex items-center justify-center"><div className="w-6 h-6 border-2 border-[#5a4a3c] rounded-full border-t-transparent animate-spin"></div></div>}
                                 <div className="text-center">
                                     <div className="w-16 h-16 bg-[#e0c4a8] rounded-full flex items-center justify-center mx-auto mb-4">
                                         <Building2 className="w-8 h-8 text-[#5a4a3c]" />
                                     </div>
                                     <h2 className="text-lg font-semibold text-[#5a4a3c] mb-2">Batches</h2>
-                                    <p className="text-2xl font-bold text-[#5a4a3c]">{batches.length}</p>
+                                    <p className="text-2xl font-bold text-[#5a4a3c]">{batchWise.length}</p>
                                     <p className="text-sm text-[#7b5c4b] mt-1">Active Batches</p>
                                 </div>
                             </div>
@@ -143,12 +144,13 @@ const Fees = () => {
                     transition={{ delay: 0.2, duration: 0.5 }}
                 >
                     <WrapperCard>
-                        <div className="bg-[#f8ede3] w-full rounded-3xl p-6">
+                        <div className="bg-[#f8ede3] w-full rounded-3xl p-6 relative min-h-[15em]">
+                            {loading && <div className="absolute inset-0 bg-white/40 backdrop-blur-sm z-10 flex items-center justify-center rounded-3xl"><div className="w-8 h-8 border-4 border-[#5a4a3c] rounded-full border-t-transparent animate-spin"></div></div>}
                             <div className="flex items-center gap-2 mb-4">
                                 <GraduationCap className="w-5 h-5 text-[#5a4a3c]" />
                                 <h3 className="text-xl font-semibold text-[#5a4a3c]">Batch-wise Fee Distribution</h3>
                             </div>
-                            {batches.length === 0 ? (
+                            {batchWise.length === 0 ? (
                                 <motion.div
                                     variants={placeholderVariants}
                                     animate="pulse"
@@ -158,33 +160,33 @@ const Fees = () => {
                                     <p className="text-sm text-center">No batches available</p>
                                 </motion.div>
                             ) : (
-                                <div className="flex gap-4 overflow-x-auto">
+                                <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar">
                                     <AnimatePresence>
-                                        {batches.map((batch, index) => (
+                                        {batchWise.map((batch) => (
                                             <motion.div
                                                 key={batch.batchId}
                                                 variants={fadeInUp}
                                                 initial="hidden"
                                                 animate="show"
-                                                className="bg-[#f8ede3] w-[22em] p-4 rounded-lg border border-[#e6c8a8] hover:shadow-lg transition-all duration-300"
+                                                className="bg-white min-w-[22em] p-4 rounded-xl border border-[#e6c8a8] hover:shadow-lg transition-all duration-300 relative group"
                                             >
-                                                <div className="flex items-center gap-3 mb-2">
-                                                    <div className="w-8 h-8 rounded-full bg-[#e0c4a8] flex items-center justify-center text-sm font-bold text-[#5a4a3c]">
-                                                        {batch.batchName.charAt(0)}
+                                                <div className="flex items-center gap-3 mb-4 border-b border-gray-100 pb-3">
+                                                    <div className="w-10 h-10 rounded-full bg-[#e0c4a8]/30 flex items-center justify-center text-sm font-bold text-[#5a4a3c] uppercase shadow-sm">
+                                                        {batch.batchName.substring(0, 2)}
                                                     </div>
                                                     <div>
-                                                        <h4 className="font-semibold text-[#5a4a3c]">{batch.batchName}</h4>
-                                                        <p className="text-xs text-[#7b5c4b]">Class {batch.forStandard}</p>
+                                                        <h4 className="font-semibold text-[#5a4a3c] text-lg">{batch.batchName}</h4>
+                                                        {batch.forStandard && <p className="text-xs text-[#7b5c4b] font-medium bg-[#e0c4a8]/20 inline-block px-2 py-0.5 rounded-full mt-1">Class {batch.forStandard}</p>}
                                                     </div>
                                                 </div>
-                                                <div className="flex justify-between items-center gap-10">
-                                                    <div className="text-center">
-                                                        <p className="text-sm text-[#7b5c4b]">Students</p>
-                                                        <p className="font-semibold text-[#5a4a3c]">{batch.students.length}</p>
+                                                <div className="flex justify-between items-center gap-6">
+                                                    <div className="text-left">
+                                                        <p className="text-xs text-[#7b5c4b] uppercase tracking-wider font-semibold mb-1">Students</p>
+                                                        <p className="text-lg font-bold text-[#5a4a3c] bg-gray-50 px-3 py-1 rounded-md border border-gray-100">{batch.studentsCount}</p>
                                                     </div>
-                                                    <div className="text-center">
-                                                        <p className="text-sm text-[#7b5c4b]">Total Fees</p>
-                                                        <p className="font-semibold text-[#5a4a3c]">₹{batch.totalFees.toLocaleString()}</p>
+                                                    <div className="text-right">
+                                                        <p className="text-xs text-[#7b5c4b] uppercase tracking-wider font-semibold mb-1">Total Fees</p>
+                                                        <p className="text-lg font-bold text-[#2fb344] bg-green-50 px-3 py-1 rounded-md border border-green-100">₹{batch.totalFees.toLocaleString()}</p>
                                                     </div>
                                                 </div>
                                             </motion.div>
@@ -198,11 +200,9 @@ const Fees = () => {
 
                 <div className="mb-50 sm:mb-35">
                     <FeesTable
-                        batches={batches}
-                        students={students}
-                        fetchStudents={fetchStudents}
                         monthFilter={monthFilter}
                         setMonthFilter={setMonthFilter}
+                        onSaveComplete={fetchSummary}
                     />
                 </div>
             </div>

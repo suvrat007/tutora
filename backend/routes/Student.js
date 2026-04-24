@@ -227,7 +227,13 @@ router.get('/attendance/summary', userAuth, async (req, res) => {
 
         const matchStage = { adminId };
         if (studentId) {
-            matchStage._id = mongoose.Types.ObjectId(studentId);
+            matchStage._id = new mongoose.Types.ObjectId(studentId);
+        }
+        if (req.query.batchId) {
+            matchStage.batchId = new mongoose.Types.ObjectId(req.query.batchId);
+        }
+        if (req.query.subjectId) {
+            matchStage.subjectId = new mongoose.Types.ObjectId(req.query.subjectId);
         }
 
         const summary = await Student.aggregate([
@@ -429,16 +435,16 @@ router.post("/bulk-update-fee-status", userAuth, async (req, res) => {
             return res.status(400).json({ error: "Some student IDs are invalid" });
         }
 
-        const targetMonth = new Date(date).getMonth();
-        const targetYear = new Date(date).getFullYear();
+        const targetMonth = new Date(date).getUTCMonth();
+        const targetYear = new Date(date).getUTCFullYear();
 
         await Promise.all(
             students.map(async (student) => {
                 student.fee_status.feeStatus = student.fee_status.feeStatus.filter((status) => {
                     const statusDate = new Date(status.date);
                     return (
-                        statusDate.getMonth() !== targetMonth ||
-                        statusDate.getFullYear() !== targetYear
+                        statusDate.getUTCMonth() !== targetMonth ||
+                        statusDate.getUTCFullYear() !== targetYear
                     );
                 });
 
@@ -498,6 +504,219 @@ router.post("/ensure-current-month-fee-status", userAuth, async (req, res) => {
     } catch (error) {
         console.error("Error ensuring current month fee status:", error);
         res.status(500).json({ message: "Failed to ensure current month fee status", error: error.message });
+    }
+});
+
+// Fee Dashboard Summary Route
+router.get("/fees/dashboard-summary", userAuth, async (req, res) => {
+    try {
+        const adminId = req.user._id;
+        const targetMonthYear = req.query.month || `${new Date().toLocaleString("default", { month: "long" })} ${new Date().getFullYear()}`;
+        
+        const [monthName, yearStr] = targetMonthYear.split(" ");
+        const targetDate = new Date(`${monthName} 1, ${yearStr} UTC`);
+        const targetMonthNum = targetDate.getUTCMonth();
+        const targetYearNum = targetDate.getUTCFullYear();
+
+        const summary = await Student.aggregate([
+            { $match: { adminId: new mongoose.Types.ObjectId(adminId) } },
+            {
+                $facet: {
+                    globalStats: [
+                        {
+                            $project: {
+                                amount: { $ifNull: ["$fee_status.amount", 0] },
+                                isPaidThisMonth: {
+                                    $anyElementTrue: [
+                                        {
+                                            $map: {
+                                                input: { $ifNull: ["$fee_status.feeStatus", []] },
+                                                as: "fs",
+                                                in: {
+                                                    $and: [
+                                                        { $eq: [{ $month: { $toDate: "$$fs.date" } }, targetMonthNum + 1] },
+                                                        { $eq: [{ $year: { $toDate: "$$fs.date" } }, targetYearNum] },
+                                                        { $eq: ["$$fs.paid", true] }
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: null,
+                                totalInstituteFees: { $sum: "$amount" },
+                                studentsCount: { $sum: 1 },
+                                totalPaidAmount: {
+                                    $sum: { $cond: ["$isPaidThisMonth", "$amount", 0] }
+                                }
+                            }
+                        }
+                    ],
+                    batchWise: [
+                        {
+                            $group: {
+                                _id: "$batchId",
+                                batchTotalFees: { $sum: { $ifNull: ["$fee_status.amount", 0] } },
+                                batchStudentsCount: { $sum: 1 }
+                            }
+                        },
+                        {
+                            $lookup: {
+                                from: "batches",
+                                localField: "_id",
+                                foreignField: "_id",
+                                as: "batchInfo"
+                            }
+                        },
+                        { $unwind: { path: "$batchInfo", preserveNullAndEmptyArrays: true } },
+                        {
+                            $project: {
+                                _id: 0,
+                                batchId: "$_id",
+                                batchName: { $ifNull: ["$batchInfo.name", "No Batch"] },
+                                forStandard: { $ifNull: ["$batchInfo.forStandard", ""] },
+                                totalFees: "$batchTotalFees",
+                                studentsCount: "$batchStudentsCount"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]);
+
+        const result = {
+            globalStats: summary[0].globalStats[0] || { totalInstituteFees: 0, studentsCount: 0, totalPaidAmount: 0 },
+            batchWise: summary[0].batchWise || []
+        };
+
+        res.status(200).json(result);
+    } catch (error) {
+        console.error("Error fetching fee dashboard summary:", error);
+        res.status(500).json({ error: "Failed to fetch fee summary", details: error.message });
+    }
+});
+
+// Fee List with Pagination & Filtering
+router.get("/fees/list", userAuth, async (req, res) => {
+    try {
+        const adminId = req.user._id;
+        const targetMonthYear = req.query.month || `${new Date().toLocaleString("default", { month: "long" })} ${new Date().getFullYear()}`;
+        const batchFilter = req.query.batchId || "";
+        const subjectFilter = req.query.subject || "";
+        const paidStatusFilter = req.query.status || "";
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const [monthName, yearStr] = targetMonthYear.split(" ");
+        const targetDate = new Date(`${monthName} 1, ${yearStr} UTC`);
+        const targetMonthNum = targetDate.getUTCMonth();
+        const targetYearNum = targetDate.getUTCFullYear();
+
+        const matchStage = { adminId: new mongoose.Types.ObjectId(adminId) };
+
+        if (batchFilter) {
+            matchStage.batchId = new mongoose.Types.ObjectId(batchFilter);
+        }
+
+        // (Subject filtering might be complex natively unless we populate subjects fully, 
+        //  we filter locally or structurally handle it if essential. For now we match inside the aggregate if needed)
+
+        const pipeline = [
+            { $match: matchStage },
+            {
+                $lookup: {
+                    from: "batches",
+                    localField: "batchId",
+                    foreignField: "_id",
+                    as: "batchInfo"
+                }
+            },
+            { $unwind: { path: "$batchInfo", preserveNullAndEmptyArrays: true } },
+            {
+                $project: {
+                    _id: 0,
+                    studentId: "$_id",
+                    name: 1,
+                    batchId: 1,
+                    subjectId: 1,
+                    batchName: { $ifNull: ["$batchInfo.name", "No Batch"] },
+                    batchSubjects: { $ifNull: ["$batchInfo.subject", []] },
+                    amount: { $ifNull: ["$fee_status.amount", 0] },
+                    feeStatus: { $ifNull: ["$fee_status.feeStatus", []] },
+                    isPaidThisMonth: {
+                        $anyElementTrue: [
+                            {
+                                $map: {
+                                    input: { $ifNull: ["$fee_status.feeStatus", []] },
+                                    as: "fs",
+                                    in: {
+                                        $and: [
+                                            { $eq: [{ $month: { $toDate: "$$fs.date" } }, targetMonthNum + 1] },
+                                            { $eq: [{ $year: { $toDate: "$$fs.date" } }, targetYearNum] },
+                                            { $eq: ["$$fs.paid", true] }
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ];
+
+        if (paidStatusFilter === "paid") {
+            pipeline.push({ $match: { isPaidThisMonth: true } });
+        } else if (paidStatusFilter === "unpaid") {
+            pipeline.push({ $match: { isPaidThisMonth: false } });
+        }
+
+        pipeline.push({
+            $facet: {
+                metadata: [{ $count: "total" }],
+                data: [{ $skip: skip }, { $limit: limit }]
+            }
+        });
+
+        const results = await Student.aggregate(pipeline);
+        const total = results[0].metadata[0] ? results[0].metadata[0].total : 0;
+        let data = results[0].data;
+
+        // Post-process to map subject names
+        data = data.map(st => {
+             const subjectNames = (st.subjectId || []).map(sId => {
+                 if (!sId) return "Unknown Subject";
+                 const match = (st.batchSubjects || []).find(bs => bs && bs._id && bs._id.toString() === sId.toString());
+                 return match ? match.name : "Unknown Subject";
+             });
+             return {
+                 ...st,
+                 subjects: subjectNames
+             };
+        });
+
+        // Subject filter (if handled locally post-processing since array includes check is tricky in Mongo without explicit unwind)
+        if (subjectFilter) {
+            data = data.filter(st => st.subjects.includes(subjectFilter));
+        }
+
+        res.status(200).json({
+            data,
+            pagination: {
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit)
+            }
+        });
+
+    } catch (error) {
+        console.error("Error fetching fee list:", error);
+        res.status(500).json({ error: "Failed to fetch fee list", details: error.message });
     }
 });
 

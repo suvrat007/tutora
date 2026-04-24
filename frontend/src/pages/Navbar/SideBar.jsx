@@ -12,8 +12,9 @@ import {
     FaUsers,
     FaMoneyCheckAlt,
     FaUserCheck,
+    FaChalkboardTeacher,
 } from "react-icons/fa";
-import { HiOutlineClipboardList } from "react-icons/hi";
+import { HiOutlineClipboardList, HiOutlineDocumentText } from "react-icons/hi";
 import { MdExpandLess, MdExpandMore } from "react-icons/md";
 import { FiLogOut } from "react-icons/fi";
 import useLogoutAdmin from "@/useLogoutAdmin.js";
@@ -75,6 +76,7 @@ const Sidebar = () => {
                     subItems={[
                         { label: "Attendance", path: "/main/attendance", icon: <HiOutlineClipboardList /> },
                         { label: "Fee", path: "/main/fees", icon: <FaMoneyCheckAlt /> },
+                        { label: "Tests", path: "/main/tests", icon: <HiOutlineDocumentText /> },
                     ]}
                 />
                 <MobileNavDropdown
@@ -85,6 +87,7 @@ const Sidebar = () => {
                     subItems={[
                         { label: "Students", path: "/main/student-data", icon: <FaUserCheck /> },
                         { label: "Batches", path: "/main/batches", icon: <FaUserGraduate /> },
+                        { label: "Teachers", path: "/main/teachers", icon: <FaChalkboardTeacher /> },
                     ]}
                 />
                 <MobileNavItem icon={<FaUniversity />}  onClick={()=>navigate('/main/info-institute')} label="Institute" />
@@ -154,6 +157,7 @@ const SidebarItems = ({ isHovered, management, register, setManagement, setRegis
                 subItems={[
                     { label: "Attendance", path: "/main/attendance", icon: HiOutlineClipboardList },
                     { label: "Fee Management", path: "/main/fees", icon: FaMoneyCheckAlt },
+                    { label: "Test Management", path: "/main/tests", icon: HiOutlineDocumentText },
                 ]}
             />
             <Item label="Student Center" path="/main/info-students" icon={FaUserGraduate} />
@@ -166,6 +170,7 @@ const SidebarItems = ({ isHovered, management, register, setManagement, setRegis
                 subItems={[
                     { label: "Students", path: "/main/student-data", icon: FaUserCheck },
                     { label: "Batches", path: "/main/batches", icon: FaUserGraduate },
+                    { label: "Teachers", path: "/main/teachers", icon: FaChalkboardTeacher },
                 ]}
             />
         </>

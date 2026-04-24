@@ -102,7 +102,7 @@ router.get("/get-batch/:id", userAuth,async (req, res) => {
     const id = req.params.id;
     const adminId = req.user._id
     try {
-        const response = await Batch.findById({adminId:adminId , _id:id}).populate('enrolledStudents admin');
+        const response = await Batch.findOne({ adminId, _id: id }).populate('enrolledStudents admin');
         if (!response) {
             return res.status(404).json({ message: "Batch not found" });
         }

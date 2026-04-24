@@ -6,9 +6,7 @@ export const useAttendanceState = () => {
     const [date, setDate] = useState("");
     const [students, setStudents] = useState([]);
     const [presentIds, setPresentIds] = useState(new Set());
-    const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
-    const [success, setSuccess] = useState("");
     const [markedPresentStudents, setMarkedPresentStudents] = useState([]);
 
     const clearForm = useCallback(() => {
@@ -18,16 +16,12 @@ export const useAttendanceState = () => {
         setStudents([]);
         setPresentIds(new Set());
         setMarkedPresentStudents([]);
-        setError("");
-        setSuccess("");
     }, []);
 
     const resetStudentData = useCallback(() => {
         setStudents([]);
         setMarkedPresentStudents([]);
         setPresentIds(new Set());
-        setError("");
-        setSuccess("");
     }, []);
 
     return {
@@ -36,9 +30,7 @@ export const useAttendanceState = () => {
         date, setDate,
         students, setStudents,
         presentIds, setPresentIds,
-        error, setError,
         loading, setLoading,
-        success, setSuccess,
         markedPresentStudents, setMarkedPresentStudents,
         clearForm,
         resetStudentData
