@@ -70,7 +70,7 @@ const CompleteInformationDisplay = () => {
       <select
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          className="border border-[#ddb892] rounded px-2 py-1 text-sm text-[#4a3a2c] bg-[#f0d9c0]"
+          className="border border-[#ddb892] rounded px-2 py-1 text-sm text-[#4a3a2c] bg-[#f0d9c0] cursor-pointer"
           disabled={disabled}
       >
         <option value="">{placeholder}</option>
@@ -131,7 +131,7 @@ const CompleteInformationDisplay = () => {
               <div className="pt-2 border-t border-[#ddb892]">
                 <button
                     onClick={() => navigate('/main/batches')}
-                    className="w-full py-2 text-sm font-semibold border border-[#d7b48f] rounded-xl bg-[#f0d9c0] hover:bg-[#d7b48f]/80 transition"
+                    className="w-full py-2 text-sm font-semibold border border-[#d7b48f] rounded-xl bg-[#f0d9c0] hover:bg-[#d7b48f]/80 transition cursor-pointer"
                 >
                   View All Batch Details
                 </button>
@@ -226,65 +226,128 @@ const CompleteInformationDisplay = () => {
         </div>
 
         {/* Right Panel */}
-        <div className="w-full">
+        <div className="w-full min-h-[35em] md:h-full">
           <WrapperCard>
-            <Card className="w-full h-[35em] sm:h-full bg-[#f8ede3] text-[#4a3a2c] p-6 overflow-x-auto rounded-2xl border border-[#ddb892]">
-              <h2 className="text-lg font-semibold mb-4">Students Table</h2>
-              <div className="flex gap-4 mb-4 flex-wrap">
-                {renderDropdown(batchName, (v) => { setBatchName(v); setSubjectName(''); }, batches, "All Batches", isLoadingBatches)}
-                {renderDropdown(subjectName, setSubjectName, batches.find((b) => b.name === batchName)?.subject || [], "All Subjects", !batchName)}
-                {renderDropdown(gradeFilter, setGradeFilter, uniqueGrades, "All Grades")}
-                {renderDropdown(attendanceFilter, setAttendanceFilter, ['>50', '<50'], "All Attendance")}
+            <div className="bg-[#f8ede3] rounded-3xl overflow-hidden flex flex-col h-full border border-[#ddb892]">
+
+              {/* Header */}
+              <div className="px-6 py-4 bg-[#f0d9c0] border-b border-[#e6c8a8]">
+                <h2 className="text-xl font-semibold text-[#5a4a3c]">Students</h2>
               </div>
 
-              {isLoadingBatches || loadingAttendance ? (
-                  <div className="flex items-center justify-center py-4 text-[#6b4c3b]">
+              {/* Filters */}
+              <div className="flex flex-wrap gap-3 p-4 border-b border-[#e6c8a8] bg-[#f8ede3]">
+                <div className="flex-1 min-w-[110px]">
+                  <label className="block text-xs font-semibold text-[#7b5c4b] uppercase mb-1">Batch</label>
+                  <select
+                    value={batchName}
+                    onChange={(e) => { setBatchName(e.target.value); setSubjectName(''); }}
+                    disabled={isLoadingBatches}
+                    className="w-full p-2.5 rounded-lg border border-[#e6c8a8] text-sm text-[#5a4a3c] bg-white shadow-sm focus:ring-2 focus:ring-[#e0c4a8] outline-none transition-shadow cursor-pointer"
+                  >
+                    <option value="">All Batches</option>
+                    {batches.map((b) => <option key={b._id} value={b.name}>{b.name}</option>)}
+                  </select>
+                </div>
+                <div className="flex-1 min-w-[110px]">
+                  <label className="block text-xs font-semibold text-[#7b5c4b] uppercase mb-1">Subject</label>
+                  <select
+                    value={subjectName}
+                    onChange={(e) => setSubjectName(e.target.value)}
+                    disabled={!batchName}
+                    className="w-full p-2.5 rounded-lg border border-[#e6c8a8] text-sm text-[#5a4a3c] bg-white shadow-sm focus:ring-2 focus:ring-[#e0c4a8] outline-none transition-shadow cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <option value="">All Subjects</option>
+                    {(batches.find((b) => b.name === batchName)?.subject || []).map((s) => (
+                      <option key={s._id} value={s.name}>{s.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex-1 min-w-[110px]">
+                  <label className="block text-xs font-semibold text-[#7b5c4b] uppercase mb-1">Grade</label>
+                  <select
+                    value={gradeFilter}
+                    onChange={(e) => setGradeFilter(e.target.value)}
+                    className="w-full p-2.5 rounded-lg border border-[#e6c8a8] text-sm text-[#5a4a3c] bg-white shadow-sm focus:ring-2 focus:ring-[#e0c4a8] outline-none transition-shadow cursor-pointer"
+                  >
+                    <option value="">All Grades</option>
+                    {uniqueGrades.map((g) => <option key={g} value={g}>Class {g}</option>)}
+                  </select>
+                </div>
+                <div className="flex-1 min-w-[110px]">
+                  <label className="block text-xs font-semibold text-[#7b5c4b] uppercase mb-1">Attendance</label>
+                  <select
+                    value={attendanceFilter}
+                    onChange={(e) => setAttendanceFilter(e.target.value)}
+                    className="w-full p-2.5 rounded-lg border border-[#e6c8a8] text-sm text-[#5a4a3c] bg-white shadow-sm focus:ring-2 focus:ring-[#e0c4a8] outline-none transition-shadow cursor-pointer"
+                  >
+                    <option value="">All</option>
+                    <option value=">50">Above 50%</option>
+                    <option value="<50">Below 50%</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Scrollable table body only */}
+              <div className="flex-1 overflow-y-auto">
+                {isLoadingBatches || loadingAttendance ? (
+                  <div className="flex items-center justify-center h-full text-[#6b4c3b]">
                     <Loader2 className="animate-spin w-5 h-5 mr-2" /> Loading data...
                   </div>
-              ) : (
-                  <table className="w-full text-left border-collapse text-sm">
-                    <thead>
-                    <tr className="border-b text-[#6b4c3b]">
-                      <th className="p-2">Sr No</th>
-                      <th className="p-2">Name</th>
-                      <th className="p-2">Grade</th>
-                      <th className="p-2">Batch</th>
-                      <th className="p-2">Subjects</th>
-                      <th className="p-2">Attendance %</th>
-                      <th className="p-2">School</th>
-                      <th className="p-2">Contact No</th>
-                    </tr>
+                ) : (
+                  <table className="min-w-full divide-y divide-[#e6c8a8]">
+                    <thead className="bg-[#f0d9c0] sticky top-0 z-10 shadow-sm">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-[#7b5c4b] uppercase tracking-wider">#</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-[#7b5c4b] uppercase tracking-wider">Name</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-[#7b5c4b] uppercase tracking-wider">Grade</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-[#7b5c4b] uppercase tracking-wider">Batch</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-[#7b5c4b] uppercase tracking-wider">Subjects</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-[#7b5c4b] uppercase tracking-wider">Attendance</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-[#7b5c4b] uppercase tracking-wider">School</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-[#7b5c4b] uppercase tracking-wider">Contact</th>
+                      </tr>
                     </thead>
-                    <tbody>
-                    {filteredData.length > 0 ? (
+                    <tbody className="bg-[#f8ede3] divide-y divide-[#e6c8a8]">
+                      {filteredData.length > 0 ? (
                         filteredData.map((student, index) => (
-                            <tr key={student.studentId} className="border-t hover:bg-[#e7c6a5]/50">
-                              <td className="p-2">{index + 1}</td>
-                              <td
-                                  className="p-2 hover:cursor-pointer hover:underline"
-                                  onClick={() => handleStudentDisplay(student)}
-                              >
-                                {student.studentName}
-                              </td>
-                              <td className="p-2">{student.grade}</td>
-                              <td className="p-2">{student.batchName}</td>
-                              <td className="p-2">{student.subjects}</td>
-                              <td className="p-2">{student.percentage}%</td>
-                              <td className="p-2">{student.school_name}</td>
-                              <td className="p-2">{student.contact_info?.phoneNumbers?.student || 'N/A'}</td>
-                            </tr>
+                          <tr key={student.studentId} className="hover:bg-[#f0d9c0] transition-colors">
+                            <td className="px-4 py-3 text-sm text-[#5a4a3c]">{index + 1}</td>
+                            <td
+                              className="px-4 py-3 text-sm font-medium text-[#5a4a3c] cursor-pointer hover:underline hover:text-[#8b5e3c]"
+                              onClick={() => handleStudentDisplay(student)}
+                            >
+                              {student.studentName}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-[#5a4a3c]">{student.grade}</td>
+                            <td className="px-4 py-3 text-sm text-[#5a4a3c]">{student.batchName}</td>
+                            <td className="px-4 py-3 text-sm text-[#5a4a3c]">{student.subjects}</td>
+                            <td className="px-4 py-3 text-sm">
+                              <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                                student.percentage >= 75 ? 'bg-green-100 text-green-700' :
+                                student.percentage >= 50 ? 'bg-yellow-100 text-yellow-700' :
+                                'bg-red-100 text-red-700'
+                              }`}>
+                                {student.percentage}%
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-sm text-[#5a4a3c]">{student.school_name}</td>
+                            <td className="px-4 py-3 text-sm text-[#5a4a3c]">{student.contact_info?.phoneNumbers?.student || 'N/A'}</td>
+                          </tr>
                         ))
-                    ) : (
+                      ) : (
                         <tr>
-                          <td colSpan={8} className="p-4 text-center text-[#6b4c3b]">
+                          <td colSpan={8} className="px-4 py-10 text-center text-sm text-[#6b4c3b]">
                             No students match the current filters
                           </td>
                         </tr>
-                    )}
+                      )}
                     </tbody>
                   </table>
-              )}
-            </Card>
+                )}
+              </div>
+
+            </div>
           </WrapperCard>
         </div>
       </div>

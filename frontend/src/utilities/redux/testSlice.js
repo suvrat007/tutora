@@ -9,10 +9,10 @@ const testSlice = createSlice({
     initialState,
     reducers: {
         setTests: (state, action) => {
-            state.tests = action.payload;
+            state.tests = Array.isArray(action.payload) ? action.payload : [];
         },
         mergeTests: (state, action) => {
-            if (!action.payload.length) return;
+            if (!Array.isArray(action.payload) || !action.payload.length) return;
             const batchId = action.payload[0]?.batchId?.toString();
             state.tests = [
                 ...state.tests.filter(t => t.batchId?.toString() !== batchId),
