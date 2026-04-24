@@ -5,7 +5,6 @@ import { deleteUser } from "./utilities/redux/userSlice.js";
 import {clearBatches} from "@/utilities/redux/batchSlice.js";
 import {clearClassLogs} from "@/utilities/redux/classLogsSlice.js";
 import {clearGroupedStudents} from "@/utilities/redux/studentSlice.js";
-import {clearAttendanceSummary} from "@/utilities/redux/attendanceSlice.js";
 import {clearFeeData} from "@/utilities/redux/feeSlice.js";
 import toast from 'react-hot-toast';
 
@@ -23,7 +22,6 @@ const useLogoutAdmin = () => {
             dispatch(clearBatches()) ;
             dispatch(clearClassLogs());
             dispatch(clearGroupedStudents());
-            dispatch(clearAttendanceSummary());
             dispatch(clearFeeData());
 
             navigate("/", { replace: true });

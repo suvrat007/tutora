@@ -19,6 +19,10 @@ const testSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    passMarks: {
+        type: Number,
+        default: 0
+    },
     testDate: {
         type: Date,
         required: true

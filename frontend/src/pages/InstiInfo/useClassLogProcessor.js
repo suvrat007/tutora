@@ -33,9 +33,8 @@ const generateExpectedDates = (startDate, endDate, days, time) => {
     return [...new Set(dates.map(d => d.getTime()))].map(ts => new Date(ts));
 };
 
-const useClassLogProcessor = (classLogs, batches) => {
+const processClassLogs = (classLogs, batches) => {
     // Use the end of the current day as end date to include all of today (LOCAL)
-    console.log("useClassLogProcessor called with classLogs:", batches, classLogs);
     const endDate = new Date();
     endDate.setHours(23, 59, 59, 999);
 
@@ -144,4 +143,4 @@ const useClassLogProcessor = (classLogs, batches) => {
     return processedLogs;
 };
 
-export default useClassLogProcessor;
+export default processClassLogs;

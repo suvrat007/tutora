@@ -1,15 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import moment from 'moment';
 import axiosInstance from "@/utilities/axiosInstance.jsx";
-import { notify } from "@/components/ui/Toast.jsx";
+import toast from "react-hot-toast";
 import useFetchUnUpdatedClasslog from "../DashboardHooks/useFetchUnUpdatedClasslog.js";
 import useFetchClassLogs from "@/pages/useFetchClassLogs.js";
 
 const ClassStatusUpdates = () => {
     const [rerender, setRerender] = useState(false);
     const { filteredLogs, loading, error } = useFetchUnUpdatedClasslog(rerender);
+
+    useEffect(() => {
+        if (error) toast.error(error);
+    }, [error]);
     const [statusData, setStatusData] = useState({});
     const [openIndex, setOpenIndex] = useState(null);
     const [loadingStates, setLoadingStates] = useState({});
@@ -29,30 +33,29 @@ const ClassStatusUpdates = () => {
 
     const handleSubmit = async (classInfo, index) => {
         const status = statusData[index];
-        if (!status) return setStatusData(prev => ({ ...prev, [index]: { ...prev[index], error: "Please select Held or Cancelled." } }));
-        if (!status.held && !status.note?.trim()) return setStatusData(prev => ({ ...prev, [index]: { ...prev[index], error: "Provide a reason." } }));
+        if (!status) { toast.error("Please select Held or Cancelled."); return; }
+        if (!status.held && !status.note?.trim()) { toast.error("Provide a cancellation reason."); return; }
 
-                const payload = {
-                    batch_id: classInfo.batchId,
-                    subject_id: classInfo.subjectId,
-                    date: classInfo.originalDate || classInfo.date,
-                    hasHeld: status.held,
-                    note: status.note || "No Data",
-                    updated: true
-                };
+        const payload = {
+            batch_id: classInfo.batchId,
+            subject_id: classInfo.subjectId,
+            date: classInfo.originalDate || classInfo.date,
+            hasHeld: status.held,
+            note: status.note || "No Data",
+            updated: true
+        };
 
-                try {
-                    setLoadingStates(prev => ({ ...prev, [index]: true }));
-        const response = await axiosInstance.post("/api/classLog/add-class-updates", { updates: [payload] }, { withCredentials: true });
-        notify("Class updated!", "success");
-        fetchClassLogs();
-        setOpenIndex(null);
-        setRerender(prev => !prev);
-        setStatusData(prev => { const p = { ...prev }; delete p[index]; return p; });
-    } catch (err) {
+        try {
+            setLoadingStates(prev => ({ ...prev, [index]: true }));
+            await axiosInstance.post("/api/classLog/add-class-updates", { updates: [payload] }, { withCredentials: true });
+            toast.success("Class updated!");
+            fetchClassLogs();
+            setOpenIndex(null);
+            setRerender(prev => !prev);
+            setStatusData(prev => { const p = { ...prev }; delete p[index]; return p; });
+        } catch (err) {
             console.error("Update failed:", err);
-            notify(err.response?.data?.message || "Update failed.", "error");
-            setStatusData(prev => ({ ...prev, [index]: { ...prev[index], error: "Update failed." } }));
+            toast.error(err.response?.data?.message || "Update failed.");
         } finally {
             setLoadingStates(prev => ({ ...prev, [index]: false }));
         }
@@ -73,7 +76,6 @@ const ClassStatusUpdates = () => {
             <div className="p-6 rounded-3xl border border-[#e6c8a8] shadow-[0_8px_24px_rgba(0,0,0,0.15)] bg-[#f8ede3] h-full">
                 <h2 className="text-xl font-semibold mb-4 text-[#5a4a3c]">Update Unupdated Classes</h2>
                 <div className="overflow-y-auto h-[90%] sm:h-[80%]">
-                    {error && <p className="text-red-500 mb-2">{error}</p>}
                     {loading ? (
                         <div className="flex items-center justify-center py-4 text-[#7b5c4b]">
                             <Loader2 className="animate-spin w-5 h-5 mr-2" /> Loading classes...

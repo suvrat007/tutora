@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import useFetchUser from "@/pages/useFetchUser.js";
 import { X } from "lucide-react";
 import { motion } from "framer-motion";
+import toast from "react-hot-toast";
 
 const CLOUDINARY_UPLOAD_URL = "https://api.cloudinary.com/v1_1";
 
@@ -43,7 +44,6 @@ const EditInfoModal = ({ isOpen, onClose, initialData }) => {
     const [uploadingLogo, setUploadingLogo] = useState(false);
     const [localAdminPicPreview, setLocalAdminPicPreview] = useState(null);
     const [localLogoPreview, setLocalLogoPreview] = useState(null);
-    const [error, setError] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const navigate = useNavigate();
@@ -93,13 +93,13 @@ const EditInfoModal = ({ isOpen, onClose, initialData }) => {
 
         // Validate file type
         if (!file.type.startsWith('image/')) {
-            setError('Please select a valid image file');
+            toast.error('Please select a valid image file');
             return;
         }
 
         // Validate file size (max 5MB)
         if (file.size > 5 * 1024 * 1024) {
-            setError('Image size should be less than 5MB');
+            toast.error('Image size should be less than 5MB');
             return;
         }
 
@@ -111,8 +111,7 @@ const EditInfoModal = ({ isOpen, onClose, initialData }) => {
             setLocalLogoPreview(previewURL);
             setUploadingLogo(true);
         }
-        setError(null);
-
+        
         try {
             const url = await uploadToCloudinary(file, cloudName, uploadPreset);
             if (type === "adminPic") {
@@ -128,7 +127,7 @@ const EditInfoModal = ({ isOpen, onClose, initialData }) => {
             }
         } catch (err) {
             console.error("Cloudinary upload error:", err);
-            setError("Failed to upload image. Please try again.");
+            toast.error("Failed to upload image. Please try again.");
 
             // Reset on error
             if (type === "adminPic") {
@@ -161,36 +160,35 @@ const EditInfoModal = ({ isOpen, onClose, initialData }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError(null);
-        setIsSubmitting(true);
+                setIsSubmitting(true);
 
         // Client-side validation
         if (!formData.name.trim()) {
-            setError("Admin name is required");
+            toast.error("Admin name is required");
             setIsSubmitting(false);
             return;
         }
 
         if (!formData.emailId.trim()) {
-            setError("Admin email is required");
+            toast.error("Admin email is required");
             setIsSubmitting(false);
             return;
         }
 
         if (!formData.institute_info.name.trim()) {
-            setError("Institute name is required");
+            toast.error("Institute name is required");
             setIsSubmitting(false);
             return;
         }
 
         if (!formData.institute_info.contact_info.emailId.trim()) {
-            setError("Institute contact email is required");
+            toast.error("Institute contact email is required");
             setIsSubmitting(false);
             return;
         }
 
         if (!formData.institute_info.contact_info.phone_number.trim()) {
-            setError("Institute contact phone is required");
+            toast.error("Institute contact phone is required");
             setIsSubmitting(false);
             return;
         }
@@ -210,13 +208,13 @@ const EditInfoModal = ({ isOpen, onClose, initialData }) => {
                 },
             }, { withCredentials: true });
 
-            console.log("Update successful:", response.data);
+            toast.success("Institute details updated");
             await fetchUser();
             onClose();
         } catch (err) {
             console.error("Update error:", err);
             const errorMessage = err.response?.data?.message || "An unexpected error occurred during update.";
-            setError(errorMessage);
+            toast.error(errorMessage);
         } finally {
             setIsSubmitting(false);
         }
@@ -246,12 +244,6 @@ const EditInfoModal = ({ isOpen, onClose, initialData }) => {
                 <h2 className="text-3xl font-extrabold text-center text-[#5a4a3c] mb-6">
                     Edit Institute Details
                 </h2>
-
-                {error && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
-                        <span className="block sm:inline">{error}</span>
-                    </div>
-                )}
 
                 <div className="space-y-5">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

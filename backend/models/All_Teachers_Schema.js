@@ -1,12 +1,17 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const TeacherSchema = new Schema({
+    adminId: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin', required: true },
     name: {type: String, required: true},
     qualification: {type: String, required: true},
     contact_info: {
         emailId: {type: String, required: true },
         phoneNumber: { type: String, required: true }
     },
+    subjects: [{
+        batch_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Batch' },
+        subject_id: { type: mongoose.Schema.Types.ObjectId },
+    }],
     teaching_batches:[{
         batch_id: {
             type: mongoose.Schema.Types.ObjectId,

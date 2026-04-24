@@ -3,7 +3,6 @@ import axiosInstance from "../../utilities/axiosInstance.jsx";
 import { AiOutlineClose } from "react-icons/ai";
 import { motion } from "framer-motion";
 import useFetchStudents from "@/pages/useFetchStudents.js";
-import useFetchBatches from "@/pages/useFetchBatches.js";
 import { useSelector } from "react-redux";
 import toast from 'react-hot-toast';
 
@@ -49,15 +48,14 @@ const AddStudent = ({
     });
     const [formErrors, setFormErrors] = useState({});
     const fetchStudents = useFetchStudents();
-    const fetchBatches = useFetchBatches();
 
     useEffect(() => {
         if (isEditMode && existingStudentData) {
             setNewStudent({
                 ...existingStudentData,
-                grade: String(existingStudentData.grade || ""), // Ensure grade is a string
+                grade: String(existingStudentData.grade || ""),
                 fee_status: {
-                    amount: String(existingStudentData.fee_status?.amount || ""), // Ensure amount is a string
+                    amount: String(existingStudentData.fee_status?.amount || ""),
                     feeStatus: existingStudentData.fee_status?.feeStatus?.length > 0
                         ? existingStudentData.fee_status.feeStatus
                         : [{ date: new Date(existingStudentData.admission_date), paid: false }],
@@ -70,7 +68,6 @@ const AddStudent = ({
     const validateForm = () => {
         const errors = {};
 
-        // Required field validations
         if (!newStudent.name.trim()) errors.name = "Please fill in the student name";
         if (!newStudent.grade || String(newStudent.grade).trim() === "") errors.grade = "Please fill in the grade";
         if (!newStudent.address.trim()) errors.address = "Please fill in the address";
@@ -83,7 +80,6 @@ const AddStudent = ({
         if (!newStudent.contact_info.phoneNumbers.mom.trim()) errors.mom_phone = "Please fill in the mother phone";
         if (!newStudent.fee_status.amount || String(newStudent.fee_status.amount).trim() === "") errors.fee_amount = "Please fill in the fee amount";
 
-        // Batch and subject validation (only if a batch is selected)
         if (selectedBatchId) {
             const selectedBatch = batches.find((b) => b._id === selectedBatchId);
             if (selectedBatch && String(selectedBatch.forStandard) !== String(newStudent.grade)) {
@@ -118,7 +114,6 @@ const AddStudent = ({
                     { withCredentials: true }
                 );
 
-                // Check if the response indicates success
                 if (response.status === 200 || response.status === 201) {
                     toast.success("Student updated successfully!");
                 } else {
@@ -131,7 +126,6 @@ const AddStudent = ({
                     { withCredentials: true }
                 );
 
-                // Check if the response indicates success
                 if (response.status === 200 || response.status === 201) {
                     toast.success("Student added successfully!");
                 } else {
@@ -139,15 +133,12 @@ const AddStudent = ({
                 }
             }
 
-            // Refresh data
-            await Promise.all([fetchStudents(), fetchBatches()]);
+            await fetchStudents();
 
-            // Call the callback function
             if (onStudentAdded && typeof onStudentAdded === 'function') {
-                await onStudentAdded();
+                onStudentAdded();
             }
 
-            // Close modals/components
             setSeeStdDetails((prev) => ({ ...prev, show: false }));
             if (isEditMode) {
                 setEdit(false);
@@ -158,16 +149,12 @@ const AddStudent = ({
         } catch (error) {
             console.error("Submit error:", error);
 
-            // Handle different types of errors
             if (error.response) {
-                // Server responded with error status
                 const errorMessage = error.response.data?.message || error.response.data?.error || "Server error occurred";
                 toast.error(errorMessage);
             } else if (error.request) {
-                // Network error
                 toast.error("Network error. Please check your connection and try again.");
             } else {
-                // Other errors
                 toast.error(error.message || "An unexpected error occurred");
             }
         } finally {
@@ -314,10 +301,7 @@ const AddStudent = ({
                                 value={selectedBatchId}
                                 onChange={(e) => {
                                     setSelectedBatchId(e.target.value);
-                                    setNewStudent((prev) => ({
-                                        ...prev,
-                                        subjectId: [],
-                                    }));
+                                    setNewStudent((prev) => ({ ...prev, subjectId: [] }));
                                 }}
                                 disabled={isSubmitting}
                                 className="w-full border border-[#e6c8a8] bg-[#f0d9c0] rounded-lg px-3 py-1.5 sm:py-2 text-sm sm:text-base text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] transition disabled:opacity-50"

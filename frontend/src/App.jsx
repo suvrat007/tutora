@@ -1,23 +1,32 @@
 import './index.css'
 import './App.css'
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import store from "./utilities/redux/store.js";
 import { Provider } from "react-redux";
-import Home from "./pages/Dashboard/Home.jsx";
-import AttendencePage from "./pages/Attendence/components/AttendencePage.jsx";
-import StudentData from "./pages/Student/StudentData.jsx";
-import BatchPage from "./pages/BatchPage/BatchPage.jsx";
-import Landing from './pages/LandingPage/Landing';
-import CompleteInformationDisplay from './pages/InfoCenter/CompleteInformationDisplay';
 import Body from "@/pages/Body.jsx";
-import Login from "@/pages/Auth/Login.jsx";
 import ProtectedRoute from "@/ProtectedRoute.jsx";
 import { ThemeProvider } from "./components/ui/ThemeProvider.jsx";
 import MainLayout from "./pages/MainLayout.jsx";
-import LandingPage from "@/pages/LandingPage.jsx";
-import InstituteInfo from "@/pages/InstiInfo/InstituteInfo.jsx";
-import Fees from "@/pages/Fees Management/Fees.jsx";
-import TestManagementPage from "@/pages/TestManagement/TestManagementPage.jsx";
+
+const Home = lazy(() => import('./pages/Dashboard/Home.jsx'));
+const AttendencePage = lazy(() => import('./pages/Attendence/components/AttendencePage.jsx'));
+const StudentData = lazy(() => import('./pages/Student/StudentData.jsx'));
+const BatchPage = lazy(() => import('./pages/BatchPage/BatchPage.jsx'));
+const Landing = lazy(() => import('./pages/LandingPage/Landing'));
+const CompleteInformationDisplay = lazy(() => import('./pages/InfoCenter/CompleteInformationDisplay'));
+const Login = lazy(() => import('@/pages/Auth/Login.jsx'));
+const LandingPage = lazy(() => import('@/pages/LandingPage.jsx'));
+const InstituteInfo = lazy(() => import('@/pages/InstiInfo/InstituteInfo.jsx'));
+const Fees = lazy(() => import('@/pages/Fees Management/Fees.jsx'));
+const TestManagementPage = lazy(() => import('@/pages/TestManagement/TestManagementPage.jsx'));
+const TeacherPage = lazy(() => import('@/pages/TeacherManagement/TeacherPage.jsx'));
+
+const PageLoader = () => (
+    <div className="flex items-center justify-center h-full w-full min-h-[200px]">
+        <div className="w-8 h-8 border-4 border-[#e6c8a8] border-t-[#8b5e3c] rounded-full animate-spin" />
+    </div>
+);
 
 const appRouter = createBrowserRouter([
     {
@@ -26,11 +35,11 @@ const appRouter = createBrowserRouter([
         children: [
             {
                 index: true,
-                element: <Landing />,
+                element: <Suspense fallback={<PageLoader />}><Landing /></Suspense>,
             },
             {
                 path: "login",
-                element: <Login />,
+                element: <Suspense fallback={<PageLoader />}><Login /></Suspense>,
             },
             {
                 path: "main",
@@ -42,35 +51,39 @@ const appRouter = createBrowserRouter([
                 children: [
                     {
                         index: true,
-                        element: <Home />,
+                        element: <Suspense fallback={<PageLoader />}><Home /></Suspense>,
                     },
                     {
                         path: "attendance",
-                        element: <AttendencePage />,
+                        element: <Suspense fallback={<PageLoader />}><AttendencePage /></Suspense>,
                     },
                     {
                         path: "fees",
-                        element: <Fees />,
+                        element: <Suspense fallback={<PageLoader />}><Fees /></Suspense>,
                     },
                     {
                         path: "student-data",
-                        element: <StudentData />,
+                        element: <Suspense fallback={<PageLoader />}><StudentData /></Suspense>,
                     },
                     {
                         path: "batches",
-                        element: <BatchPage />,
+                        element: <Suspense fallback={<PageLoader />}><BatchPage /></Suspense>,
                     },
                     {
                         path: "info-students",
-                        element: <CompleteInformationDisplay />,
+                        element: <Suspense fallback={<PageLoader />}><CompleteInformationDisplay /></Suspense>,
                     },
                     {
                         path: "info-institute",
-                        element: <InstituteInfo />,
+                        element: <Suspense fallback={<PageLoader />}><InstituteInfo /></Suspense>,
                     },
                     {
                         path: "tests",
-                        element: <TestManagementPage />,
+                        element: <Suspense fallback={<PageLoader />}><TestManagementPage /></Suspense>,
+                    },
+                    {
+                        path: "teachers",
+                        element: <Suspense fallback={<PageLoader />}><TeacherPage /></Suspense>,
                     },
                 ],
             },

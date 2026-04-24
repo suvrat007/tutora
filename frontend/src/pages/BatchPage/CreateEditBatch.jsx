@@ -76,8 +76,8 @@ const CreateEditBatch = ({ onClose, onBatchCreated, onBatchUpdated, setRerender,
                 : schedule.days.filter(day => day !== value);
         } else if (name === 'selectAllDays') {
             schedule.days = schedule.days.length === daysOfWeek.length
-                ? [] // Deselect all if all are selected
-                : [...daysOfWeek]; // Select all days
+                ? []
+                : [...daysOfWeek];
         } else {
             schedule[name] = value;
         }

@@ -12,6 +12,7 @@ import {
     FaUsers,
     FaMoneyCheckAlt,
     FaUserCheck,
+    FaChalkboardTeacher,
 } from "react-icons/fa";
 import { HiOutlineClipboardList, HiOutlineDocumentText } from "react-icons/hi";
 import { MdExpandLess, MdExpandMore } from "react-icons/md";
@@ -86,6 +87,7 @@ const Sidebar = () => {
                     subItems={[
                         { label: "Students", path: "/main/student-data", icon: <FaUserCheck /> },
                         { label: "Batches", path: "/main/batches", icon: <FaUserGraduate /> },
+                        { label: "Teachers", path: "/main/teachers", icon: <FaChalkboardTeacher /> },
                     ]}
                 />
                 <MobileNavItem icon={<FaUniversity />}  onClick={()=>navigate('/main/info-institute')} label="Institute" />
@@ -168,6 +170,7 @@ const SidebarItems = ({ isHovered, management, register, setManagement, setRegis
                 subItems={[
                     { label: "Students", path: "/main/student-data", icon: FaUserCheck },
                     { label: "Batches", path: "/main/batches", icon: FaUserGraduate },
+                    { label: "Teachers", path: "/main/teachers", icon: FaChalkboardTeacher },
                 ]}
             />
         </>

@@ -10,16 +10,29 @@ const Batch = require('../models/Batch');
 // Create a new test (schedule or log)
 router.post('/createTest', userAuth, async (req, res) => {
     try {
-        const { testName, batchId, subjectId, maxMarks, testDate, status, studentResults = [] } = req.body;
+        const { testName, batchId, subjectId, maxMarks, passMarks, testDate, status, studentResults = [] } = req.body;
+        
+        let initialStudentResults = studentResults;
+        if (initialStudentResults.length === 0 && batchId) {
+            // Automatically allocate test to respective students in the batch
+            const studentsInBatch = await Student.find({ batchId, adminId: req.user._id });
+            initialStudentResults = studentsInBatch.map(student => ({
+                studentId: student._id,
+                appeared: false,
+                marks: 0
+            }));
+        }
+
         const newTest = new Test({
             adminId: req.user._id,
             testName,
             batchId,
             subjectId,
             maxMarks,
+            passMarks: passMarks || 0,
             testDate,
             status,
-            studentResults
+            studentResults: initialStudentResults
         });
         await newTest.save();
 
@@ -59,7 +72,7 @@ router.get('/getAllTests', userAuth, async (req, res) => {
         if (req.query.batchId) {
             query.batchId = req.query.batchId;
         }
-        const tests = await Test.find(query).populate('batchId', 'name').populate('studentResults.studentId', 'name grade');
+        const tests = await Test.find(query).populate('studentResults.studentId', 'name grade');
 
         res.json(tests);
     } catch (error) {
@@ -83,7 +96,7 @@ router.get('/getTestById/:testId', userAuth, async (req, res) => {
 // Update a test
 router.put('/updateTest/:testId', userAuth, async (req, res) => {
     try {
-        const { testName, batchId, subjectId, maxMarks, testDate, status, cancellationReason, studentResults } = req.body;
+        const { testName, batchId, subjectId, maxMarks, passMarks, testDate, status, cancellationReason, studentResults } = req.body;
 
         if (status === 'cancelled' && !cancellationReason) {
             return res.status(400).json({ message: 'Cancellation reason is required' });
@@ -94,6 +107,7 @@ router.put('/updateTest/:testId', userAuth, async (req, res) => {
             batchId,
             subjectId,
             maxMarks,
+            passMarks,
             testDate,
             status,
             cancellationReason

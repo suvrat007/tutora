@@ -11,9 +11,17 @@ const testSlice = createSlice({
         setTests: (state, action) => {
             state.tests = action.payload;
         },
+        mergeTests: (state, action) => {
+            if (!action.payload.length) return;
+            const batchId = action.payload[0]?.batchId?.toString();
+            state.tests = [
+                ...state.tests.filter(t => t.batchId?.toString() !== batchId),
+                ...action.payload,
+            ];
+        },
     },
 });
 
-export const { setTests } = testSlice.actions;
+export const { setTests, mergeTests } = testSlice.actions;
 
 export default testSlice.reducer;
