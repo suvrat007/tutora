@@ -44,24 +44,8 @@ const StudentData = () => {
   const groupedStudents = useSelector((state) => state.students.groupedStudents);
   const fetchStudents = useFetchStudents();
 
-  const handleStudentAdded = async () => {
-    try {
-      await fetchStudents();
-      console.log("Student data refreshed successfully");
-    } catch (error) {
-      console.error("Error refreshing student data:", error);
-    }
-  };
-
-  const handleStudentEdited = async () => {
-    try {
-      await fetchStudents();
-      setSeeStdDetails(prev => ({ ...prev, show: false }));
-      console.log("Student data refreshed after edit");
-    } catch (error) {
-      console.error("Error refreshing student data after edit:", error);
-    }
-  };
+  const handleStudentAdded = () => {};
+  const handleStudentEdited = () => {};
 
   const deleteStudent = async (studentId) => {
     if (isDeleting) return; // Prevent multiple delete requests
@@ -109,7 +93,16 @@ const StudentData = () => {
       })
       .flatMap((group) =>
           group.students
-              .filter((student) => student.name.toLowerCase().includes(searchName.toLowerCase()))
+              .filter((student) => {
+                if (!searchName) return true;
+                const term = searchName.toLowerCase();
+                return (
+                  student.name.toLowerCase().includes(term) ||
+                  student.contact_info?.phoneNumbers?.student?.includes(searchName) ||
+                  student.contact_info?.phoneNumbers?.mom?.includes(searchName) ||
+                  student.contact_info?.phoneNumbers?.dad?.includes(searchName)
+                );
+              })
               .map((student) => ({
                 ...student,
                 batchName: batches.find((b) => b._id === group.batchId)?.name || "No Batch",
@@ -235,14 +228,14 @@ const StudentData = () => {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 p-3 sm:p-4 overflow-y-auto">
                   <div>
-                    <label className="block text-xs sm:text-sm font-medium text-[#5a4a3c] mb-1">Search by Name</label>
+                    <label className="block text-xs sm:text-sm font-medium text-[#5a4a3c] mb-1">Search by name or phone</label>
                     <div className="relative">
                       <FiSearch className="absolute top-2 sm:top-3 left-3 text-[#e0c4a8] w-4 h-4 sm:w-5 sm:h-5" />
                       <input
                           type="text"
                           value={searchName}
                           onChange={(e) => setSearchName(e.target.value)}
-                          placeholder="Enter student name"
+                          placeholder="Name or phone number"
                           className="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-1.5 sm:py-2 border border-[#e6c8a8] bg-[#f0d9c0] rounded-lg text-sm sm:text-base text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] transition"
                       />
                     </div>

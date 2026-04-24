@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import axiosInstance from "@/utilities/axiosInstance";
-import { addBatches } from "@/utilities/redux/batchSlice.js";
 import useFetchBatches from "@/pages/useFetchBatches.js";
 import WrapperCard from "@/utilities/WrapperCard.jsx";
 import { BookOpen, Users, FileText} from "lucide-react"
@@ -49,7 +48,6 @@ const BatchPage = () => {
     const adminData = useSelector((state) => state.user);
     const batches = useSelector((state) => state.batches);
     const groupedStudents = useSelector((state) => state.students.groupedStudents);
-    const dispatch = useDispatch();
     const fetchBatches = useFetchBatches();
 
     
@@ -76,10 +74,6 @@ const BatchPage = () => {
 
     const handleViewDetails = (batch, studentsForBatch) => {
         setViewDetails({ display: true, batch, studentsForBatch });
-    };
-
-    const handleBatchUpdated = (updatedBatch) => {
-        dispatch(addBatches(batches.map((b) => (b._id === updatedBatch._id ? updatedBatch : b))));
     };
 
     const closeViewDetails = () => {
@@ -238,8 +232,8 @@ const BatchPage = () => {
                 <ModalBackdrop onClose={() => setCreateBatches(false)}>
                     <CreateEditBatch
                         onClose={() => setCreateBatches(false)}
-                        handleBatchUpdated={handleBatchUpdated}
-                        handleViewDetails={handleViewDetails}
+                        onBatchCreated={() => {}}
+                        onBatchUpdated={() => {}}
                         batchToEdit={null}
                     />
                 </ModalBackdrop>

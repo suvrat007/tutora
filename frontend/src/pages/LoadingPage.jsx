@@ -4,40 +4,37 @@ import { motion } from "framer-motion";
 import useFetchBatches from "@/pages/useFetchBatches.js";
 import useFetchStudents from "@/pages/useFetchStudents.js";
 import useFetchClassLogs from "@/pages/useFetchClassLogs.js";
-import useFetchAttendanceSummary from "@/pages/useFetchAttendanceSummary.js";
 import { FaUniversity, FaUserCheck, FaUserGraduate } from "react-icons/fa";
 import { HiOutlineClipboardList } from "react-icons/hi";
+import useFetchTests from "@/pages/useFetchTests.js";
 
 const LoadingPage = ({ onDone }) => {
     const fetchBatches = useFetchBatches();
     const fetchGroupedStudents = useFetchStudents();
     const fetchClassLogs = useFetchClassLogs();
-    const fetchAttendanceSummary = useFetchAttendanceSummary();
+    useFetchTests();
 
     const [currentStep, setCurrentStep] = useState(0);
 
     const classLogs = useSelector((state) => state.classlogs);
     const batches = useSelector((state) => state.batches);
     const students = useSelector((state) => state.students);
-    const attendanceSummary = useSelector((state) => state.attendanceSummary);
 
     const steps = [
         { name: "Batches", icon: FaUserGraduate },
         { name: "Students", icon: FaUserCheck },
         { name: "Classes", icon: FaUniversity },
-        { name: "Attendance", icon: HiOutlineClipboardList },
     ];
 
     useEffect(() => {
         const fetchData = async () => {
             const hasData =
                 batches?.length > 0 &&
-                students?.length > 0 &&
-                classLogs?.length > 0 &&
-                attendanceSummary;
+                students?.groupedStudents?.length > 0 &&
+                classLogs?.length > 0;
 
             if (hasData) {
-                setCurrentStep(4);
+                setCurrentStep(3);
                 setTimeout(() => onDone(), 500);
                 return;
             }
@@ -45,9 +42,8 @@ const LoadingPage = ({ onDone }) => {
             try {
                 const operations = [
                     { fetch: fetchBatches, shouldRun: !batches?.length },
-                    { fetch: fetchGroupedStudents, shouldRun: !students?.length },
+                    { fetch: fetchGroupedStudents, shouldRun: !students?.groupedStudents?.length },
                     { fetch: fetchClassLogs, shouldRun: !classLogs?.length },
-                    { fetch: fetchAttendanceSummary, shouldRun: !attendanceSummary },
                 ];
 
                 for (let i = 0; i < operations.length; i++) {

@@ -1,62 +1,45 @@
 import { motion } from "framer-motion";
 import { FiX } from "react-icons/fi";
 import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import axiosInstance from "@/utilities/axiosInstance.jsx";
 import TimePicker from "react-time-picker";
 import 'react-time-picker/dist/TimePicker.css';
 import 'react-clock/dist/Clock.css';
-import useFetchAllBatch from "@/pages/BatchPage/Functions/useFetchAllBatch.jsx";
 import { notify } from '@/components/ui/Toast.jsx';
+import { API } from '@/utilities/constants';
+
+const inputClass = "w-full px-3 py-2 border border-[#e6c8a8] rounded-lg bg-white text-sm text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8]";
+const labelClass = "block text-sm font-medium text-[#5a4a3c] mb-1";
 
 const ReminderModal = ({ setShowModal, value }) => {
+    const batches = useSelector(state => state.batches);
+
     const [batchName, setBatchName] = useState("");
     const [selectedBatch, setSelectedBatch] = useState(null);
     const [subjectName, setSubjectName] = useState("");
-
-    // Initialize with today, but update whenever 'value' changes
     const [reminderDate, setReminderDate] = useState(new Date());
+    const [time, setTime] = useState("");
+    const [reminderText, setReminderText] = useState("");
 
     useEffect(() => {
         if (value) setReminderDate(new Date(value));
     }, [value]);
 
-    const [time, setTime] = useState("");
-    const [reminderText, setReminderText] = useState("");
-    const [batches, setBatches] = useState([]);
-
-    useEffect(() => {
-        const getBatch = async () => {
-            const batches = await useFetchAllBatch();
-            setBatches(batches);
-        };
-        getBatch();
-    }, []);
-
     const isValidDate = (d) => d instanceof Date && !isNaN(d);
 
     const handleSubmitReminder = async () => {
-        if (!reminderText.trim()) {
-            return notify("Reminder text is required.", "warning");
-        }
-        if (!time) {
-            return notify("Please select a time.", "warning");
-        }
-        if (!isValidDate(reminderDate)) {
-            return notify("Invalid or missing date.", "error");
-        }
+        if (!reminderText.trim()) return notify("Reminder text is required.", "warning");
+        if (!time) return notify("Please select a time.", "warning");
+        if (!isValidDate(reminderDate)) return notify("Invalid or missing date.", "error");
 
         const [hour, minute] = time.split(":").map(Number);
-
-        // Construct date+time in local timezone
         const finalDateAndTime = new Date(
             reminderDate.getFullYear(),
             reminderDate.getMonth(),
             reminderDate.getDate(),
-            hour,
-            minute,
-            0,
-            0
-        ).toISOString(); // Save as ISO string for backend consistency
+            hour, minute, 0, 0
+        ).toISOString();
 
         const payload = {
             batchName: batchName || undefined,
@@ -66,7 +49,7 @@ const ReminderModal = ({ setShowModal, value }) => {
         };
 
         try {
-            await axiosInstance.post('/api/reminder/add-reminder', payload, { withCredentials: true });
+            await axiosInstance.post(API.ADD_REMINDER, payload);
             notify(`Reminder set for ${reminderDate.toDateString()} ${time}`, "success");
             setShowModal(false);
         } catch (err) {
@@ -77,13 +60,13 @@ const ReminderModal = ({ setShowModal, value }) => {
 
     return (
         <motion.div
-            className="fixed inset-0 z-50 bg-black/20 text-black backdrop-blur-md flex items-center justify-center"
+            className="fixed inset-0 z-50 bg-black/30 backdrop-blur-md flex items-center justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
         >
             <motion.div
-                className="bg-white rounded-2xl shadow-xl p-6 w-[90%] sm:w-[420px] relative"
+                className="bg-[#f8ede3] rounded-2xl shadow-xl p-6 w-[90%] sm:w-[420px] relative border border-[#e6c8a8]"
                 initial={{ scale: 0.8 }}
                 animate={{ scale: 1 }}
                 exit={{ scale: 0.8 }}
@@ -91,15 +74,14 @@ const ReminderModal = ({ setShowModal, value }) => {
             >
                 <button
                     onClick={() => setShowModal(false)}
-                    className="absolute top-4 right-4 text-gray-500 hover:text-red-500 transition-colors"
+                    className="absolute top-4 right-4 text-[#7b5c4b] hover:text-[#5a4a3c] transition-colors"
                 >
                     <FiX size={20} />
                 </button>
 
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Set Reminder</h3>
+                <h3 className="text-lg font-bold text-[#5a4a3c] mb-4">Set Reminder</h3>
 
-                {/* Batch Dropdown (Optional) */}
-                <label className="block text-sm font-medium text-gray-600 mb-1">Batch (optional)</label>
+                <label className={labelClass}>Batch (optional)</label>
                 <select
                     value={batchName}
                     onChange={(e) => {
@@ -108,7 +90,7 @@ const ReminderModal = ({ setShowModal, value }) => {
                         setSelectedBatch(selected || null);
                         setSubjectName("");
                     }}
-                    className="w-full px-3 py-2 mb-3 border rounded-md shadow-sm text-sm"
+                    className={`${inputClass} mb-3`}
                 >
                     <option value="">No Batch</option>
                     {batches.map((batch, idx) => (
@@ -116,13 +98,12 @@ const ReminderModal = ({ setShowModal, value }) => {
                     ))}
                 </select>
 
-                {/* Subject Dropdown (Optional) */}
-                <label className="block text-sm font-medium text-gray-600 mb-1">Subject (optional)</label>
+                <label className={labelClass}>Subject (optional)</label>
                 <select
                     value={subjectName}
                     onChange={(e) => setSubjectName(e.target.value)}
                     disabled={!selectedBatch}
-                    className="w-full px-3 py-2 mb-3 border rounded-md shadow-sm text-sm"
+                    className={`${inputClass} mb-3 disabled:opacity-50`}
                 >
                     <option value="">No Subject</option>
                     {selectedBatch?.subject?.map((subj, idx) => (
@@ -130,45 +111,41 @@ const ReminderModal = ({ setShowModal, value }) => {
                     ))}
                 </select>
 
-                {/* Date Input */}
-                <label className="block text-sm font-medium text-gray-600 mb-1">Date</label>
+                <label className={labelClass}>Date</label>
                 <input
                     type="date"
                     value={`${reminderDate.getFullYear()}-${String(reminderDate.getMonth() + 1).padStart(2, '0')}-${String(reminderDate.getDate()).padStart(2, '0')}`}
                     onChange={(e) => {
                         const [year, month, day] = e.target.value.split('-').map(Number);
-                        const localDate = new Date(year, month - 1, day);
-                        setReminderDate(localDate);
+                        setReminderDate(new Date(year, month - 1, day));
                     }}
-                    className="w-full px-3 py-2 mb-3 border rounded-md text-sm"
+                    className={`${inputClass} mb-3`}
                 />
 
-                {/* Time Picker */}
-                <label className="block text-sm font-medium text-gray-600 mb-1">Time (24hr)</label>
+                <label className={labelClass}>Time (24hr)</label>
                 <TimePicker
                     onChange={setTime}
                     value={time}
                     disableClock={true}
-                    className="w-full text-sm"
+                    className="w-full text-sm mb-3"
                     format="HH:mm"
                     clearIcon={null}
                 />
 
-                {/* Reminder Text */}
-                <label className="block text-sm font-medium text-gray-600 mb-1 mt-4">Reminder</label>
+                <label className={`${labelClass} mt-1`}>Reminder</label>
                 <input
                     type="text"
                     value={reminderText}
                     onChange={(e) => setReminderText(e.target.value)}
                     placeholder="e.g. Conduct unit test"
-                    className="w-full px-3 py-2 mb-4 border rounded-md text-sm"
+                    className={`${inputClass} mb-4`}
                 />
 
-                {/* Submit */}
                 <motion.button
                     whileTap={{ scale: 0.96 }}
+                    whileHover={{ scale: 1.02 }}
                     onClick={handleSubmitReminder}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md text-sm font-semibold"
+                    className="w-full bg-[#8b5e3c] hover:bg-[#7a4f2f] text-white py-2 rounded-lg text-sm font-semibold transition-colors"
                 >
                     Save Reminder
                 </motion.button>

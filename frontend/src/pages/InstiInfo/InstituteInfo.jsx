@@ -1,15 +1,14 @@
 import { useSelector } from 'react-redux';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
     Building2, Phone, Mail, GraduationCap, Calendar, Users, PencilIcon
 } from 'lucide-react';
 
-import useClassLogProcessor from './useClassLogProcessor';
+import processClassLogs from './useClassLogProcessor';
 import useFetchClassLogs from '@/pages/useFetchClassLogs.js';
 import useFetchBatches from '@/pages/useFetchBatches.js';
 import useFetchStudents from '@/pages/useFetchStudents.js';
-import useFetchAttendanceSummary from '@/pages/useFetchAttendanceSummary.js';
 
 import ClassesTable from './ClassesTable';
 import WrapperCard from '@/utilities/WrapperCard.jsx';
@@ -42,7 +41,7 @@ const InstituteInfo = () => {
     const [showEditModal, setShowEditModal] = useState(false);
 
 
-    const newClassLogs = useClassLogProcessor(classLogs, batches);
+    const newClassLogs = useMemo(() => processClassLogs(classLogs, batches), [classLogs, batches]);
 
     const onUpdate = async () => {
         await fetchClassLogs();
@@ -88,23 +87,29 @@ const InstituteInfo = () => {
                     {/* Admin Info */}
                     <motion.div variants={fadeInUp}>
                         <WrapperCard>
-                            <div className="flex gap-10 bg-[#f8ede3] rounded-2xl h-full items-center justify-center text-center p-4 border border-[#e6c8a8] shadow-[0_8px_24px_rgba(0,0,0,0.15)]">
-                                <div className="rounded-2xl bg-[#e0c4a8] p-1 shadow-inner">
-                                    <img
-                                        src={userData.adminPicURL}
-                                        alt="User Avatar"
-                                        className="w-full h-full object-cover rounded-2xl border border-[#e6c8a8] bg-[#f8ede3]"
-                                    />
+                            <div className="flex gap-6 bg-[#f8ede3] rounded-2xl h-[300px] items-center justify-center text-center p-6 border border-[#e6c8a8] shadow-[0_8px_24px_rgba(0,0,0,0.15)]">
+                                <div className="w-24 h-24 flex-shrink-0 rounded-2xl bg-[#e0c4a8] p-1 shadow-inner">
+                                    {userData.adminPicURL ? (
+                                        <img
+                                            src={userData.adminPicURL}
+                                            alt="User Avatar"
+                                            className="w-full h-full object-cover rounded-2xl border border-[#e6c8a8]"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center rounded-2xl bg-[#5a4a3c] text-white font-bold text-lg">
+                                            {userData.name?.[0]?.toUpperCase() || 'A'}
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="space-y-1">
                                     <h2 className="text-lg font-semibold text-[#5a4a3c]">Admin</h2>
                                     <p className="text-sm text-[#7b5c4b] flex items-center justify-center gap-2">
                                         <Users className="w-4 h-4 text-[#e6c8a8]" />
-                                        {userData.name}
+                                        {userData.name || 'N/A'}
                                     </p>
                                     <p className="text-sm text-[#7b5c4b] flex items-center justify-center gap-2">
                                         <Mail className="w-4 h-4 text-[#e6c8a8]" />
-                                        {userData.emailId}
+                                        {userData.emailId || 'N/A'}
                                     </p>
                                 </div>
                             </div>
@@ -158,7 +163,7 @@ const InstituteInfo = () => {
                                         {[{
                                             Icon: Building2,
                                             label: 'Name',
-                                            value: instiData.name
+                                            value: instiData.name || 'N/A'
                                         }, {
                                             Icon: Phone,
                                             label: 'Phone',
@@ -191,16 +196,15 @@ const InstituteInfo = () => {
                     transition={{delay: 0.3, duration: 0.5}}
                 >
                     <WrapperCard>
-                        <div
-                            className="bg-[#f8ede3] rounded-2xl h-[600px] overflow-hidden flex flex-col border border-[#e6c8a8] shadow-[0_8px_24px_rgba(0,0,0,0.15)]">
-                            <div className="px-6 py-4 bg-[#f0d9c0] border-b border-[#e6c8a8]">
+                        <div className="bg-[#f8ede3] rounded-2xl h-[600px] flex flex-col border border-[#e6c8a8] shadow-[0_8px_24px_rgba(0,0,0,0.15)] overflow-hidden">
+                            <div className="flex-shrink-0 px-6 py-4 bg-[#f0d9c0] border-b border-[#e6c8a8]">
                                 <h2 className="text-xl font-semibold text-[#5a4a3c] flex items-center gap-2">
                                     <Calendar className="w-5 h-5 text-[#e6c8a8]"/>
                                     Class Management
                                 </h2>
                                 <p className="text-sm text-[#7b5c4b]">Overview of all scheduled classes</p>
                             </div>
-                            <div className="flex-1 overflow-y-auto">
+                            <div className="flex-1 min-h-0">
                                 <ClassesTable newClassLogs={newClassLogs} onUpdate={onUpdate}/>
                             </div>
                         </div>

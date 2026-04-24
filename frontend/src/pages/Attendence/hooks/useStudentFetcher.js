@@ -1,89 +1,46 @@
 import { useCallback } from "react";
-import { getLocalDateYYYYMMDD } from '@/lib/utils.js';
+import axiosInstance from "@/utilities/axiosInstance.jsx";
+import toast from "react-hot-toast";
 
-export const useStudentFetcher = (
-    batches,
-    groupedStudents,
-    classLogs,
-    setStudents,
-    setMarkedPresentStudents,
-    setPresentIds,
-    setSuccess,
-    setError
-) => {
-    const formatDateToYYYYMMDD = useCallback((dateInput) => getLocalDateYYYYMMDD(dateInput), []);
+export const useStudentFetcher = (batches, setStudents, setMarkedPresentStudents, setPresentIds, setLoading) => {
+    const fetchStudents = useCallback(async (batchName, subjectName, date) => {
+        if (!batchName || !subjectName || !date) return;
 
-    const fetchStudents = useCallback((batchName, subjectName, date, isValidDateTime, errorMessage) => {
+        const selectedBatch = batches.find((b) => b.name === batchName);
+        const selectedSubject = selectedBatch?.subject.find((s) => s.name === subjectName);
+        const batchId = selectedBatch?._id;
+        const subjectId = selectedSubject?._id;
+
+        if (!batchId || !subjectId) {
+            toast.error("Invalid batch or subject selection");
+            return;
+        }
+
+        setLoading(true);
         try {
-            if (!batchName || !subjectName || !date) {
-                setError("All fields are required.");
-                return;
-            }
-
-            if (!isValidDateTime()) {
-                setError(errorMessage);
-                return;
-            }
-
-            const selectedBatch = batches.find((b) => b.name === batchName);
-            const selectedSubject = selectedBatch?.subject.find((s) => s.name === subjectName);
-            const batchId = selectedBatch?._id;
-            const subjectId = selectedSubject?._id;
-
-            if (!batchId || !subjectId) {
-                setError("Invalid batch or subject selection");
-                return;
-            }
-
-            const batchGroup = groupedStudents.find((g) => g.batchName === batchName) || {};
-            const allStudents = batchGroup.students?.flatMap((s) => s) || [];
-
-            const filteredStudents = allStudents.filter((s) =>
-                s.subjectId?.includes(subjectId)
+            const response = await axiosInstance.get(
+                `/api/classLog/attendance-status?batchId=${batchId}&subjectId=${subjectId}&date=${date}`,
+                { withCredentials: true }
             );
 
-            const classLog = classLogs.find(
-                (c) =>
-                    c.batch_id?._id?.toString() === batchId.toString() &&
-                    c.subject_id?.toString() === subjectId.toString()
-            );
+            const { students, presentIds, markedPresentStudents } = response.data;
+            setStudents(students);
+            setMarkedPresentStudents(markedPresentStudents);
+            setPresentIds(new Set(presentIds));
 
-            if (!classLog) {
-                setError("No class log found for this batch and subject.");
-                return;
+            if (markedPresentStudents.length > 0) {
+                toast(`${markedPresentStudents.length} students already marked present`, { icon: '📋' });
             }
-
-            const classesForDate = classLog.classes.filter(
-                (c) => formatDateToYYYYMMDD(c.date) === formatDateToYYYYMMDD(date)
-            );
-
-            let alreadyMarked = [];
-
-            if (classesForDate.length > 0 && classesForDate[0].attendance?.length > 0) {
-                alreadyMarked = classesForDate[0].attendance
-                    .map((a) => {
-                        const student = filteredStudents.find(
-                            (s) => s._id === a.studentIds?._id
-                        );
-                        return student ? { ...student, time: a.time } : null;
-                    })
-                    .filter(Boolean);
-            }
-
-            setStudents(filteredStudents);
-            setMarkedPresentStudents(alreadyMarked);
-            setPresentIds(new Set());
-            setSuccess(
-                alreadyMarked.length
-                    ? `${alreadyMarked.length} students already marked present.`
-                    : "No previous attendance found for this date."
-            );
-            setError("");
         } catch (err) {
             console.error(err);
-            setError("Failed to fetch students. Please try again.");
+            toast.error(err.response?.data?.message || "Failed to fetch attendance status");
+            setStudents([]);
+            setMarkedPresentStudents([]);
+            setPresentIds(new Set());
+        } finally {
+            setLoading(false);
         }
-    }, [batches, groupedStudents, classLogs, formatDateToYYYYMMDD, setStudents, setMarkedPresentStudents, setPresentIds, setSuccess, setError]);
+    }, [batches, setStudents, setMarkedPresentStudents, setPresentIds, setLoading]);
 
     return { fetchStudents };
 };

@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import toast from "react-hot-toast";
 
 const CLOUDINARY_UPLOAD_URL = "https://api.cloudinary.com/v1_1";
 
@@ -36,7 +37,6 @@ const OnboardingForm = ({ adminCreds }) => {
 
     const [uploading, setUploading] = useState(false);
     const [localPreview, setLocalPreview] = useState(null);
-    const [error, setError] = useState(null);
     const navigate = useNavigate();
 
     const cloudName = import.meta.env.VITE_CLOUD_NAME;
@@ -99,8 +99,7 @@ const OnboardingForm = ({ adminCreds }) => {
             navigate("/main");
         } catch (err) {
             console.error("Signup error:", err);
-            const errorMessage = err.response?.data?.message || "An unexpected error occurred during signup.";
-            setError(errorMessage);
+            toast.error(err.response?.data?.message || "An unexpected error occurred during signup.");
         }
     };
 
@@ -117,12 +116,6 @@ const OnboardingForm = ({ adminCreds }) => {
                         <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center text-[#4a3a2c] mb-6">
                             Institute Onboarding
                         </h2>
-
-                        {error && (
-                            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md relative mb-4" role="alert">
-                                <span className="block sm:inline">{error}</span>
-                            </div>
-                        )}
 
                         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
                             <div className="space-y-2">
