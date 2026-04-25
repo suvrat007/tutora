@@ -1,3 +1,4 @@
+// Fields: camelCase for refs/meta (adminId, normalized_name), snake_case for user-facing data (forStandard, startDate)
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema
 

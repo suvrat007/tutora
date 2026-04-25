@@ -1,3 +1,4 @@
+// Fields: camelCase for refs/meta (adminId, batchId, subjectId), snake_case for user-facing data (school_name, admission_date, fee_status)
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -32,5 +33,8 @@ const Student = new Schema({
         ]
     }
 });
+
+// Optimizes GET /api/v1/student queries filtered by adminId and optional batchId
+Student.index({ adminId: 1, batchId: 1 });
 
 module.exports = mongoose.model('Student', Student);

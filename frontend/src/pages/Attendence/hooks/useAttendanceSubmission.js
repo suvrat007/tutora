@@ -13,7 +13,7 @@ export const useAttendanceSubmission = (batches) => {
 
         try {
             await axiosInstance.patch(
-                "api/classLog/mark-attendance",
+                'classLog/mark-attendance',
                 {
                     batch_id: selectedBatch._id,
                     subject_id: selectedSubject._id,

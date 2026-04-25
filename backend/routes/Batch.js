@@ -8,7 +8,7 @@ const ClassLog = require("../models/ClassLogSchema.js");
 router.post("/add-new-batch",userAuth, async (req, res) => {
     const { name } = req.body;
     const normalized = name.replace(/\s+/g, "").toLowerCase();
-    const uid= req.user._id
+    const uid= req.adminId
 
     try {
         const response = new Batch({
@@ -26,11 +26,20 @@ router.post("/add-new-batch",userAuth, async (req, res) => {
 });
 router.get("/get-all-batches",userAuth, async (req, res) => {
     try{
-        const adminId = req.user._id
-        const response = await Batch.find({adminId:adminId});
-        console.log(response);
-        return res.status(200).json(response);
+        const adminId = req.adminId;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 50;
+        const skip = (page - 1) * limit;
 
+        const [total, data] = await Promise.all([
+            Batch.countDocuments({ adminId }),
+            Batch.find({ adminId }).skip(skip).limit(limit)
+        ]);
+
+        return res.status(200).json({
+            data,
+            pagination: { total, page, limit, totalPages: Math.ceil(total / limit) }
+        });
     }catch(error){
         console.error("Error fetching Batch:", error);
         return res.status(500).json({ message: "Failed to fetch Batches", error: error.message });
@@ -40,7 +49,7 @@ router.get("/get-all-batches",userAuth, async (req, res) => {
 router.delete("/delete-batch/:id", userAuth, async (req, res) => {
     try {
         const batchId = req.params.id;
-        const adminId = req.user._id;
+        const adminId = req.adminId;
         const { shouldDeleteStudents } = req.body;
 
         const batchDeleteResult = await Batch.deleteOne({ adminId, _id: batchId });
@@ -100,7 +109,7 @@ router.patch("/update-batch/:id", userAuth,async (req, res) => {
 
 router.get("/get-batch/:id", userAuth,async (req, res) => {
     const id = req.params.id;
-    const adminId = req.user._id
+    const adminId = req.adminId
     try {
         const response = await Batch.findOne({ adminId, _id: id }).populate('enrolledStudents admin');
         if (!response) {

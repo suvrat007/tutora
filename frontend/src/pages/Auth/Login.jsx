@@ -14,6 +14,29 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import {GoogleLogin} from "@react-oauth/google";
 
+// Defined at module level so AnimatePresence gets a stable component reference
+const LoginLoadingSpinner = () => (
+    <motion.div
+        className="absolute inset-0 bg-[#f8ede3]/80 backdrop-blur-sm z-50 flex items-center justify-center rounded-2xl"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
+    >
+        <motion.div
+            className="w-12 h-12 border-4 border-[#e7c6a5] border-t-[#4a3a2c] rounded-full"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+        >
+            <motion.div
+                className="w-full h-full rounded-full border-2 border-[#e7c6a5]/50"
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+            />
+        </motion.div>
+    </motion.div>
+);
+
 const Login = () => {
     const words = ["mazing", "wesome", "mbitious", "daptive", "dvanced"];
     const [isSignup, setIsSignup] = useState(false);
@@ -28,18 +51,22 @@ const Login = () => {
     };
 
     const loggedInUser = useSelector((state) => state.user);
+    // Guard: don't auto-navigate while an auth attempt is in-flight.
+    // Body.jsx calls fetchUser() on mount, which may resolve a valid session
+    // concurrently with a wrong-password attempt — without this guard, navigate()
+    // fires at the same time as toast.error(), causing the toast to be swallowed.
     useEffect(() => {
-        if (loggedInUser) {
+        if (loggedInUser && !isLoading) {
             navigate("/main");
         }
-    }, [loggedInUser]);
+    }, [loggedInUser, isLoading, navigate]);
 
     const handleLogin = async (e) => {
         e.preventDefault();
         setIsLoading(true);
         try {
             const response = await axiosInstance.post(
-                "/api/auth/login",
+                'auth/login',
                 {
                     emailId: formData.emailId,
                     password: formData.password,
@@ -58,7 +85,9 @@ const Login = () => {
     const handleGoogleLogin = async (credentialResponse) => {
         try {
             setIsLoading(true);
-            const response = await axiosInstance.post('/api/auth/google-auth', { credential: credentialResponse.credential }, { withCredentials: true });
+            // Google OAuth requires localhost:5173 and production URL in authorized JavaScript origins
+            // in Google Cloud Console → APIs & Services → Credentials
+            const response = await axiosInstance.post('auth/google-auth', { credential: credentialResponse.credential }, { withCredentials: true });
             if (response.data.isNewUser) {
                 // New Google user — needs to set up their institute
                 setSignupCreds({ isGoogleUser: true });
@@ -93,28 +122,6 @@ const Login = () => {
 
     if (signupCreds) return <OnboardingForm adminCreds={signupCreds} />;
 
-    const LoadingSpinner = () => (
-        <motion.div
-            className="absolute inset-0 bg-[#f8ede3]/80 backdrop-blur-sm z-50 flex items-center justify-center rounded-2xl"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-        >
-            <motion.div
-                className="w-12 h-12 border-4 border-[#e7c6a5] border-t-[#4a3a2c] rounded-full"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            >
-                <motion.div
-                    className="w-full h-full rounded-full border-2 border-[#e7c6a5]/50"
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                />
-            </motion.div>
-        </motion.div>
-    );
-
     return (
         // <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
             <div className="relative min-h-screen bg-gradient-to-br from-[#fdf5ec] to-[#f5e8dc] flex items-center justify-center px-4 sm:px-6 md:px-8 overflow-hidden">
@@ -128,7 +135,7 @@ const Login = () => {
                     <Card className="rounded-2xl shadow-xl bg-[#f8ede3]/90 backdrop-blur-sm border border-[#e7c6a5]/50">
                         <CardContent className="p-6 sm:p-8 relative">
                             <AnimatePresence>
-                                {isLoading && <LoadingSpinner/>}
+                                {isLoading && <LoginLoadingSpinner />}
                             </AnimatePresence>
                             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-2 text-[#4a3a2c]">
                                 <span className="inline">TUTORA</span>
@@ -203,8 +210,14 @@ const Login = () => {
                             </p>
                             <div className="mt-2 w-full flex flex-col items-center">
                                 <GoogleLogin
-                                    onSuccess={handleGoogleLogin}
-                                    onError={()=>{toast.error('Google Login Failed')}}
+                                    onSuccess={async (credentialResponse) => {
+                                        try {
+                                            await handleGoogleLogin(credentialResponse);
+                                        } catch (err) {
+                                            toast.error('Google sign-in failed. Please try again.');
+                                        }
+                                    }}
+                                    onError={() => toast.error('Google sign-in failed. Please try again.')}
                                     useOneTap
                                 />
                             </div>

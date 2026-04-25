@@ -19,7 +19,7 @@ export const useStudentFetcher = (batches, setStudents, setMarkedPresentStudents
         setLoading(true);
         try {
             const response = await axiosInstance.get(
-                `/api/classLog/attendance-status?batchId=${batchId}&subjectId=${subjectId}&date=${date}`,
+                `classLog/attendance-status?batchId=${batchId}&subjectId=${subjectId}&date=${date}`,
                 { withCredentials: true }
             );
 

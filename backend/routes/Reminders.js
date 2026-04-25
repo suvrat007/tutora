@@ -7,7 +7,7 @@ const userAuth = require('../middleware/userAuth');
 router.post('/add-reminder', userAuth, async (req, res) => {
     try {
         const { batchName, subjectName, reminderDate, reminder } = req.body;
-        const adminId = req.user._id;
+        const adminId = req.adminId;
 
         const newReminder = new Reminder({
             adminId,
@@ -39,7 +39,7 @@ router.delete('/delete-reminder/:id', userAuth, async (req, res) => {
 
 router.get('/get-reminder', userAuth, async (req, res) => {
     try {
-        const reminders = await Reminder.find({ adminId: req.user._id });
+        const reminders = await Reminder.find({ adminId: req.adminId });
         return res.status(200).json({ message: "Fetched", reminder: reminders });
     } catch (err) {
         console.error(err.message);

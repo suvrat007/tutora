@@ -109,7 +109,7 @@ const AddStudent = ({
 
             if (isEditMode && existingStudentData?._id) {
                 response = await axiosInstance.patch(
-                    `/api/student/update-student/${existingStudentData._id}`,
+                    `student/update-student/${existingStudentData._id}`,
                     studentData,
                     { withCredentials: true }
                 );
@@ -121,7 +121,7 @@ const AddStudent = ({
                 }
             } else {
                 response = await axiosInstance.post(
-                    "/api/student/add-new-student",
+                    "student/add-new-student",
                     studentData,
                     { withCredentials: true }
                 );

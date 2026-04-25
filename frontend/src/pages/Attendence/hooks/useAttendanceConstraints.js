@@ -25,9 +25,10 @@ const useAttendanceConstraints = (batchName, subjectName, date, batches) => {
         today.setHours(0, 0, 0, 0);
 
 
-        // Constraint 2: Check if class is scheduled on the selected day
+        // Constraint 2: Check if class is scheduled on the selected day (only when schedule is defined)
+        const scheduledDays = selectedSubject?.classSchedule?.days;
         const day = selectedDate.toLocaleString("en-US", { weekday: "long" });
-        if (!selectedSubject?.classSchedule?.days.includes(day)) {
+        if (Array.isArray(scheduledDays) && scheduledDays.length > 0 && !scheduledDays.includes(day)) {
             setErrorMessage(`Class is not scheduled on ${day}`);
             return false;
         }

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 import axiosInstance from '../../utilities/axiosInstance';
 import { API, TEST_STATUS } from '../../utilities/constants';
+import { formatDateTime } from '../../utilities/dateUtils';
 import ConfirmationModal from '@/components/ui/ConfirmationModal';
 
 const statusColors = {
@@ -71,14 +72,14 @@ const TestList = ({ batches, tests, setEditingTest, setSelectedTest, fetchTests 
                                     </div>
                                     <p className="text-xs text-[#7b5c4b] mb-0.5">{getBatchName(test.batchId)}</p>
                                     <p className="text-xs text-[#7b5c4b] mb-0.5">{getSubjectName(test.batchId, test.subjectId)}</p>
-                                    <p className="text-xs text-[#7b5c4b] mb-0.5">{new Date(test.testDate).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</p>
+                                    <p className="text-xs text-[#7b5c4b] mb-0.5">{formatDateTime(test.testDate)}</p>
                                     <p className="text-xs text-[#7b5c4b]">Max: <span className="font-semibold text-[#5a4a3c]">{test.maxMarks}</span>{test.passMarks > 0 && <span> &middot; Pass: <span className="font-semibold text-[#5a4a3c]">{test.passMarks}</span></span>}</p>
                                     <div className="mt-3 flex gap-2" onClick={e => e.stopPropagation()}>
                                         <button
-                                            onClick={() => setEditingTest(test)}
+                                            onClick={() => setSelectedTest(test)}
                                             className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[#5a4a3c] bg-[#e0c4a8] rounded-lg hover:bg-[#d8bca0] transition-colors"
                                         >
-                                            <FiEdit2 className="w-3 h-3" /> Edit
+                                            <FiEdit2 className="w-3 h-3" /> Results
                                         </button>
                                         <button
                                             onClick={() => setTestToDelete({ testId: test._id, batchId: test.batchId })}

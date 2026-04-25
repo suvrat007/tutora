@@ -3,8 +3,10 @@ import { useSelector } from 'react-redux';
 import axiosInstance from '../../utilities/axiosInstance';
 import { Input } from '../../components/ui/input';
 import { API } from '../../utilities/constants';
+import { FiSettings } from 'react-icons/fi';
+import { formatDateTime } from '../../utilities/dateUtils';
 
-const TestDetail = ({ test, fetchTests }) => {
+const TestDetail = ({ test, fetchTests, setEditingTest }) => {
     const batches = useSelector(state => state.batches);
     const [results, setResults] = useState([]);
     const [saving, setSaving] = useState(false);
@@ -78,13 +80,24 @@ const TestDetail = ({ test, fetchTests }) => {
                     <div className="flex flex-wrap gap-2 text-sm font-medium">
                         <span className="bg-[#f0d9c0] text-[#5a4a3c] px-3 py-1 rounded-full">{getBatchName(test.batchId)}</span>
                         <span className="bg-[#f0d9c0] text-[#5a4a3c] px-3 py-1 rounded-full">{getSubjectName(test.batchId, test.subjectId)}</span>
-                        <span className="bg-[#f0d9c0] text-[#5a4a3c] px-3 py-1 rounded-full">{new Date(test.testDate).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</span>
+                        <span className="bg-[#f0d9c0] text-[#5a4a3c] px-3 py-1 rounded-full">{formatDateTime(test.testDate)}</span>
                     </div>
                 </div>
-                <div className="text-right bg-[#f0d9c0] px-4 py-2 rounded-xl border border-[#e6c8a8]">
-                    <div className="text-xs font-bold uppercase tracking-widest text-[#7b5c4b]">Max Marks</div>
-                    <div className="text-3xl font-black text-[#5a4a3c]">{test.maxMarks}</div>
-                    <div className="text-xs mt-1 font-medium text-[#7b5c4b] capitalize">Status: {test.status}</div>
+                <div className="flex items-start gap-3">
+                    <div className="text-right bg-[#f0d9c0] px-4 py-2 rounded-xl border border-[#e6c8a8]">
+                        <div className="text-xs font-bold uppercase tracking-widest text-[#7b5c4b]">Max Marks</div>
+                        <div className="text-3xl font-black text-[#5a4a3c]">{test.maxMarks}</div>
+                        <div className="text-xs mt-1 font-medium text-[#7b5c4b] capitalize">Status: {test.status}</div>
+                    </div>
+                    {setEditingTest && (
+                        <button
+                            onClick={() => setEditingTest(test)}
+                            title="Edit test details"
+                            className="p-2 rounded-lg text-[#7b5c4b] hover:text-[#5a4a3c] hover:bg-[#f0d9c0] transition-colors border border-[#e6c8a8]"
+                        >
+                            <FiSettings className="w-4 h-4" />
+                        </button>
+                    )}
                 </div>
             </div>
 

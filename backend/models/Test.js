@@ -1,3 +1,4 @@
+// Fields: camelCase for refs/meta (adminId, batchId, subjectId), camelCase for user-facing data (testName, maxMarks, passMarks, testDate)
 const mongoose = require('mongoose');
 
 const testSchema = new mongoose.Schema({
@@ -13,7 +14,7 @@ const testSchema = new mongoose.Schema({
     subjectId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Subject',
-        required: true
+        // optional: form allows "No Subject" selection
     },
     maxMarks: {
         type: Number,
@@ -51,6 +52,9 @@ const testSchema = new mongoose.Schema({
         }
     }]
 }, { timestamps: true });
+
+// Optimizes GET /api/v1/test/getAllTests queries filtered by adminId + batchId
+testSchema.index({ adminId: 1, batchId: 1 });
 
 const Test = mongoose.model('Test', testSchema);
 

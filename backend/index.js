@@ -2,6 +2,7 @@ require('dotenv').config();
 const dns = require('dns');
 dns.setDefaultResultOrder('ipv4first');
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const app = express();
 const {connectDb}=require("./utils/databaseConnection")
 const cors = require('cors');
@@ -24,15 +25,40 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser())
 
-app.use('/api/student', StudentRouter);
-app.use('/api/batch', BatchRouter);
-app.use('/api/reminder',ReminderRouter);
-app.use('/api/classLog', ClassLogRouter);
-app.use('/api/admin', AdminRouter);
-app.use('/api/auth', AuthRouter)
-app.use('/api/institute',InstituteRouter)
-app.use('/api/test', TestRouter);
-app.use('/api/teacher', TeacherRouter);
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 20,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many attempts, please try again later.' },
+});
+
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many requests, please try again later.' },
+});
+
+app.use('/api/v1/auth', authLimiter);
+app.use('/api', apiLimiter);
+
+app.use('/api/v1/student', StudentRouter);
+app.use('/api/v1/batch', BatchRouter);
+app.use('/api/v1/reminder', ReminderRouter);
+app.use('/api/v1/classLog', ClassLogRouter);
+app.use('/api/v1/admin', AdminRouter);
+app.use('/api/v1/auth', AuthRouter);
+app.use('/api/v1/institute', InstituteRouter);
+app.use('/api/v1/test', TestRouter);
+app.use('/api/v1/teacher', TeacherRouter);
+
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    const status = err.status || err.statusCode || 500;
+    res.status(status).json({ message: err.message || 'Internal server error' });
+});
 
 connectDb().then(()=>{
     console.log("connected to database")

@@ -28,10 +28,10 @@ const signupValidation = Joi.object({
             'string.empty': 'Institute contact email is required.'
         }),
         phone_number: Joi.string()
-            .pattern(/^[0-9]{10,15}$/)
+            .pattern(/^\+?[\d\s\-]{7,15}$/)
             .required()
             .messages({
-                'string.pattern.base': 'Phone number must be 10-15 digits long.',
+                'string.pattern.base': 'Phone number must be 7-15 digits and may include +, spaces, or hyphens.',
                 'string.empty': 'Phone number is required.'
             })
     }).required().messages({

@@ -15,7 +15,7 @@ const useAttendanceSummary = (batchName, subjectName, batches, refreshTrigger) =
             setLoading(true);
             setError(null);
             try {
-                let url = '/api/student/attendance/summary';
+                let url = 'student/attendance/summary';
                 let selectedBatch = null;
                 let selectedSubject = null;
 

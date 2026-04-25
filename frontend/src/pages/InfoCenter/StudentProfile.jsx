@@ -95,46 +95,22 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
     const [statusFilter, setStatusFilter] = useState('');
     const [subjectFilter, setSubjectFilter] = useState('');
 
-    const handleGoBack = () => {
-        setShowStudentProfile({
-            show: false,
-            student: null,
-        });
-    };
-
-    if (!student) {
-        return (
-            <div className="flex flex-col items-center justify-center h-full p-6 bg-[#e7c6a5]">
-                <div className="text-center">
-                    <FaUser className="w-16 h-16 text-[#6b4c3b] mx-auto mb-4" />
-                    <p className="text-lg text-[#4a3a2c] mb-4">No student data provided.</p>
-                    <button
-                        className="inline-flex items-center px-6 py-3 bg-[#d7b48f] text-[#4a3a2c] rounded-lg hover:bg-[#d7b48f]/80 transition-colors"
-                        onClick={handleGoBack}
-                    >
-                        <FaChevronLeft className="w-4 h-4 mr-2" />
-                        Back to Info Page
-                    </button>
-                </div>
-            </div>
-        );
-    }
-
+    // All hooks must be called unconditionally — before any early return
     const classlogs = useSelector((state) => state.classlogs) || [];
     const batches = useSelector((state) => state.batches) || [];
 
     const studentSubjects = useMemo(() => {
+        if (!student) return [];
         const batch = batches.find((b) => b._id === student.batchId);
         if (!batch || !student.subjectId) return [];
-
         return student.subjectId
             .map((sid) => batch.subject?.find((s) => s._id === sid)?.name)
             .filter(Boolean)
             .sort();
-    }, [student.subjectId, student.batchId, batches]);
+    }, [student, batches]);
 
     const attendanceData = useMemo(() => {
-        if (!classlogs || !student.subjectId) return [];
+        if (!student || !classlogs || !student.subjectId) return [];
 
         const admissionDate = new Date(student.admission_date);
         if (isNaN(admissionDate.getTime())) return [];
@@ -155,7 +131,7 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
                 return classlog.classes
                     .filter((cls) => {
                         const classDate = new Date(cls.date);
-                        return classDate >= admissionDate; // Filter classes on or after admission date
+                        return classDate >= admissionDate;
                     })
                     .map((cls) => {
                         let status = 'No Data';
@@ -186,7 +162,7 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
             .sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate));
 
         return data;
-    }, [classlogs, student.subjectId, student.studentId, batches, student.admission_date]);
+    }, [classlogs, student, batches]);
 
     const filteredAttendanceData = useMemo(() => {
         return attendanceData.filter((entry) => {
@@ -202,12 +178,33 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
         const totalCount = validClasses.length;
         const percentage = totalCount > 0 ? Math.round((presentCount / totalCount) * 100) : 0;
 
-        return {
-            present: presentCount,
-            total: totalCount,
-            percentage: percentage
-        };
+        return { present: presentCount, total: totalCount, percentage };
     }, [attendanceData]);
+
+    const handleGoBack = () => {
+        setShowStudentProfile({
+            show: false,
+            student: null,
+        });
+    };
+
+    if (!student) {
+        return (
+            <div className="flex flex-col items-center justify-center h-full p-6 bg-[#e7c6a5]">
+                <div className="text-center">
+                    <FaUser className="w-16 h-16 text-[#6b4c3b] mx-auto mb-4" />
+                    <p className="text-lg text-[#4a3a2c] mb-4">No student data provided.</p>
+                    <button
+                        className="inline-flex items-center px-6 py-3 bg-[#d7b48f] text-[#4a3a2c] rounded-lg hover:bg-[#d7b48f]/80 transition-colors"
+                        onClick={handleGoBack}
+                    >
+                        <FaChevronLeft className="w-4 h-4 mr-2" />
+                        Back to Info Page
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     const resetFilters = () => {
         setStatusFilter('');

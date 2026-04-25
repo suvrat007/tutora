@@ -31,7 +31,7 @@ const TestManagementPage = () => {
         if (!batchId) return;
         try {
             const res = await axiosInstance.get(`${API.GET_ALL_TESTS}?batchId=${batchId}`);
-            dispatch(mergeTests(res.data));
+            dispatch(mergeTests(res.data.data));
         } catch (error) {
             console.error('Failed to fetch tests', error);
         }
@@ -91,7 +91,7 @@ const TestManagementPage = () => {
                             <Suspense fallback={
                                 <div className="animate-pulse bg-[#f0d9c0] rounded-2xl h-40 border border-[#e6c8a8]" />
                             }>
-                                <TestDetail test={selectedTest} fetchTests={fetchTests} />
+                                <TestDetail test={selectedTest} fetchTests={fetchTests} setEditingTest={setEditingTest} />
                             </Suspense>
                         )}
                     </div>

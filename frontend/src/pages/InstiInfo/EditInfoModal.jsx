@@ -194,7 +194,7 @@ const EditInfoModal = ({ isOpen, onClose, initialData }) => {
         }
 
         try {
-            const response = await axiosInstance.patch("/api/admin/update", {
+            const response = await axiosInstance.patch("admin/update", {
                 name: formData.name.trim(),
                 emailId: formData.emailId.trim(),
                 adminPicURL: formData.adminPicURL,

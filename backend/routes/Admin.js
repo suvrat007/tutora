@@ -6,7 +6,7 @@ const userAuth  =require("../middleware/userAuth.js");
 
 router.get('/get',userAuth,async (req,res)=>{
     try{
-        const userId = req.user._id
+        const userId = req.adminId
         const admin = await Admin.findById(userId).select("-password").populate('institute_info')
 
         if(!admin){
@@ -23,7 +23,7 @@ router.get('/get',userAuth,async (req,res)=>{
 router.patch('/update', userAuth, async (req, res) => {
     try {
         const { name, emailId, adminPicURL, institute_info } = req.body;
-        const adminId = req.user._id;
+        const adminId = req.adminId;
 
         if (!name || !emailId || !institute_info?.name || !institute_info?.contact_info?.emailId || !institute_info?.contact_info?.phone_number) {
             return res.status(400).json({ message: 'All required fields must be provided' });

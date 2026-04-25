@@ -3,9 +3,6 @@ import { FiX } from "react-icons/fi";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import axiosInstance from "@/utilities/axiosInstance.jsx";
-import TimePicker from "react-time-picker";
-import 'react-time-picker/dist/TimePicker.css';
-import 'react-clock/dist/Clock.css';
 import { notify } from '@/components/ui/Toast.jsx';
 import { API } from '@/utilities/constants';
 
@@ -123,13 +120,11 @@ const ReminderModal = ({ setShowModal, value }) => {
                 />
 
                 <label className={labelClass}>Time (24hr)</label>
-                <TimePicker
-                    onChange={setTime}
+                <input
+                    type="time"
                     value={time}
-                    disableClock={true}
-                    className="w-full text-sm mb-3"
-                    format="HH:mm"
-                    clearIcon={null}
+                    onChange={(e) => setTime(e.target.value)}
+                    className={`${inputClass} mb-3`}
                 />
 
                 <label className={`${labelClass} mt-1`}>Reminder</label>

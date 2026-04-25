@@ -57,7 +57,7 @@ const FeesTable = ({ monthFilter, setMonthFilter, onSaveComplete }) => {
             if (subjectFilter) queryParams.append("subject", subjectFilter);
             if (paidFilter) queryParams.append("status", paidFilter);
 
-            const res = await axiosInstance.get(`/api/student/fees/list?${queryParams.toString()}`);
+            const res = await axiosInstance.get(`student/fees/list?${queryParams.toString()}`);
             if (isMounted.current) {
                 setStudents(res.data.data);
                 setTotalPages(res.data.pagination.totalPages);
@@ -118,8 +118,8 @@ const FeesTable = ({ monthFilter, setMonthFilter, onSaveComplete }) => {
                 console.log("[FeeToggle] POSTing — paid:", paidIds, "unpaid:", unpaidIds, "date:", dateStr);
 
                 await Promise.all([
-                    ...(paidIds.length ? [axiosInstance.post("/api/student/bulk-update-fee-status", { studentIds: paidIds, paid: true, date: dateStr })] : []),
-                    ...(unpaidIds.length ? [axiosInstance.post("/api/student/bulk-update-fee-status", { studentIds: unpaidIds, paid: false, date: dateStr })] : []),
+                    ...(paidIds.length ? [axiosInstance.post("student/bulk-update-fee-status", { studentIds: paidIds, paid: true, date: dateStr })] : []),
+                    ...(unpaidIds.length ? [axiosInstance.post("student/bulk-update-fee-status", { studentIds: unpaidIds, paid: false, date: dateStr })] : []),
                 ]);
                 console.log("[FeeToggle] save succeeded");
 

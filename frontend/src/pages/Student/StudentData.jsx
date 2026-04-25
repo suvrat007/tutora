@@ -52,7 +52,7 @@ const StudentData = () => {
 
     setIsDeleting(true);
     try {
-      await axiosInstance.delete(`/api/student/delete-student/${studentId}`, {
+      await axiosInstance.delete(`student/delete-student/${studentId}`, {
         withCredentials: true,
       });
 

@@ -90,7 +90,7 @@ const AddStudentModal = ({ onClose, batch, refreshStudents }) => {
 
         try {
             for (const student of selectedStudents) {
-                await axiosInstance.patch(`/api/student/update-student/${student.id}`, {
+                await axiosInstance.patch(`student/update-student/${student.id}`, {
                     batchId: batch._id,
                     subjectId: student.subjectIds,
                 }, { withCredentials: true });

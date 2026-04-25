@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
-import moment from 'moment-timezone';
-import { getLocalDateYYYYMMDD } from '@/lib/utils.js';
+import { formatDate, isToday } from '@/utilities/dateUtils';
 import {
     Calendar,
     BookOpen,
@@ -124,9 +123,6 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
         setModalOpen(true);
     };
 
-    // Get today's local date
-    const todayDate = getLocalDateYYYYMMDD();
-
     return (
         <motion.div
             variants={fadeInUp}
@@ -219,8 +215,8 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
                                         </div>
                                     </td>
                                     <td className="px-4 sm:px-6 py-4">
-                                        <p>{moment(cls.date).format('MMM DD, YYYY')}</p>
-                                        <p className="text-xs text-[#7b5c4b]">{moment(cls.date).format('dddd')}</p>
+                                        <p>{formatDate(cls.date)}</p>
+                                        <p className="text-xs text-[#7b5c4b]">{new Date(cls.date).toLocaleDateString('en-US', { weekday: 'long' })}</p>
                                     </td>
                                     <td className="px-4 sm:px-6 py-4">
                                         <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(cls.status)}`}>
@@ -259,7 +255,7 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
                                         </div>
                                     </td>
                                     <td className="px-4 sm:px-6 py-4">
-                                        {cls.status === 'No data recorded' && !moment(cls.date).isSame(todayDate, 'day') && (
+                                        {cls.status === 'No data recorded' && !isToday(cls.date) && (
                                             <motion.button
                                                 whileHover={{ scale: 1.05 }}
                                                 whileTap={{ scale: 0.95 }}

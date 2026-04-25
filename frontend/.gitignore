@@ -25,4 +25,14 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+# Environment
 .env
+.env.*
+*.env
+
+# Test files
+*.test.js
+*.test.jsx
+*.spec.js
+*.spec.jsx
+src/test/

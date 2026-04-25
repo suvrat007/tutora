@@ -20,7 +20,7 @@ const formatDateToYYYYMMDD = (dateInput) => {
 
 router.post("/add-class-updates", userAuth, async (req, res) => {
     try {
-        const adminId = req.user._id;
+        const adminId = req.adminId;
         const { updates } = req.body;
 
         if (!Array.isArray(updates) || updates.length === 0) {
@@ -129,7 +129,7 @@ router.post("/add-class-updates", userAuth, async (req, res) => {
 
 router.patch("/mark-attendance", userAuth, async (req, res) =>  {
     try {
-        const adminId = req.user._id;
+        const adminId = req.adminId;
         const { batch_id, subject_id, date, presentIds, time } = req.body;
 
         if (
@@ -194,7 +194,7 @@ router.patch("/mark-attendance", userAuth, async (req, res) =>  {
 
 router.get('/getAllClasslogs', userAuth, async (req, res) => {
     try {
-        const adminId = req.user._id;
+        const adminId = req.adminId;
 
         const response = await ClassLog.find({ adminId })
             .populate('batch_id')
@@ -210,7 +210,7 @@ router.get('/getAllClasslogs', userAuth, async (req, res) => {
 
 router.get('/attendance-status', userAuth, async (req, res) => {
     try {
-        const adminId = req.user._id;
+        const adminId = req.adminId;
         const { batchId, subjectId, date } = req.query;
 
         if (!mongoose.Types.ObjectId.isValid(batchId) ||
@@ -267,7 +267,7 @@ router.get('/attendance-status', userAuth, async (req, res) => {
 
 router.get('/today-pending', userAuth, async (req, res) => {
     try {
-        const adminId = req.user._id;
+        const adminId = req.adminId;
         const { localDate, localTime } = req.query;
 
         if (!localDate || !localTime) {
