@@ -28,7 +28,8 @@ const Student = new Schema({
         feeStatus: [
             {
                 date: { type: Date, required: true },
-                paid: { type: Boolean, default: false }
+                paid: { type: Boolean, default: false },
+                paid_at: { type: Date, default: null }
             }
         ]
     }

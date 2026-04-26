@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axiosInstance from "@/utilities/axiosInstance.jsx";
 
-const useAttendanceSummary = (batchName, subjectName, batches, refreshTrigger, startDate = null, endDate = null) => {
+const useAttendanceSummary = (batchName, subjectName, batches, refreshTrigger) => {
     const [summary, setSummary] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -15,7 +15,7 @@ const useAttendanceSummary = (batchName, subjectName, batches, refreshTrigger, s
             setLoading(true);
             setError(null);
             try {
-                const params = new URLSearchParams();
+                let url = 'student/attendance/summary';
                 let selectedBatch = null;
                 let selectedSubject = null;
 
@@ -26,18 +26,11 @@ const useAttendanceSummary = (batchName, subjectName, batches, refreshTrigger, s
                         if (isMounted) setError('Invalid batch or subject selection');
                         return;
                     }
-                    params.set('batchId', selectedBatch._id);
-                    params.set('subjectId', selectedSubject._id);
+                    url += `?batchId=${selectedBatch._id}&subjectId=${selectedSubject._id}`;
                 } else if (batchName) {
                     selectedBatch = batches.find((b) => b.name === batchName);
-                    if (selectedBatch) params.set('batchId', selectedBatch._id);
+                    if (selectedBatch) url += `?batchId=${selectedBatch._id}`;
                 }
-
-                if (startDate) params.set('startDate', startDate);
-                if (endDate) params.set('endDate', endDate);
-
-                const paramStr = params.toString();
-                const url = `student/attendance/summary${paramStr ? `?${paramStr}` : ''}`;
 
                 const response = await axiosInstance.get(url, { withCredentials: true });
 
@@ -70,7 +63,7 @@ const useAttendanceSummary = (batchName, subjectName, batches, refreshTrigger, s
 
         fetchSummary();
         return () => { isMounted = false; };
-    }, [batchName, subjectName, batches, refreshTrigger, startDate, endDate]);
+    }, [batchName, subjectName, batches, refreshTrigger]);
 
     return { summary, loading, error };
 };
