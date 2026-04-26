@@ -39,6 +39,7 @@ const Callendar = () => {
                         <Calendar
                             onChange={setValue}
                             value={value}
+                            showFixedNumberOfWeeks={true}
                             className="react-calendar w-full text-sm"
                             tileClassName="hover:bg-[#e0c4a8] rounded-md transition-all duration-300"
                         />

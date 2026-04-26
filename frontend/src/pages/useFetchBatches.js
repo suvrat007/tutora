@@ -6,8 +6,8 @@ const useFetchBatches =  () => {
     const dispatch = useDispatch();
     const getAllBatches = async () => {
         try {
-            const response = await axiosInstance.get(`/api/batch/get-all-batches`,{withCredentials:true});
-            dispatch(addBatches(response.data));
+            const response = await axiosInstance.get('batch/get-all-batches', { withCredentials: true });
+            dispatch(addBatches(response.data.data));
         } catch (error) {
             console.error(error.message);
         }

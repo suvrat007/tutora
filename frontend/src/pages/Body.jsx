@@ -52,7 +52,7 @@ const Body = () => {
                     hasEnsuredTodayRef.current = true;
                     return;
                 }
-                await axiosInstance.post("/api/classLog/add-class-updates", { updates }, { withCredentials: true });
+                await axiosInstance.post("classLog/add-class-updates", { updates }, { withCredentials: true });
             } catch (e) {
                 // Silent fail to avoid blocking app load
                 console.error("Failed ensuring today's classes:", e);

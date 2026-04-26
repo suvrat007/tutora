@@ -7,7 +7,7 @@ const userAuth = require("../middleware/userAuth.js");
 
 router.post("/add-new-student", userAuth, async (req, res) => {
     const { contact_info, batchId, fee_status } = req.body;
-    const adminId = req.user._id;
+    const adminId = req.adminId;
 
     try {
         const duplicateQuery = {
@@ -57,9 +57,20 @@ router.post("/add-new-student", userAuth, async (req, res) => {
 
 router.get("/get-all-students-of-institute", userAuth, async (req, res) => {
     try {
-        const adminId = req.user._id;
-        const students = await Student.find({ adminId }).populate('batchId');
-        return res.status(200).json(students);
+        const adminId = req.adminId;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const skip = (page - 1) * limit;
+
+        const [total, data] = await Promise.all([
+            Student.countDocuments({ adminId }),
+            Student.find({ adminId }).populate('batchId').skip(skip).limit(limit)
+        ]);
+
+        return res.status(200).json({
+            data,
+            pagination: { total, page, limit, totalPages: Math.ceil(total / limit) }
+        });
     } catch (error) {
         console.error("Error fetching students:", error);
         return res.status(500).json({ message: "Failed to fetch students", error: error.message });
@@ -68,7 +79,7 @@ router.get("/get-all-students-of-institute", userAuth, async (req, res) => {
 
 router.get("/get-students-grouped-by-batch", userAuth, async (req, res) => {
     try {
-        const adminId = req.user._id;
+        const adminId = req.adminId;
 
         const groupedStudents = await Student.aggregate([
             {
@@ -142,7 +153,7 @@ router.get("/get-students-grouped-by-batch", userAuth, async (req, res) => {
 router.delete("/delete-student/:id", userAuth, async (req, res) => {
     try {
         const { id } = req.params;
-        const adminId = req.user._id;
+        const adminId = req.adminId;
         const response = await Student.deleteOne({ adminId, _id: id });
         // console.log(response);
         return res.status(200).json(response);
@@ -154,7 +165,7 @@ router.delete("/delete-student/:id", userAuth, async (req, res) => {
 
 router.patch("/update-student/:id", userAuth, async (req, res) => {
     const { id } = req.params;
-    const adminId = req.user._id;
+    const adminId = req.adminId;
     const updateData = req.body;
 
     try {
@@ -219,10 +230,10 @@ router.patch("/update-student/:id", userAuth, async (req, res) => {
 
 router.get('/attendance/summary', userAuth, async (req, res) => {
     try {
-        if (!req.user || !req.user._id) {
+        if (!req.adminId) {
             return res.status(401).json({ message: 'Unauthorized: User not authenticated' });
         }
-        const adminId = req.user._id;
+        const adminId = new mongoose.Types.ObjectId(req.adminId);
         const studentId = req.query.studentId;
 
         const matchStage = { adminId };
@@ -235,6 +246,13 @@ router.get('/attendance/summary', userAuth, async (req, res) => {
         if (req.query.subjectId) {
             matchStage.subjectId = new mongoose.Types.ObjectId(req.query.subjectId);
         }
+
+        const startDate = req.query.startDate || null; // 'YYYY-MM-DD'
+        const endDate = req.query.endDate || null;     // 'YYYY-MM-DD'
+        const dateRangeConditions = [
+            ...(startDate ? [{ $gte: ['$classes.date', startDate] }] : []),
+            ...(endDate ? [{ $lte: ['$classes.date', endDate] }] : []),
+        ];
 
         const summary = await Student.aggregate([
             { $match: matchStage },
@@ -308,8 +326,8 @@ router.get('/attendance/summary', userAuth, async (req, res) => {
                                     $and: [
                                         { $eq: ['$classes.updated', true] },
                                         { $eq: ['$classes.hasHeld', true] },
-                                        // Filter classes on or after admission_date
                                         { $gte: ['$classes.date', { $dateToString: { format: '%Y-%m-%d', date: '$$admissionDate' } }] },
+                                        ...dateRangeConditions,
                                     ],
                                 },
                             },
@@ -358,8 +376,8 @@ router.get('/attendance/summary', userAuth, async (req, res) => {
                                     $and: [
                                         { $eq: ['$classes.updated', true] },
                                         { $eq: ['$classes.hasHeld', true] },
-                                        // Filter classes on or after admission_date
                                         { $gte: ['$classes.date', { $dateToString: { format: '%Y-%m-%d', date: '$$admissionDate' } }] },
+                                        ...dateRangeConditions,
                                     ],
                                 },
                             },
@@ -466,7 +484,7 @@ router.post("/bulk-update-fee-status", userAuth, async (req, res) => {
 
 router.post("/ensure-current-month-fee-status", userAuth, async (req, res) => {
     try {
-        const adminId = req.user._id;
+        const adminId = req.adminId;
         const currentDate = new Date();
         const currentMonth = currentDate.getMonth();
         const currentYear = currentDate.getFullYear();
@@ -510,9 +528,9 @@ router.post("/ensure-current-month-fee-status", userAuth, async (req, res) => {
 // Fee Dashboard Summary Route
 router.get("/fees/dashboard-summary", userAuth, async (req, res) => {
     try {
-        const adminId = req.user._id;
+        const adminId = req.adminId;
         const targetMonthYear = req.query.month || `${new Date().toLocaleString("default", { month: "long" })} ${new Date().getFullYear()}`;
-        
+
         const [monthName, yearStr] = targetMonthYear.split(" ");
         const targetDate = new Date(`${monthName} 1, ${yearStr} UTC`);
         const targetMonthNum = targetDate.getUTCMonth();
@@ -603,7 +621,7 @@ router.get("/fees/dashboard-summary", userAuth, async (req, res) => {
 // Fee List with Pagination & Filtering
 router.get("/fees/list", userAuth, async (req, res) => {
     try {
-        const adminId = req.user._id;
+        const adminId = req.adminId;
         const targetMonthYear = req.query.month || `${new Date().toLocaleString("default", { month: "long" })} ${new Date().getFullYear()}`;
         const batchFilter = req.query.batchId || "";
         const subjectFilter = req.query.subject || "";

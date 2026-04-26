@@ -9,8 +9,8 @@ const useFetchTests = (batchId) => {
     useEffect(() => {
         const fetchTests = async () => {
             try {
-                const response = await axiosInstance.get('/api/test/getAllTests', { withCredentials: true });
-                dispatch(setTests(response.data));
+                const response = await axiosInstance.get('test/getAllTests', { withCredentials: true });
+                dispatch(setTests(response.data.data));
             } catch (error) {
                 console.error('Failed to fetch tests', error);
             }

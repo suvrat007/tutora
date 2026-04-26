@@ -33,8 +33,8 @@ const TeacherPage = () => {
     const [pickerSubject, setPickerSubject] = useState("");
 
     useEffect(() => {
-        axiosInstance.get("/api/teacher/all")
-            .then(res => dispatch(setTeachers(res.data)))
+        axiosInstance.get('teacher/all')
+            .then(res => dispatch(setTeachers(res.data.data)))
             .catch(() => toast.error("Failed to load teachers"));
     }, [dispatch]);
 
@@ -141,11 +141,11 @@ const TeacherPage = () => {
                 teaching_batches: form.teaching_batches.map(id => ({ batch_id: id })),
             };
             if (editing) {
-                const res = await axiosInstance.put(`/api/teacher/update/${editing._id}`, payload);
+                const res = await axiosInstance.put(`teacher/update/${editing._id}`, payload);
                 dispatch(updateTeacher(res.data));
                 toast.success("Teacher updated");
             } else {
-                const res = await axiosInstance.post("/api/teacher/add", payload);
+                const res = await axiosInstance.post('teacher/add', payload);
                 dispatch(addTeacher(res.data));
                 toast.success("Teacher added");
             }
@@ -162,7 +162,7 @@ const TeacherPage = () => {
     const handleDelete = async () => {
         setDeleting(true);
         try {
-            await axiosInstance.delete(`/api/teacher/delete/${deleteId}`);
+            await axiosInstance.delete(`teacher/delete/${deleteId}`);
             dispatch(removeTeacher(deleteId));
             toast.success("Teacher deleted");
         } catch {

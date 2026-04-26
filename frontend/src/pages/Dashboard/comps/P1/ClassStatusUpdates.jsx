@@ -47,7 +47,7 @@ const ClassStatusUpdates = () => {
 
         try {
             setLoadingStates(prev => ({ ...prev, [index]: true }));
-            await axiosInstance.post("/api/classLog/add-class-updates", { updates: [payload] }, { withCredentials: true });
+            await axiosInstance.post("classLog/add-class-updates", { updates: [payload] }, { withCredentials: true });
             toast.success("Class updated!");
             fetchClassLogs();
             setOpenIndex(null);

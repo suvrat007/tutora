@@ -120,10 +120,10 @@ const CreateEditBatch = ({ onClose, onBatchCreated, onBatchUpdated, setRerender,
             };
             let response;
             if (isEditMode) {
-                response = await axiosInstance.patch(`/api/batch/update-batch/${batchToEdit._id}`, sortedBatchData, { withCredentials: true });
+                response = await axiosInstance.patch(`batch/update-batch/${batchToEdit._id}`, sortedBatchData, { withCredentials: true });
                 onBatchUpdated?.();
             } else {
-                response = await axiosInstance.post('/api/batch/add-new-batch', sortedBatchData, { withCredentials: true });
+                response = await axiosInstance.post('batch/add-new-batch', sortedBatchData, { withCredentials: true });
                 onBatchCreated?.();
             }
             setRerender?.(prev => !prev);

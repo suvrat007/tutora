@@ -14,7 +14,7 @@ const useLogoutAdmin = () => {
 
     const handleLogout = async () => {
         try {
-            await axiosInstance.post("/api/auth/logout", {}, {
+            await axiosInstance.post('auth/logout', {}, {
                 withCredentials: true,
             });
 

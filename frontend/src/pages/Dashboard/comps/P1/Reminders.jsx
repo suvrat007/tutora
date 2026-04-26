@@ -13,7 +13,7 @@ const Reminders = () => {
     useEffect(() => {
         const fetchReminders = async () => {
             try {
-                const res = await axiosInstance.get("/api/reminder/get-reminder", {
+                const res = await axiosInstance.get("reminder/get-reminder", {
                     withCredentials: true,
                 });
                 const now = new Date();
@@ -61,7 +61,7 @@ const Reminders = () => {
         setIsSaving(true);
         try {
             for (let id of markedDoneIds) {
-                await axiosInstance.delete(`/api/reminder/delete-reminder/${id}`, {
+                await axiosInstance.delete(`reminder/delete-reminder/${id}`, {
                     withCredentials: true,
                 });
             }

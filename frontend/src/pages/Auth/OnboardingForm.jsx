@@ -83,13 +83,13 @@ const OnboardingForm = ({ adminCreds }) => {
         try {
             if (adminCreds?.isGoogleUser) {
                 // Google user already has an account — just create the institute
-                await axiosInstance.post("/api/auth/complete-onboarding", { ...formData }, { withCredentials: true });
+                await axiosInstance.post('auth/complete-onboarding', { ...formData }, { withCredentials: true });
             } else {
                 if (!adminCreds?.name || !adminCreds?.emailId || !adminCreds?.password) {
                     setError("Admin credentials are missing. Cannot proceed with onboarding.");
                     return;
                 }
-                await axiosInstance.post("/api/auth/signup", {
+                await axiosInstance.post('auth/signup', {
                     name: adminCreds.name,
                     emailId: adminCreds.emailId,
                     password: adminCreds.password,
@@ -173,9 +173,9 @@ const OnboardingForm = ({ adminCreds }) => {
                                 <label htmlFor="phoneNumber" className="block text-sm sm:text-base font-medium text-[#9b8778]">Institute Contact Phone</label>
                                 <Input
                                     id="phoneNumber"
-                                    type="text"
+                                    type="tel"
                                     name="phone_number"
-                                    placeholder="e.g., +1234567890"
+                                    placeholder="+91 9876543210"
                                     value={formData.phone_number}
                                     onChange={handleChange}
                                     required

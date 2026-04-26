@@ -78,7 +78,7 @@ const TodaysClasses = () => {
                     }));
 
                     await axiosInstance.post(
-                        "/api/classLog/add-class-updates",
+                        "classLog/add-class-updates",
                         { updates: updatesToSend },
                         { withCredentials: true }
                     );

@@ -2,11 +2,10 @@ import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import useAttendanceSummary from '@/pages/Attendence/hooks/useAttendanceSummary';
 
-export const useCombinedStudentAttendance = (batchName, subjectName, batches) => {
+export const useCombinedStudentAttendance = (batchName, subjectName, batches, startDate = null, endDate = null) => {
     const students = useSelector((state) => state.students.groupedStudents) || [];
 
-    // Fetch all attendance from API — filtering is done client-side below
-    const { summary: attendance, loading, error: attendanceError } = useAttendanceSummary('', '', batches, null);
+    const { summary: attendance, loading, error: attendanceError } = useAttendanceSummary('', '', batches, null, startDate, endDate);
 
     const combinedData = useMemo(() => {
         if (!Array.isArray(students) || !Array.isArray(batches)) {
@@ -150,7 +149,7 @@ export const useCombinedStudentAttendance = (batchName, subjectName, batches) =>
             console.error('Error in useCombinedStudentAttendance:', err);
             return { data: [], error: 'An error occurred while processing student data' };
         }
-    }, [batchName, subjectName, batches, students, attendance]);
+    }, [batchName, subjectName, batches, students, attendance, startDate, endDate]);
 
     if (attendanceError) return { data: [], error: attendanceError, loading };
     return { ...combinedData, loading };

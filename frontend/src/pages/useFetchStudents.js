@@ -7,7 +7,7 @@ const useFetchStudents = () => {
 
     const fetchGroupedStudents = async () => {
         try {
-            const response = await axiosInstance.get("/api/student/get-students-grouped-by-batch", {
+            const response = await axiosInstance.get('student/get-students-grouped-by-batch', {
                 withCredentials: true,
             });
             dispatch(setGroupedStudents(response.data));

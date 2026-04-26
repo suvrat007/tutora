@@ -56,7 +56,7 @@ const BatchPage = () => {
         setBatchToDelete(null);
         setIsLoading(true);
         try {
-            const response = await axiosInstance.delete(`/api/batch/delete-batch/${id}`, {
+            const response = await axiosInstance.delete(`batch/delete-batch/${id}`, {
                 data: { shouldDeleteStudents },
                 withCredentials: true,
             });

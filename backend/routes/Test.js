@@ -15,7 +15,7 @@ router.post('/createTest', userAuth, async (req, res) => {
         let initialStudentResults = studentResults;
         if (initialStudentResults.length === 0 && batchId) {
             // Automatically allocate test to respective students in the batch
-            const studentsInBatch = await Student.find({ batchId, adminId: req.user._id });
+            const studentsInBatch = await Student.find({ batchId, adminId: req.adminId });
             initialStudentResults = studentsInBatch.map(student => ({
                 studentId: student._id,
                 appeared: false,
@@ -24,7 +24,7 @@ router.post('/createTest', userAuth, async (req, res) => {
         }
 
         const newTest = new Test({
-            adminId: req.user._id,
+            adminId: req.adminId,
             testName,
             batchId,
             subjectId,
@@ -37,8 +37,8 @@ router.post('/createTest', userAuth, async (req, res) => {
         await newTest.save();
 
         if (status === 'scheduled') {
-            const batch = await Batch.findById(newTest.batchId);
-            const subject = batch ? batch.subject.id(newTest.subjectId) : null;
+            const batch = newTest.batchId ? await Batch.findById(newTest.batchId) : null;
+            const subject = (batch && newTest.subjectId) ? batch.subject.id(newTest.subjectId) : null;
 
             let reminderMessage = `Test: ${newTest.testName}`;
             if (batch && subject) {
@@ -48,9 +48,7 @@ router.post('/createTest', userAuth, async (req, res) => {
             }
 
             const newReminder = new Reminder({
-                adminId: req.user._id,
-                batchId: newTest.batchId.toString(),
-                subjectId: newTest.subjectId,
+                adminId: req.adminId,
                 reminderDate: newTest.testDate,
                 reminder: reminderMessage,
                 batchName: batch ? batch.name : undefined,
@@ -68,13 +66,24 @@ router.post('/createTest', userAuth, async (req, res) => {
 // Get all tests for a batch with optional filtering
 router.get('/getAllTests', userAuth, async (req, res) => {
     try {
-        const query = { adminId: req.user._id };
+        const query = { adminId: req.adminId };
         if (req.query.batchId) {
             query.batchId = req.query.batchId;
         }
-        const tests = await Test.find(query).populate('studentResults.studentId', 'name grade');
 
-        res.json(tests);
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const skip = (page - 1) * limit;
+
+        const [total, data] = await Promise.all([
+            Test.countDocuments(query),
+            Test.find(query)
+                .populate('studentResults.studentId', 'name grade')
+                .sort({ testDate: -1 })
+                .skip(skip).limit(limit)
+        ]);
+
+        res.json({ data, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

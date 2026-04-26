@@ -68,7 +68,7 @@ const EditClassModal = ({ isOpen, onClose, classInfo, onUpdate }) => {
 
         try {
             setLoading(true);
-            const response = await axiosInstance.post("/api/classLog/add-class-updates", payload, { withCredentials: true });
+            const response = await axiosInstance.post("classLog/add-class-updates", payload, { withCredentials: true });
             notify("Class updated successfully!", "success");
             onUpdate();
             onClose();

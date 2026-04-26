@@ -35,7 +35,7 @@ const Fees = () => {
     const fetchSummary = useCallback(async () => {
         setLoading(true);
         try {
-            const response = await axiosInstance.get(`/api/student/fees/dashboard-summary?month=${encodeURIComponent(monthFilter === "Present Month" ? currentMonth : monthFilter)}`, { withCredentials: true });
+            const response = await axiosInstance.get(`student/fees/dashboard-summary?month=${encodeURIComponent(monthFilter === "Present Month" ? currentMonth : monthFilter)}`, { withCredentials: true });
             setSummary(response.data);
         } catch (error) {
             console.error("Failed to fetch fee dashboard summary", error);

@@ -1,3 +1,4 @@
+// Fields: camelCase for refs/meta (adminId, batch_id, subject_id), snake_case for user-facing data (hasHeld, updated)
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
@@ -19,8 +20,12 @@ const ClassLogSchema = new Schema({
     ]
 }, {
     indexes: [
+        // Enforces one ClassLog doc per admin+batch+subject combination
         { key: { adminId: 1, batch_id: 1, subject_id: 1 }, unique: true }
     ]
 });
+
+// Optimizes ClassLog.find({ adminId }) queries for attendance status and today-pending
+ClassLogSchema.index({ adminId: 1 });
 
 module.exports = mongoose.model('ClassLog', ClassLogSchema);

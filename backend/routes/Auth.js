@@ -37,15 +37,16 @@ router.post('/google-auth',async (req, res) => {
             isNewUser = true;
         }
 
-        // Generate JWT token (same as your existing flow)
-        const token = jwt.sign({_id: user._id}, process.env.JWT_KEY, {expiresIn: '1d'});
+        // Token embeds adminId + instituteId so middleware skips a DB round-trip per request.
+        // Refresh strategy: reissue on /api/auth/login or /api/auth/google-auth; no silent refresh yet.
+        const token = jwt.sign({ _id: user._id, instituteId: user.institute_info || null }, process.env.JWT_KEY, { expiresIn: '7d' });
 
-        res.cookie("token",token,{
+        res.cookie("token", token, {
             httpOnly: true,
             secure: true,
             sameSite: 'none',
-            path:'/',
-            maxAge:3600000*24
+            path: '/',
+            maxAge: 3600000 * 24 * 7,
         })
 
         const userObj = user.toObject();
@@ -96,14 +97,14 @@ router.post("/signup", async (req, res) => {
         newUser.institute_info = newInstitute._id;
         await newUser.save();
 
-        const token = jwt.sign({ _id: newUser._id }, process.env.JWT_KEY, { expiresIn: "1d" });
+        const token = jwt.sign({ _id: newUser._id, instituteId: newInstitute._id }, process.env.JWT_KEY, { expiresIn: '7d' });
 
-        res.cookie("token",token,{
+        res.cookie("token", token, {
             httpOnly: true,
             secure: true,
             sameSite: 'none',
-            path:'/',
-            maxAge:3600000*24
+            path: '/',
+            maxAge: 3600000 * 24 * 7,
         })
 
         const userObject = newUser.toObject();
@@ -131,13 +132,13 @@ router.post("/login", async (req, res) => {
             return res.status(403).json({ message: 'Invalid Credentials '});
         }
 
-        const token =jwt.sign({_id:user._id},process.env.JWT_KEY,{expiresIn: '1d'});
-        res.cookie("token",token,{
+        const token = jwt.sign({ _id: user._id, instituteId: user.institute_info || null }, process.env.JWT_KEY, { expiresIn: '7d' });
+        res.cookie("token", token, {
             httpOnly: true,
             secure: true,
             sameSite: 'none',
-            path:'/',
-            maxAge:3600000*24
+            path: '/',
+            maxAge: 3600000 * 24 * 7,
         })
 
         const userObj = user.toObject();
@@ -162,7 +163,8 @@ router.post("/logout", async (req, res) => {
 // Called after Google OAuth for new users who haven't set up an institute yet
 router.post('/complete-onboarding', userAuth, async (req, res) => {
     try {
-        const admin = req.user;
+        const admin = await Admin.findById(req.adminId);
+        if (!admin) return res.status(404).json({ message: 'Admin not found' });
 
         if (admin.institute_info) {
             return res.status(400).json({ message: 'Institute already exists' });
