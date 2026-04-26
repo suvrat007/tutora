@@ -3,10 +3,4 @@
 .env.*
 *.env
 
-# Test files
-*.test.js
-*.test.jsx
-*.spec.js
-*.spec.jsx
-
 node_modules

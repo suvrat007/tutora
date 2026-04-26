@@ -247,6 +247,13 @@ router.get('/attendance/summary', userAuth, async (req, res) => {
             matchStage.subjectId = new mongoose.Types.ObjectId(req.query.subjectId);
         }
 
+        const startDate = req.query.startDate || null; // 'YYYY-MM-DD'
+        const endDate = req.query.endDate || null;     // 'YYYY-MM-DD'
+        const dateRangeConditions = [
+            ...(startDate ? [{ $gte: ['$classes.date', startDate] }] : []),
+            ...(endDate ? [{ $lte: ['$classes.date', endDate] }] : []),
+        ];
+
         const summary = await Student.aggregate([
             { $match: matchStage },
             // Include admission_date in the projection
@@ -319,8 +326,8 @@ router.get('/attendance/summary', userAuth, async (req, res) => {
                                     $and: [
                                         { $eq: ['$classes.updated', true] },
                                         { $eq: ['$classes.hasHeld', true] },
-                                        // Filter classes on or after admission_date
                                         { $gte: ['$classes.date', { $dateToString: { format: '%Y-%m-%d', date: '$$admissionDate' } }] },
+                                        ...dateRangeConditions,
                                     ],
                                 },
                             },
@@ -369,8 +376,8 @@ router.get('/attendance/summary', userAuth, async (req, res) => {
                                     $and: [
                                         { $eq: ['$classes.updated', true] },
                                         { $eq: ['$classes.hasHeld', true] },
-                                        // Filter classes on or after admission_date
                                         { $gte: ['$classes.date', { $dateToString: { format: '%Y-%m-%d', date: '$$admissionDate' } }] },
+                                        ...dateRangeConditions,
                                     ],
                                 },
                             },

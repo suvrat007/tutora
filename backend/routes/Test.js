@@ -37,8 +37,8 @@ router.post('/createTest', userAuth, async (req, res) => {
         await newTest.save();
 
         if (status === 'scheduled') {
-            const batch = await Batch.findById(newTest.batchId);
-            const subject = batch ? batch.subject.id(newTest.subjectId) : null;
+            const batch = newTest.batchId ? await Batch.findById(newTest.batchId) : null;
+            const subject = (batch && newTest.subjectId) ? batch.subject.id(newTest.subjectId) : null;
 
             let reminderMessage = `Test: ${newTest.testName}`;
             if (batch && subject) {
@@ -49,8 +49,6 @@ router.post('/createTest', userAuth, async (req, res) => {
 
             const newReminder = new Reminder({
                 adminId: req.adminId,
-                batchId: newTest.batchId.toString(),
-                subjectId: newTest.subjectId,
                 reminderDate: newTest.testDate,
                 reminder: reminderMessage,
                 batchName: batch ? batch.name : undefined,
