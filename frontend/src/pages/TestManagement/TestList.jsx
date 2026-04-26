@@ -12,6 +12,12 @@ const statusColors = {
     [TEST_STATUS.CANCELLED]:  'bg-red-100 text-red-700',
 };
 
+const isOverdue = (test) =>
+    test.status === TEST_STATUS.SCHEDULED && new Date(test.testDate) < new Date();
+
+const isFutureScheduled = (test) =>
+    test.status === TEST_STATUS.SCHEDULED && new Date(test.testDate) >= new Date();
+
 const TestList = ({ batches, tests, setEditingTest, setSelectedTest, fetchTests }) => {
     const [testToDelete, setTestToDelete] = useState(null);
     const [deleting, setDeleting] = useState(false);
@@ -61,13 +67,17 @@ const TestList = ({ batches, tests, setEditingTest, setSelectedTest, fetchTests 
                                     initial={{ opacity: 0, y: 16 }}
                                     animate={{ opacity: 1, y: 0, transition: { delay: i * 0.05 } }}
                                     exit={{ opacity: 0, y: -16 }}
-                                    className="p-4 border border-[#e6c8a8] rounded-2xl bg-[#f8ede3] shadow-sm hover:shadow-md hover:bg-[#f0d9c0] transition-all cursor-pointer"
-                                    onClick={() => setSelectedTest(test)}
+                                    className={`p-4 border border-[#e6c8a8] rounded-2xl bg-[#f8ede3] shadow-sm transition-all ${isFutureScheduled(test) ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-md hover:bg-[#f0d9c0] cursor-pointer'}`}
+                                    onClick={() => !isFutureScheduled(test) && setSelectedTest(test)}
                                 >
                                     <div className="flex justify-between items-start mb-2">
                                         <h3 className="font-bold text-[#5a4a3c] text-sm leading-snug pr-2">{test.testName}</h3>
-                                        <span className={`text-xs px-2 py-0.5 rounded-full font-semibold shrink-0 capitalize ${statusColors[test.status] || 'bg-[#f0d9c0] text-[#7b5c4b]'}`}>
-                                            {test.status}
+                                        <span className={`text-xs px-2 py-0.5 rounded-full font-semibold shrink-0 capitalize ${
+                                            isOverdue(test)
+                                                ? 'bg-amber-100 text-amber-700'
+                                                : statusColors[test.status] || 'bg-[#f0d9c0] text-[#7b5c4b]'
+                                        }`}>
+                                            {isOverdue(test) ? 'Needs Update' : test.status}
                                         </span>
                                     </div>
                                     <p className="text-xs text-[#7b5c4b] mb-0.5">{getBatchName(test.batchId)}</p>
@@ -75,12 +85,18 @@ const TestList = ({ batches, tests, setEditingTest, setSelectedTest, fetchTests 
                                     <p className="text-xs text-[#7b5c4b] mb-0.5">{formatDateTime(test.testDate)}</p>
                                     <p className="text-xs text-[#7b5c4b]">Max: <span className="font-semibold text-[#5a4a3c]">{test.maxMarks}</span>{test.passMarks > 0 && <span> &middot; Pass: <span className="font-semibold text-[#5a4a3c]">{test.passMarks}</span></span>}</p>
                                     <div className="mt-3 flex gap-2" onClick={e => e.stopPropagation()}>
+                                        {isFutureScheduled(test) ? (
+                                            <span className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[#b0998a] bg-[#f0d9c0] rounded-lg cursor-not-allowed select-none">
+                                                Test not held yet
+                                            </span>
+                                        ) : (
                                         <button
                                             onClick={() => setSelectedTest(test)}
                                             className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[#5a4a3c] bg-[#e0c4a8] rounded-lg hover:bg-[#d8bca0] transition-colors"
                                         >
                                             <FiEdit2 className="w-3 h-3" /> Results
                                         </button>
+                                        )}
                                         <button
                                             onClick={() => setTestToDelete({ testId: test._id, batchId: test.batchId })}
                                             className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"

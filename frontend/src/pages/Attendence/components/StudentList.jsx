@@ -13,6 +13,7 @@ export const StudentList = ({
     markAllPreviouslyPresent,
     saving,
     readOnly,
+    constraintError,
     batchName,
     subjectName,
     date,
@@ -85,12 +86,17 @@ export const StudentList = ({
             </div>
 
             {/* Read-only notice */}
-            {readOnly && students.length > 0 && (
+            {readOnly && constraintError ? (
+                <div className="flex items-center gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-3">
+                    <FaLock className="w-3 h-3 shrink-0" />
+                    <span>{constraintError}</span>
+                </div>
+            ) : readOnly && students.length > 0 ? (
                 <div className="flex items-center gap-2 text-xs text-[#7b5c4b] bg-[#f0d9c0] border border-[#e6c8a8] rounded-lg px-3 py-2 mb-3">
                     <FaLock className="w-3 h-3 shrink-0 text-[#8b5e3c]" />
                     <span>Select batch, subject and date above to mark attendance</span>
                 </div>
-            )}
+            ) : null}
 
             {/* List */}
             <div className="flex-1 overflow-y-auto">
@@ -136,14 +142,11 @@ export const StudentList = ({
                     </AnimatePresence>
                 ) : (
                     <div className="flex flex-col items-center justify-center h-full text-[#7b5c4b] gap-3 py-10">
-                        {(batchName && subjectName && date) ? (
-                            <p className="text-sm text-center">No students found for this selection</p>
-                        ) : (
-                            <>
-                                <Loader2 className="w-8 h-8 animate-spin text-[#e0c4a8]" />
-                                <p className="text-sm text-center">Loading students...</p>
-                            </>
-                        )}
+                        <p className="text-sm text-center text-[#b0998a]">
+                            {batchName && subjectName && date
+                                ? "No students found for this selection"
+                                : "Select batch, subject and date to load students"}
+                        </p>
                     </div>
                 )}
             </div>

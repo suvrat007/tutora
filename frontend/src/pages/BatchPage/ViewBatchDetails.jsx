@@ -1,12 +1,12 @@
 import { useState,useEffect } from "react";
 import { useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
-import useFetchStudents from "@/pages/useFetchStudents.js";
+import useFetchStudents from "@/hooks/useFetchStudents.js";
 import { BookOpen, Users, FileText, IndianRupee } from "lucide-react";
 import { AiOutlineClose, AiOutlineEdit, AiOutlinePlus } from "react-icons/ai";
 import CreateEditBatch from "@/pages/BatchPage/CreateEditBatch.jsx";
 import AddStudentModal from "@/pages/BatchPage/AddStudentModal.jsx";
-import useFetchBatches from "@/pages/useFetchBatches.js";
+import useFetchBatches from "@/hooks/useFetchBatches.js";
 
 const fadeInUp = {
     hidden: { opacity: 0, y: 20 },

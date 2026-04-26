@@ -107,10 +107,10 @@ const TodaysClasses = () => {
     };
 
     return (
-        <div className="bg-[#f8ede3] rounded-3xl shadow-xl shadow-[0_8px_24px_rgba(0,0,0,0.15)] p-6 h-full flex flex-col overflow-hidden border border-[#e6c8a8]">
+        <div className="bg-[#f8ede3] rounded-3xl shadow-xl shadow-[0_8px_24px_rgba(0,0,0,0.15)] p-6 sm:h-full flex flex-col overflow-hidden border border-[#e6c8a8]">
             <div className="sticky top-0 z-10 bg-[#f8ede3] pb-3">
-                <h1 className="text-xl font-semibold text-[#5a4a3c] border-b border-[#e6c8a8] pb-2 flex items-center gap-2">
-                    <CalendarDays className="w-6 h-6 text-[#e0c4a8]" />
+                <h1 className="text-lg font-semibold text-[#5a4a3c] border-b border-[#e6c8a8] pb-2.5 flex items-center gap-2">
+                    <CalendarDays className="w-5 h-5 text-[#c47d3e]" />
                     Today's Classes
                 </h1>
             </div>

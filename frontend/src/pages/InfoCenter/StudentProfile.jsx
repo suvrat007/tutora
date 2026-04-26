@@ -13,7 +13,7 @@ import {
 import Card from "@/pages/Dashboard/comps/uii/Card.jsx";
 import { useSelector } from "react-redux";
 import { useState, useMemo } from 'react';
-import WrapperCard from "@/utilities/WrapperCard.jsx";
+import WrapperCard from "@/components/ui/WrapperCard.jsx";
 
 
 // StatusBadge with consistent status colors (retaining green/red/yellow for clarity)
@@ -235,76 +235,65 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
             </div>
 
             <div className="overflow-y-auto">
-                <div className="sm:flex gap-6  sm:h-64 mb-4">
+                <div className="sm:flex gap-6 mb-4">
                     <WrapperCard className="flex-1 ">
                         <div
-                            className="w-full h-full p-6 flex flex-col justify-between bg-[#f8ede3] border-[#ddb892] rounded-2xl shadow-md">
-                            <div>
-                                <h2 className="text-xl font-semibold text-[#4a3a2c] mb-4 flex items-center">
-                                    <FaUser className="w-5 h-5 mr-2 text-[#6b4c3b]"/>
-                                    General Information
-                                </h2>
-                                <div className="space-y-3">
-                                    <div className="flex items-center">
-                                        <span className="font-medium text-[#6b4c3b] w-20">Name:</span>
-                                        <span className="text-[#4a3a2c]">{student.studentName || 'N/A'}</span>
-                                    </div>
-                                    <div className="flex items-center">
-                                        <span className="font-medium text-[#6b4c3b] w-20">Grade:</span>
-                                        <span className="text-[#4a3a2c]">{student.grade || 'N/A'}</span>
-                                    </div>
-                                    <div className="flex items-center">
-                                        <span className="font-medium text-[#6b4c3b] w-20">Batch:</span>
-                                        <span className="text-[#4a3a2c]">{student.batchName || 'N/A'}</span>
-                                    </div>
-                                    <div className="flex items-start">
-                                        <span className="font-medium text-[#6b4c3b] w-20">Subjects:</span>
-                                        <span className="text-[#4a3a2c]">{student.subjects || 'N/A'}</span>
-                                    </div>
+                            className="w-full p-6 flex flex-col bg-[#f8ede3] border-[#ddb892] rounded-2xl shadow-md">
+                            <h2 className="text-xl font-semibold text-[#4a3a2c] mb-4 flex items-center">
+                                <FaUser className="w-5 h-5 mr-2 text-[#6b4c3b]"/>
+                                General Information
+                            </h2>
+                            <div className="space-y-3">
+                                <div className="flex items-start">
+                                    <span className="font-medium text-[#6b4c3b] w-20 shrink-0">Name:</span>
+                                    <span className="text-[#4a3a2c] break-words min-w-0">{student.studentName || 'N/A'}</span>
+                                </div>
+                                <div className="flex items-start">
+                                    <span className="font-medium text-[#6b4c3b] w-20 shrink-0">Grade:</span>
+                                    <span className="text-[#4a3a2c]">{student.grade || 'N/A'}</span>
+                                </div>
+                                <div className="flex items-start">
+                                    <span className="font-medium text-[#6b4c3b] w-20 shrink-0">Batch:</span>
+                                    <span className="text-[#4a3a2c] break-words min-w-0">{student.batchName || 'N/A'}</span>
+                                </div>
+                                <div className="flex items-start">
+                                    <span className="font-medium text-[#6b4c3b] w-20 shrink-0">Subjects:</span>
+                                    <span className="text-[#4a3a2c] break-words min-w-0">{student.subjects || 'N/A'}</span>
                                 </div>
                             </div>
                         </div>
                     </WrapperCard>
 
                     <WrapperCard className="flex-1">
-                        <div className="w-full h-full p-6 bg-[#f8ede3] border-[#ddb892] rounded-2xl shadow-md">
+                        <div className="w-full p-6 bg-[#f8ede3] border-[#ddb892] rounded-2xl shadow-md">
                             <h2 className="text-xl font-semibold text-[#4a3a2c] mb-4 flex items-center">
                                 <FaSchool className="w-5 h-5 mr-2 text-[#6b4c3b]"/>
                                 Personal Information
                             </h2>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <div>
-                                        <span className="font-medium text-[#6b4c3b] block">School:</span>
-                                        <span className="text-[#4a3a2c] text-sm">{student.school_name || 'N/A'}</span>
-                                    </div>
-                                    <div>
-                                        <span className="font-medium text-[#6b4c3b] block">Admission Date:</span>
-                                        <span
-                                            className="text-[#4a3a2c] text-sm">{formatDate(student.admission_date)}</span>
-                                    </div>
-                                    <div>
-                                        <span className="font-medium text-[#6b4c3b] block">Student Phone:</span>
-                                        <span
-                                            className="text-[#4a3a2c] text-sm">{student.contact_info?.phoneNumbers?.student || 'N/A'}</span>
-                                    </div>
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                                <div>
+                                    <span className="font-medium text-[#6b4c3b] block">School:</span>
+                                    <span className="text-[#4a3a2c] text-sm break-words">{student.school_name || 'N/A'}</span>
                                 </div>
-                                <div className="space-y-2">
-                                    <div>
-                                        <span className="font-medium text-[#6b4c3b] block">Mom Phone:</span>
-                                        <span
-                                            className="text-[#4a3a2c] text-sm">{student.contact_info?.phoneNumbers?.mom || 'N/A'}</span>
-                                    </div>
-                                    <div>
-                                        <span className="font-medium text-[#6b4c3b] block">Dad Phone:</span>
-                                        <span
-                                            className="text-[#4a3a2c] text-sm">{student.contact_info?.phoneNumbers?.dad || 'N/A'}</span>
-                                    </div>
-                                    <div>
-                                        <span className="font-medium text-[#6b4c3b] block">Student Email:</span>
-                                        <span
-                                            className="text-[#4a3a2c] text-sm">{student.contact_info?.emailIds?.student || 'N/A'}</span>
-                                    </div>
+                                <div>
+                                    <span className="font-medium text-[#6b4c3b] block">Mom Phone:</span>
+                                    <span className="text-[#4a3a2c] text-sm">{student.contact_info?.phoneNumbers?.mom || 'N/A'}</span>
+                                </div>
+                                <div>
+                                    <span className="font-medium text-[#6b4c3b] block">Admission Date:</span>
+                                    <span className="text-[#4a3a2c] text-sm">{formatDate(student.admission_date)}</span>
+                                </div>
+                                <div>
+                                    <span className="font-medium text-[#6b4c3b] block">Dad Phone:</span>
+                                    <span className="text-[#4a3a2c] text-sm">{student.contact_info?.phoneNumbers?.dad || 'N/A'}</span>
+                                </div>
+                                <div>
+                                    <span className="font-medium text-[#6b4c3b] block">Student Phone:</span>
+                                    <span className="text-[#4a3a2c] text-sm">{student.contact_info?.phoneNumbers?.student || 'N/A'}</span>
+                                </div>
+                                <div className="col-span-2">
+                                    <span className="font-medium text-[#6b4c3b] block">Student Email:</span>
+                                    <span className="text-[#4a3a2c] text-sm break-all">{student.contact_info?.emailIds?.student || 'N/A'}</span>
                                 </div>
                             </div>
                         </div>

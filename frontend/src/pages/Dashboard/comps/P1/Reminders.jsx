@@ -3,7 +3,7 @@ import axiosInstance from "@/utilities/axiosInstance";
 import { AnimatePresence, motion } from "framer-motion";
 import { notify } from '@/components/ui/Toast.jsx';
 
-const Reminders = () => {
+const Reminders = ({ refreshKey = 0 }) => {
     const [reminders, setReminders] = useState([]);
     const [markedDoneIds, setMarkedDoneIds] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -48,7 +48,7 @@ const Reminders = () => {
             }
         };
         fetchReminders();
-    }, []);
+    }, [refreshKey]);
 
     const toggleReminderDone = (id) => {
         setMarkedDoneIds((prev) =>
@@ -89,11 +89,9 @@ const Reminders = () => {
     };
 
     return (
-        <div className="px-6 py-3 border-b border-[#e6c8a8] flex flex-col h-full bg-[#f8ede3] rounded-3xl shadow-[0_8px_24px_rgba(0,0,0,0.15)]">
-            <div className="flex justify-between items-center">
-                <h1 className="text-lg font-semibold text-[#5a4a3c]">
-                     Reminders for Today
-                </h1>
+        <div className="px-6 py-4 border border-[#e6c8a8] flex flex-col sm:h-full bg-[#f8ede3] rounded-3xl shadow-xl">
+            <div className="flex justify-between items-center border-b border-[#e6c8a8] pb-2.5 mb-4">
+                <h1 className="text-lg font-semibold text-[#5a4a3c]">Reminders for Today</h1>
                 <motion.button
                     whileTap={{ scale: 0.95 }}
                     whileHover={{ scale: 1.03, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
@@ -108,7 +106,7 @@ const Reminders = () => {
                     {isSaving ? "Deleting..." : "Save Changes"}
                 </motion.button>
             </div>
-            <div className="flex-1 overflow-y-auto py-4 space-y-4">
+            <div className="flex-1 overflow-y-auto space-y-4">
                 {loading ? (
                     <p className="text-sm text-[#7b5c4b]">Loading reminders...</p>
                 ) : error ? (

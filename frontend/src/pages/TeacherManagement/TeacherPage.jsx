@@ -6,7 +6,7 @@ import { FaChalkboardTeacher } from "react-icons/fa";
 import { BookOpen } from "lucide-react";
 import axiosInstance from "@/utilities/axiosInstance.jsx";
 import { setTeachers, addTeacher, updateTeacher, removeTeacher } from "@/utilities/redux/teacherSlice.js";
-import WrapperCard from "@/utilities/WrapperCard.jsx";
+import WrapperCard from "@/components/ui/WrapperCard.jsx";
 import ConfirmationModal from "@/components/ui/ConfirmationModal.jsx";
 import toast from "react-hot-toast";
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import axiosInstance from "@/utilities/axiosInstance";
-import useFetchBatches from "@/pages/useFetchBatches.js";
+import useFetchBatches from "@/hooks/useFetchBatches.js";
 import { AiOutlineClose, AiOutlinePlus, AiOutlineMinus } from "react-icons/ai";
 import { notify } from '@/components/ui/Toast.jsx';
 

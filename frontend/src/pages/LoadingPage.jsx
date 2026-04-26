@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
-import useFetchBatches from "@/pages/useFetchBatches.js";
-import useFetchStudents from "@/pages/useFetchStudents.js";
-import useFetchClassLogs from "@/pages/useFetchClassLogs.js";
+import useFetchBatches from "@/hooks/useFetchBatches.js";
+import useFetchStudents from "@/hooks/useFetchStudents.js";
+import useFetchClassLogs from "@/hooks/useFetchClassLogs.js";
 import { FaUserGraduate, FaUserCheck, FaUniversity } from "react-icons/fa";
-import useFetchTests from "@/pages/useFetchTests.js";
+import useFetchTests from "@/hooks/useFetchTests.js";
 
 const steps = [
     { name: "Batches", icon: FaUserGraduate },

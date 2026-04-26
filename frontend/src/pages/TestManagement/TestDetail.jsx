@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import axiosInstance from '../../utilities/axiosInstance';
 import { Input } from '../../components/ui/input';
-import { API } from '../../utilities/constants';
+import { API, TEST_STATUS } from '../../utilities/constants';
 import { FiSettings } from 'react-icons/fi';
 import { formatDateTime } from '../../utilities/dateUtils';
 
@@ -11,11 +11,13 @@ const TestDetail = ({ test, fetchTests, setEditingTest }) => {
     const [results, setResults] = useState([]);
     const [saving, setSaving] = useState(false);
     const resultsRef = useRef(results);
+    const autoCompletedRef = useRef(false);
 
     useEffect(() => {
         setResults(test.studentResults || []);
         resultsRef.current = test.studentResults || [];
-    }, [test]);
+        autoCompletedRef.current = false;
+    }, [test._id]);
 
     const getSubjectName = (batchId, subjectId) => {
         const batch = batches.find(b => b._id === batchId);
@@ -32,6 +34,10 @@ const TestDetail = ({ test, fetchTests, setEditingTest }) => {
     };
 
     const saveToBackend = async (dataToSave) => {
+        const isOverdue = !autoCompletedRef.current
+            && test.status === TEST_STATUS.SCHEDULED
+            && new Date(test.testDate) < new Date();
+
         setSaving(true);
         try {
             const formattedResults = dataToSave.map(r => ({
@@ -39,7 +45,13 @@ const TestDetail = ({ test, fetchTests, setEditingTest }) => {
                 appeared: r.appeared,
                 marks: r.marks
             }));
-            await axiosInstance.put(API.UPDATE_TEST(test._id), { studentResults: formattedResults });
+            const payload = { studentResults: formattedResults };
+            if (isOverdue) payload.status = TEST_STATUS.COMPLETED;
+            await axiosInstance.put(API.UPDATE_TEST(test._id), payload);
+            if (isOverdue) {
+                autoCompletedRef.current = true;
+                fetchTests(test.batchId);
+            }
         } catch (error) {
             console.error('Failed to save test results', error);
         } finally {

@@ -6,12 +6,12 @@ import {
 } from 'lucide-react';
 
 import processClassLogs from './useClassLogProcessor';
-import useFetchClassLogs from '@/pages/useFetchClassLogs.js';
-import useFetchBatches from '@/pages/useFetchBatches.js';
-import useFetchStudents from '@/pages/useFetchStudents.js';
+import useFetchClassLogs from '@/hooks/useFetchClassLogs.js';
+import useFetchBatches from '@/hooks/useFetchBatches.js';
+import useFetchStudents from '@/hooks/useFetchStudents.js';
 
 import ClassesTable from './ClassesTable';
-import WrapperCard from '@/utilities/WrapperCard.jsx';
+import WrapperCard from '@/components/ui/WrapperCard.jsx';
 import EditInfoModal from '@/pages/InstiInfo/EditInfoModal.jsx';
 import LoadingPage from '@/pages/LoadingPage.jsx';
 

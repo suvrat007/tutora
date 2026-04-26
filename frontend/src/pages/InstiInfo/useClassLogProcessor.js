@@ -96,6 +96,7 @@ const processClassLogs = (classLogs, batches) => {
                 if (!scheduleDays.includes(dayOfWeek)) {
                     return {
                         ...existingClass,
+                        date: clsDateStr, // normalize to YYYY-MM-DD
                         status: 'Invalid schedule day',
                         error: 'Class date does not match schedule'
                     };
@@ -103,6 +104,7 @@ const processClassLogs = (classLogs, batches) => {
 
                 return {
                     ...existingClass,
+                    date: clsDateStr, // normalize to YYYY-MM-DD regardless of DB format
                     status: existingClass.updated
                         ? (existingClass.hasHeld ? 'Conducted' : 'Cancelled')
                         : 'No data recorded'

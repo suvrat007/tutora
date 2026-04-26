@@ -72,7 +72,7 @@ router.post("/add-class-updates", userAuth, async (req, res) => {
                     } else {
                         // Add new class
                         classLog.classes.push({
-                            date: new Date(formattedDate),
+                            date: formattedDate,
                             hasHeld: hasHeld || false,
                             note: note || "No Data",
                             attendance: [],
@@ -89,7 +89,7 @@ router.post("/add-class-updates", userAuth, async (req, res) => {
                         subject_id,
                         classes: [
                             {
-                                date: new Date(formattedDate),
+                                date: formattedDate,
                                 hasHeld: hasHeld || false,
                                 note: note || "No Data",
                                 attendance: [],
@@ -157,7 +157,7 @@ router.patch("/mark-attendance", userAuth, async (req, res) =>  {
 
         if (!classEntry) {
             classLog.classes.push({
-                date: new Date(formattedDate),
+                date: formattedDate,
                 hasHeld: true,
                 note: "No Data",
                 attendance: [],

@@ -3,16 +3,16 @@ import { IndianRupee, CheckCircle2, Clock3 } from "lucide-react";
 import { motion } from "framer-motion";
 
 const FeeCollection = () => {
-    const fees = useSelector(s => s.fees);
+    const feeSummary = useSelector(s => s.feeSummary);
 
-    const collected = fees.students
-        .filter(s => s.isPaidThisMonth)
-        .reduce((sum, s) => sum + s.amount, 0);
-    const total = fees.students.reduce((sum, s) => sum + s.amount, 0);
+    const globalStats = feeSummary?.globalStats;
+    const collected = globalStats?.totalPaidAmount ?? 0;
+    const total = globalStats?.totalInstituteFees ?? 0;
+    const studentsCount = globalStats?.studentsCount ?? 0;
+    const pending = feeSummary?.pendingStudents ?? [];
+    const paidCount = studentsCount - pending.length;
+
     const pct = total > 0 ? (collected / total) * 100 : 0;
-    const paidCount = fees.students.filter(s => s.isPaidThisMonth).length;
-    const pending = fees.students.filter(s => !s.isPaidThisMonth && s.amount > 0);
-
     const fmt = n => new Intl.NumberFormat("en-IN").format(n);
     const month = new Date().toLocaleString("default", { month: "long", year: "numeric" });
 
@@ -23,7 +23,6 @@ const FeeCollection = () => {
                 Fee Collection — {month}
             </h2>
 
-            {/* Amount summary */}
             <div className="mb-4">
                 <div className="flex justify-between items-end mb-2">
                     <div>
@@ -38,7 +37,6 @@ const FeeCollection = () => {
                     </span>
                 </div>
 
-                {/* Progress bar */}
                 <div className="h-3 bg-[#e6c8a8] rounded-full overflow-hidden">
                     <motion.div
                         initial={{ width: 0 }}
@@ -61,7 +59,6 @@ const FeeCollection = () => {
                 </div>
             </div>
 
-            {/* Pending students */}
             <p className="text-xs font-semibold text-[#b0998a] uppercase tracking-wider mb-2">
                 Still to collect from
             </p>

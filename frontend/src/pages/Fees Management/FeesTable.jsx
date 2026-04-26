@@ -9,7 +9,7 @@ import {
     Download,
     Loader2,
 } from "lucide-react";
-import WrapperCard from "@/utilities/WrapperCard.jsx";
+import WrapperCard from "@/components/ui/WrapperCard.jsx";
 import axiosInstance from "@/utilities/axiosInstance.jsx";
 import toast from 'react-hot-toast';
 import { useSelector } from "react-redux";

@@ -570,9 +570,33 @@ router.get("/fees/dashboard-summary", userAuth, async (req, res) => {
                     ],
                     batchWise: [
                         {
+                            $project: {
+                                batchId: 1,
+                                amount: { $ifNull: ["$fee_status.amount", 0] },
+                                isPaidThisMonth: {
+                                    $anyElementTrue: [
+                                        {
+                                            $map: {
+                                                input: { $ifNull: ["$fee_status.feeStatus", []] },
+                                                as: "fs",
+                                                in: {
+                                                    $and: [
+                                                        { $eq: [{ $month: { $toDate: "$$fs.date" } }, targetMonthNum + 1] },
+                                                        { $eq: [{ $year: { $toDate: "$$fs.date" } }, targetYearNum] },
+                                                        { $eq: ["$$fs.paid", true] }
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             $group: {
                                 _id: "$batchId",
-                                batchTotalFees: { $sum: { $ifNull: ["$fee_status.amount", 0] } },
+                                batchTotalFees: { $sum: "$amount" },
+                                batchPaidAmount: { $sum: { $cond: ["$isPaidThisMonth", "$amount", 0] } },
                                 batchStudentsCount: { $sum: 1 }
                             }
                         },
@@ -592,6 +616,7 @@ router.get("/fees/dashboard-summary", userAuth, async (req, res) => {
                                 batchName: { $ifNull: ["$batchInfo.name", "No Batch"] },
                                 forStandard: { $ifNull: ["$batchInfo.forStandard", ""] },
                                 totalFees: "$batchTotalFees",
+                                paidAmount: "$batchPaidAmount",
                                 studentsCount: "$batchStudentsCount"
                             }
                         }

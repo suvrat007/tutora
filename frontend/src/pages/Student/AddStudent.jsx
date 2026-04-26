@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axiosInstance from "../../utilities/axiosInstance.jsx";
 import { AiOutlineClose } from "react-icons/ai";
 import { motion } from "framer-motion";
-import useFetchStudents from "@/pages/useFetchStudents.js";
+import useFetchStudents from "@/hooks/useFetchStudents.js";
 import { useSelector } from "react-redux";
 import toast from 'react-hot-toast';
 

@@ -4,7 +4,7 @@ import axiosInstance from "@/utilities/axiosInstance";
 import { useSelector } from "react-redux";
 import OnboardingForm from "@/pages/Auth/OnboardingForm.jsx";
 import { motion, AnimatePresence } from "framer-motion";
-import useFetchUser from "@/pages/useFetchUser.js";
+import useFetchUser from "@/hooks/useFetchUser.js";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { GoogleLogin } from "@react-oauth/google";

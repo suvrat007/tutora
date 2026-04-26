@@ -1,18 +1,18 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import useAttendanceConstraints from "../hooks/useAttendanceConstraints.js";
 import { getLocalTimeHHMM } from "@/lib/utils.js";
-import MarkedPresentList from "@/pages/Attendence/components/MarkedPresentList.jsx";
 import { useAttendanceState } from "@/pages/Attendence/hooks/useAttendanceState.js";
 import { useStudentFetcher } from "@/pages/Attendence/hooks/useStudentFetcher.js";
 import { useStudentActions } from "@/pages/Attendence/hooks/useStudentActions.js";
 import AttendancePercentages from "@/pages/Attendence/components/AttendancePercentages.jsx";
 import { StudentList } from "@/pages/Attendence/components/StudentList.jsx";
 import { useAttendanceSubmission } from "@/pages/Attendence/hooks/useAttendanceSubmission.js";
-import WrapperCard from "@/utilities/WrapperCard.jsx";
-import useFetchStudents from "@/pages/useFetchStudents.js";
+import WrapperCard from "@/components/ui/WrapperCard.jsx";
+import useFetchStudents from "@/hooks/useFetchStudents.js";
 
 const selectClass = "border border-[#e6c8a8] px-3 py-2 rounded-lg text-sm text-[#5a4a3c] bg-white focus:ring-2 focus:ring-[#e0c4a8] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed";
 
@@ -33,19 +33,26 @@ export const AttendancePage = () => {
     const batches = useSelector((s) => s.batches);
     const groupedStudents = useSelector((s) => s.students.groupedStudents);
     const fetchGroupedStudents = useFetchStudents();
+    const location = useLocation();
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [saving, setSaving] = useState(false);
     const [dirtyCount, setDirtyCount] = useState(0);
     const saveTimeoutRef = useRef(null);
 
-    const { isValidDateTime, errorMessage } = useAttendanceConstraints(batchName, subjectName, date, batches);
+    const { canMark, constraintError, isValidDateTime } = useAttendanceConstraints(batchName, subjectName, date, batches);
 
-    // Fetch all students once for the default browse view
     useEffect(() => {
         if (!groupedStudents.length) fetchGroupedStudents();
     }, []);
 
-    // Flat list of all students — shown when no filters are active
+    // Pre-populate from navigation state (e.g. redirect from ClassesTable attendance alert)
+    useEffect(() => {
+        const { batchName: nb, subjectName: ns, date: nd } = location.state || {};
+        if (nb) setBatchName(nb);
+        if (ns) setSubjectName(ns);
+        if (nd) setDate(nd);
+    }, []);
+
     const allStudents = useMemo(() =>
         groupedStudents.flatMap(g => (g.students || []).map(s => ({ _id: s._id, name: s.name }))),
         [groupedStudents]
@@ -74,7 +81,6 @@ export const AttendancePage = () => {
         markDirty
     );
 
-    // Auto-fetch when form selectors change — no constraint check, always fetch
     useEffect(() => {
         if (!batchName || !subjectName || !date) return;
         const timer = setTimeout(() => {
@@ -83,7 +89,6 @@ export const AttendancePage = () => {
         return () => clearTimeout(timer);
     }, [batchName, subjectName, date]);
 
-    // Debounced auto-save — constraint check only happens at save time
     useEffect(() => {
         if (!dirtyCount || !students.length) return;
         if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
@@ -92,7 +97,6 @@ export const AttendancePage = () => {
             const ok = await submit(batchName, subjectName, date, presentIds, isValidDateTime);
             setSaving(false);
             if (ok) {
-                // Update markedPresentStudents locally — avoids a re-fetch and toast spam
                 const now = getLocalTimeHHMM();
                 const newMarked = students
                     .filter(s => presentIds.has(s._id.toString()))
@@ -188,7 +192,7 @@ export const AttendancePage = () => {
                 transition={{ duration: 0.4, delay: 0.1 }}
                 className="flex flex-col lg:flex-row gap-4 flex-1 min-h-0"
             >
-                {/* Left: Mark Attendance — narrower fixed width */}
+                {/* Left: Mark Attendance */}
                 <div className="lg:w-[380px] shrink-0 min-h-[24rem] lg:min-h-0">
                     <WrapperCard>
                         <StudentList
@@ -201,7 +205,8 @@ export const AttendancePage = () => {
                             clearAll={actions.clearAll}
                             markAllPreviouslyPresent={actions.markAllPreviouslyPresent}
                             saving={saving}
-                            readOnly={!isFilterActive}
+                            readOnly={!isFilterActive || !canMark}
+                            constraintError={isFilterActive ? constraintError : ""}
                             batchName={batchName}
                             subjectName={subjectName}
                             date={date}
@@ -209,27 +214,18 @@ export const AttendancePage = () => {
                     </WrapperCard>
                 </div>
 
-                {/* Right: Summary + Already Marked — takes remaining space */}
-                <div className="flex-1 min-w-0 flex flex-col gap-4">
-                    <div className="flex-1 min-h-[16rem]">
-                        <WrapperCard>
-                            <AttendancePercentages
-                                batchName={batchName}
-                                subjectName={subjectName}
-                                refreshTrigger={refreshTrigger}
-                            />
-                        </WrapperCard>
-                    </div>
-                    <div className="h-[16rem]">
-                        <WrapperCard>
-                            <MarkedPresentList
-                                markedPresentStudents={markedPresentStudents}
-                                batchName={batchName}
-                                subjectName={subjectName}
-                                date={date}
-                            />
-                        </WrapperCard>
-                    </div>
+                {/* Right: Summary — full height */}
+                <div className="flex-1 min-w-0 min-h-[24rem] lg:min-h-0">
+                    <WrapperCard>
+                        <AttendancePercentages
+                            batchName={batchName}
+                            subjectName={subjectName}
+                            refreshTrigger={refreshTrigger}
+                            presentIds={presentIds}
+                            savedPresentStudents={markedPresentStudents}
+                            isFilterActive={isFilterActive}
+                        />
+                    </WrapperCard>
                 </div>
             </motion.div>
         </div>

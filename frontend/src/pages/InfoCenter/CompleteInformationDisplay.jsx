@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import { useState, useMemo, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { useCombinedStudentAttendance } from './useCombinedStudentAttendance';
-import WrapperCard from "@/utilities/WrapperCard.jsx";
+import WrapperCard from "@/components/ui/WrapperCard.jsx";
 import StudentProfile from "@/pages/InfoCenter/StudentProfile.jsx";
 import toast from "react-hot-toast";
 

@@ -7,8 +7,8 @@ import TestList from './TestList';
 import axiosInstance from '../../utilities/axiosInstance';
 import { mergeTests } from '../../utilities/redux/testSlice';
 import { API } from '../../utilities/constants';
-import useFetchStudents from '../useFetchStudents';
-import WrapperCard from '@/utilities/WrapperCard';
+import useFetchStudents from '@/hooks/useFetchStudents';
+import WrapperCard from '@/components/ui/WrapperCard';
 
 const TestDetail = lazy(() => import('./TestDetail'));
 

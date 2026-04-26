@@ -266,7 +266,13 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
                                         <div className="group relative flex items-center gap-2">
                                             <div
                                                 className={`flex items-center gap-2 ${isZeroAttendance ? 'bg-red-100 px-3 py-1 rounded-lg cursor-pointer' : ''}`}
-                                                onClick={() => isZeroAttendance && navigate('/main/attendance')}
+                                                onClick={() => isZeroAttendance && navigate('/main/attendance', {
+                                                    state: {
+                                                        batchName: log.batch_id.name,
+                                                        subjectName: getSubjectName(log.subject_id, log.batch_id),
+                                                        date: cls.date,
+                                                    }
+                                                })}
                                             >
                                                 <Users className="w-4 h-4 text-[#e6c8a8]" />
                                                 <div>

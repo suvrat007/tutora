@@ -6,7 +6,7 @@ import {
     Building2,
     GraduationCap,
 } from "lucide-react";
-import WrapperCard from "@/utilities/WrapperCard.jsx";
+import WrapperCard from "@/components/ui/WrapperCard.jsx";
 import FeesTable from "@/pages/Fees Management/FeesTable.jsx";
 import axiosInstance from "@/utilities/axiosInstance.jsx";
 

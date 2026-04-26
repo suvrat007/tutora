@@ -24,29 +24,26 @@ const StatCard = ({ icon: Icon, label, value, sub, color, delay }) => (
 );
 
 const StatsStrip = () => {
-    const fees = useSelector(s => s.fees);
     const batches = useSelector(s => s.batches);
+    const feeSummary = useSelector(s => s.feeSummary);
     const attendance = useSelector(s => s.attendance);
 
-    const totalStudents = fees.students.length;
+    const globalStats = feeSummary?.globalStats;
+    const collectedAmt = globalStats?.totalPaidAmount ?? 0;
+    const totalAmt = globalStats?.totalInstituteFees ?? 0;
+    const totalStudents = globalStats?.studentsCount ?? 0;
     const activeBatches = batches.length;
+    const fmt = n => new Intl.NumberFormat("en-IN").format(n);
 
-    const collectedAmt = fees.students
-        .filter(s => s.isPaidThisMonth)
-        .reduce((sum, s) => sum + s.amount, 0);
-    const totalAmt = fees.students.reduce((sum, s) => sum + s.amount, 0);
-
-    const allStudents = attendance?.data || [];
-    const avgAtt = allStudents.length > 0
-        ? allStudents.reduce((sum, s) => {
+    const attStudents = attendance?.data || [];
+    const avgAtt = attStudents.length > 0
+        ? attStudents.reduce((sum, s) => {
             const subAvg = s.subjects.length > 0
                 ? s.subjects.reduce((a, b) => a + b.percentage, 0) / s.subjects.length
                 : 0;
             return sum + subAvg;
-        }, 0) / allStudents.length
-        : 0;
-
-    const fmt = n => new Intl.NumberFormat("en-IN").format(n);
+        }, 0) / attStudents.length
+        : null;
 
     return (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
@@ -77,8 +74,8 @@ const StatsStrip = () => {
             <StatCard
                 icon={TrendingUp}
                 label="Avg Attendance"
-                value={allStudents.length > 0 ? `${avgAtt.toFixed(1)}%` : "—"}
-                sub="across all students"
+                value={avgAtt !== null ? `${avgAtt.toFixed(1)}%` : "—"}
+                sub={avgAtt !== null ? "across all students" : "loading…"}
                 color="#3a6db5"
                 delay={0.21}
             />
@@ -87,4 +84,3 @@ const StatsStrip = () => {
 };
 
 export default StatsStrip;
-

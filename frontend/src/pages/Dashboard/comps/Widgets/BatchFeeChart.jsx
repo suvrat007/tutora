@@ -2,31 +2,19 @@ import { useSelector } from "react-redux";
 import { LayoutGrid } from "lucide-react";
 import { motion } from "framer-motion";
 
-const BatchFeeChart = () => {
-    const fees = useSelector(s => s.fees);
+const barColor = pct => pct >= 75 ? "#4a7c59" : pct >= 40 ? "#c47d3e" : "#b94444";
 
-    const batchData = fees.batches
-        .map(batch => {
-            const collected = batch.students
-                .filter(s => s.isPaidThisMonth)
-                .reduce((sum, s) => sum + s.amount, 0);
-            const total = batch.students.reduce((sum, s) => sum + s.amount, 0);
-            const pct = total > 0 ? (collected / total) * 100 : 0;
-            return {
-                batchName: batch.batchName,
-                forStandard: batch.forStandard,
-                collected,
-                total,
-                pct,
-                count: batch.students.length,
-            };
-        })
-        .filter(b => b.total > 0);
+const BatchFeeChart = () => {
+    const batchWise = useSelector(s => s.feeSummary?.batchWise ?? []);
+
+    const batchData = batchWise
+        .filter(b => b.totalFees > 0)
+        .map(b => ({
+            ...b,
+            pct: (b.paidAmount / b.totalFees) * 100,
+        }));
 
     const fmt = n => new Intl.NumberFormat("en-IN").format(n);
-
-    const barColor = pct =>
-        pct >= 75 ? "#4a7c59" : pct >= 40 ? "#c47d3e" : "#b94444";
 
     return (
         <div className="bg-[#f8ede3] rounded-3xl border border-[#e6c8a8] shadow-xl p-4 sm:p-6 sm:h-full flex flex-col overflow-hidden">
@@ -43,7 +31,7 @@ const BatchFeeChart = () => {
                 <div className="sm:flex-1 overflow-y-auto space-y-4 pr-1">
                     {batchData.map((b, i) => (
                         <motion.div
-                            key={b.batchName + i}
+                            key={b.batchId || b.batchName + i}
                             initial={{ opacity: 0, x: -12 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: i * 0.08, duration: 0.4 }}
@@ -60,12 +48,8 @@ const BatchFeeChart = () => {
                                     </span>
                                 </div>
                                 <div className="text-right flex-shrink-0">
-                                    <span className="text-xs font-bold text-[#8b5e3c]">
-                                        ₹{fmt(b.collected)}
-                                    </span>
-                                    <span className="text-[10px] text-[#b0998a]">
-                                        {" "}/ ₹{fmt(b.total)}
-                                    </span>
+                                    <span className="text-xs font-bold text-[#8b5e3c]">₹{fmt(b.paidAmount)}</span>
+                                    <span className="text-[10px] text-[#b0998a]"> / ₹{fmt(b.totalFees)}</span>
                                 </div>
                             </div>
                             <div className="h-2.5 bg-[#e6c8a8] rounded-full overflow-hidden">
@@ -78,7 +62,7 @@ const BatchFeeChart = () => {
                                 />
                             </div>
                             <div className="flex justify-between text-[10px] text-[#b0998a] mt-1">
-                                <span>{b.count} student{b.count !== 1 ? "s" : ""}</span>
+                                <span>{b.studentsCount} student{b.studentsCount !== 1 ? "s" : ""}</span>
                                 <span className="font-semibold">{b.pct.toFixed(0)}% collected</span>
                             </div>
                         </motion.div>

@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import axiosInstance from "@/utilities/axiosInstance";
-import useFetchBatches from "@/pages/useFetchBatches.js";
-import WrapperCard from "@/utilities/WrapperCard.jsx";
+import useFetchBatches from "@/hooks/useFetchBatches.js";
+import WrapperCard from "@/components/ui/WrapperCard.jsx";
 import { BookOpen, Users, FileText} from "lucide-react"
 import { AiOutlinePlus } from "react-icons/ai";
 import ViewBatchDetails from "@/pages/BatchPage/ViewBatchDetails.jsx";
