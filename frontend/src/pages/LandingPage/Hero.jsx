@@ -1,153 +1,147 @@
-import { Button } from "@/components/ui/button.jsx";
-import { ArrowRight, Sparkles, Play, Star } from "lucide-react";
+import { ArrowRight, Sparkles, Play, BookOpen, GraduationCap, Pencil, Lightbulb, ClipboardList, Users, Calendar, Bell, FlaskConical, Ruler } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { AnimatedGradientText } from "../../components/ui/AnimatedGradientText.jsx";
 import { motion } from "framer-motion";
 
-const Hero = ({ currentWord, rotatingWords, user, setIsModalOpen }) => {
+const FLOATERS = [
+    { Icon: GraduationCap, x: 5,   y: 10, size: 64, fy: 12, r: 6,   delay: 0,    dur: 6.0 },
+    { Icon: BookOpen,      x: 88,  y: 8,  size: 52, fy: 10, r: -8,  delay: 0.8,  dur: 5.4 },
+    { Icon: Pencil,        x: 78,  y: 58, size: 44, fy: 14, r: 10,  delay: 1.4,  dur: 5.8 },
+    { Icon: Lightbulb,     x: 12,  y: 60, size: 48, fy: 12, r: -7,  delay: 0.5,  dur: 4.9 },
+    { Icon: ClipboardList, x: 4,   y: 35, size: 40, fy: 10, r: 8,   delay: 2.0,  dur: 6.2 },
+    { Icon: Users,         x: 90,  y: 35, size: 50, fy: 14, r: -9,  delay: 1.0,  dur: 5.1 },
+    { Icon: Calendar,      x: 22,  y: 82, size: 44, fy: 12, r: 7,   delay: 2.4,  dur: 5.6 },
+    { Icon: FlaskConical,  x: 68,  y: 80, size: 40, fy: 16, r: -10, delay: 1.6,  dur: 4.7 },
+    { Icon: Ruler,         x: 46,  y: 5,  size: 42, fy: 10, r: 5,   delay: 0.7,  dur: 5.3 },
+    { Icon: Bell,          x: 56,  y: 88, size: 38, fy: 14, r: -6,  delay: 1.9,  dur: 4.5 },
+];
+
+const Floater = ({ Icon, x, y, size, fy, r, delay, dur }) => (
+    <motion.div
+        initial={{ opacity: 0 }}
+        animate={{
+            opacity: [0, 0.1, 0.13, 0.1, 0],
+            y:       [0, -fy, 0, fy * 0.35, 0],
+            rotate:  [0, r,  0, -r * 0.4, 0],
+        }}
+        transition={{
+            duration: dur,
+            delay,
+            repeat: Infinity,
+            ease: "easeInOut",
+            times: [0, 0.3, 0.5, 0.75, 1],
+        }}
+        className="absolute pointer-events-none select-none"
+        style={{ left: `${x}%`, top: `${y}%`, color: "#8b5e3c" }}
+    >
+        <Icon style={{ width: size, height: size }} strokeWidth={1} />
+    </motion.div>
+);
+
+const Hero = ({ user, setIsModalOpen }) => {
     const navigate = useNavigate();
 
-    const handleNavigate = (path) => {
-        try {
-            navigate(path);
-        } catch (error) {
-            console.error("Navigation error:", error);
-        }
-    };
-
-    const activeUsers = [
-        {
-            id: 1,
-            avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=40&h=40&q=80",
-            alt: "Profile picture of user 1"
-        },
-        {
-            id: 2,
-            avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=40&h=40&q=80",
-            alt: "Profile picture of user 2"
-        },
-        {
-            id: 3,
-            avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=40&h=40&q=80",
-            alt: "Profile picture of user 3"
-        },
-        {
-            id: 4,
-            avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=40&h=40&q=80",
-            alt: "Profile picture of user 4"
-        },
-        {
-            id: 5,
-            avatar: "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?ixlib=rb-4.0.3&auto=format&fit=crop&w=40&h=40&q=80",
-            alt: "Profile picture of user 5"
-        },
-    ];
-
     return (
-        <section className="bg-gradient-to-br from-[#fdf5ec] to-[#f5e8dc] flex flex-col items-center justify-center min-h-[90vh] px-4 sm:px-6 md:px-8 overflow-hidden">
-            <div className="text-center max-w-6xl mx-auto relative">
+        <section
+            className="relative min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 overflow-hidden"
+            style={{ background: "linear-gradient(135deg, #f5b87a 0%, #f8cfa0 18%, #faebd8 42%, #fdf6ee 58%, #f8e4b8 78%, #f5cc80 100%)" }}
+        >
+            {/* Dot grid overlay */}
+            <div className="pointer-events-none absolute inset-0 -z-10">
+                <svg className="absolute inset-0 w-full h-full opacity-[0.06]" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <pattern id="dots" x="0" y="0" width="28" height="28" patternUnits="userSpaceOnUse">
+                            <circle cx="1.5" cy="1.5" r="1.5" fill="#4a3a2c" />
+                        </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#dots)" />
+                </svg>
+            </div>
+
+            {/* Floating icons */}
+            <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                {FLOATERS.map((f, i) => <Floater key={i} {...f} />)}
+            </div>
+
+            {/* Content */}
+            <div className="relative z-10 max-w-4xl w-full text-center space-y-8">
                 <motion.div
-                    initial={{ opacity: 0, scale: 0.98 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.6, ease: "easeOut" }}
-                    className="absolute inset-0 -z-10"
-                >
-                    <div className="pointer-events-none select-none">
-                        <div className="absolute -top-24 -left-24 w-72 h-72 bg-[#e7c6a5]/40 rounded-full blur-3xl" />
-                        <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-[#e0c4a8]/40 rounded-full blur-3xl" />
-                    </div>
-                </motion.div>
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-sm rounded-full border border-[#e7c6a5]/50 shadow-lg mb-6">
-                    <Sparkles className="w-4 h-4 text-[#4a3a2c]" />
-                    <span className="text-sm font-medium text-[#4a3a2c]">
-                        Trusted by 10,000+ educators worldwide
-                    </span>
-                </div>
-                <motion.h1
-                    initial={{ opacity: 0, y: 12 }}
+                    initial={{ opacity: 0, y: -12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, ease: "easeOut", delay: 0.05 }}
-                    className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-[#4a3a2c] mb-6 leading-tight"
+                    transition={{ duration: 0.5 }}
+                    className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#ddb892]/60 bg-white/70 backdrop-blur-sm text-xs font-semibold text-[#7b5c4b] tracking-wide shadow-sm"
                 >
-                    Your Personal{" "}
-                    <span className="relative inline-block">
-                        <AnimatedGradientText className="inline-block bg-gradient-to-r from-[#4a3a2c] via-[#6b5b4f] to-[#4a3a2c] bg-clip-text text-transparent">
-                            Tutora
-                            <span
-                                className="underline decoration-4 decoration-[#e7c6a5]/60 text-[#4a3a2c]/20 underline-offset-4"
-                                key={currentWord}
-                                style={{
-                                    opacity: 0,
-                                    display: "inline-block",
-                                    transform: "translateY(10px)",
-                                    animation: "fadeInUp 0.3s forwards"
-                                }}
-                            >
-                                {rotatingWords[currentWord]}
-                            </span>
-                        </AnimatedGradientText>
-                        <style>{`
-                            @keyframes fadeInUp {
-                                from { opacity: 0; transform: translateY(10px); }
-                                to { opacity: 1; transform: translateY(0); }
-                            }
-                        `}</style>
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                    Free for solo educators
+                </motion.div>
+
+                <motion.h1
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.65, delay: 0.05 }}
+                    className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold text-[#2c1a0e] leading-[1.05] tracking-tight"
+                >
+                    Teaching tools
+                    <br />
+                    <span className="bg-gradient-to-r from-[#8b5e3c] via-[#c47d3e] to-[#8b5e3c] bg-clip-text text-transparent">
+                        that get out of the way
                     </span>
                 </motion.h1>
-                <p className="text-base sm:text-lg md:text-xl text-[#9b8778] max-w-3xl mx-auto mb-8 leading-relaxed">
-                    The all-in-one platform built for{" "}
-                    <span className="font-semibold text-[#4a3a2c]">solo educators</span>.
-                    Manage students, classes, and schedules with elegance and ease.
-                </p>
-                <motion.div
-                    initial={{ opacity: 0, y: 8 }}
+
+                <motion.p
+                    initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }}
-                    className="flex flex-col sm:flex-row justify-center gap-4 mb-12"
+                    transition={{ duration: 0.55, delay: 0.15 }}
+                    className="text-lg sm:text-xl text-[#7b5c4b] max-w-2xl mx-auto leading-relaxed"
                 >
-                    <Button
-                        size="lg"
-                        className="group cursor-pointer bg-[#4a3a2c] text-white hover:bg-[#3e2f23] transition-all duration-300 shadow-lg hover:shadow-xl px-8 py-4 text-base font-semibold rounded-xl border border-[#6b5b4f]/20"
-                        onClick={() => handleNavigate(user ? "/main" : "/login")}
+                    Tutora handles attendance, fees, reminders, and class logs —
+                    so you can focus on teaching.
+                </motion.p>
+
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.22 }}
+                    className="flex flex-col sm:flex-row justify-center gap-3"
+                >
+                    <motion.button
+                        whileHover={{ scale: 1.04, boxShadow: "0 10px 30px rgba(44,26,14,0.20)" }}
+                        whileTap={{ scale: 0.96 }}
+                        onClick={() => navigate(user ? "/main" : "/login")}
+                        className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-[#2c1a0e] text-white font-semibold text-base shadow-lg transition-colors hover:bg-[#3e2510] cursor-pointer"
                     >
-                        <Sparkles className="mr-2 h-5 w-5" />
-                        {user ? "Go To Dashboard" : "Start Free Trial"}
-                        <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="lg"
-                        className="group cursor-pointer border-2 border-[#e7c6a5] text-[#4a3a2c] hover:bg-[#e7c6a5]/20 transition-all duration-300 shadow-lg hover:shadow-xl px-8 py-4 text-base font-semibold rounded-xl bg-white/50 backdrop-blur-sm"
+                        <Sparkles className="w-4 h-4" />
+                        {user ? "Go to Dashboard" : "Get Started Free"}
+                        <ArrowRight className="w-4 h-4" />
+                    </motion.button>
+
+                    <motion.button
+                        whileHover={{ scale: 1.04 }}
+                        whileTap={{ scale: 0.96 }}
                         onClick={() => setIsModalOpen(true)}
+                        className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl border-2 border-[#ddb892] bg-white/60 backdrop-blur-sm text-[#4a3a2c] font-semibold text-base hover:bg-[#fdf0e3] transition-colors cursor-pointer shadow-sm"
                     >
-                        <Play className="mr-2 h-5 w-5 transition-transform group-hover:scale-110" />
-                        {user ? "Watch Demo" : "Watch Demo Video"}
-                        <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                    </Button>
+                        <Play className="w-4 h-4" />
+                        Watch Demo
+                    </motion.button>
                 </motion.div>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-6 text-[#9b8778]">
-                    <div className="flex items-center gap-2">
-                        <div className="flex -space-x-2">
-                            {activeUsers.map(({ id, avatar, alt }) => (
-                                <img
-                                    key={id}
-                                    src={avatar}
-                                    alt={alt}
-                                    className="w-10 h-10 rounded-full border-2 border-white shadow-sm"
-                                />
-                            ))}
-                        </div>
-                        <span className="text-sm font-medium ml-2">10,000+ active users</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                        {[...Array(5)].map((_, i) => (
-                            <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400 drop-shadow-sm" />
-                        ))}
-                        <span className="text-sm font-medium ml-2">4.9/5 rating</span>
-                    </div>
-                </div>
             </div>
+
+            {/* Scroll cue */}
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1 }}
+                className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5"
+            >
+                <span className="text-xs text-[#b0998a] tracking-widest uppercase">scroll</span>
+                <motion.div
+                    animate={{ y: [0, 6, 0] }}
+                    transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+                    className="w-px h-8 bg-gradient-to-b from-[#b0998a] to-transparent"
+                />
+            </motion.div>
         </section>
     );
 };
+
 export default Hero;

@@ -14,14 +14,12 @@ const CompleteInformationDisplay = () => {
   const [subjectName, setSubjectName] = useState('');
   const [gradeFilter, setGradeFilter] = useState('');
   const [attendanceFilter, setAttendanceFilter] = useState('');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
   const [showStudentProfile, setShowStudentProfile] = useState({ show: false, student: null });
 
   const batches = useSelector((state) => state.batches) || [];
   const isLoadingBatches = useSelector((state) => state.batches.loading);
 
-  const { data: combinedData = [], error, loading: loadingAttendance } = useCombinedStudentAttendance(batchName, subjectName, batches, dateFrom || null, dateTo || null);
+  const { data: combinedData = [], error, loading: loadingAttendance } = useCombinedStudentAttendance(batchName, subjectName, batches);
 
   useEffect(() => {
     if (error) toast.error(error);
@@ -287,26 +285,6 @@ const CompleteInformationDisplay = () => {
                     <option value=">50">Above 50%</option>
                     <option value="<50">Below 50%</option>
                   </select>
-                </div>
-                <div className="flex-1 min-w-[110px]">
-                  <label className="block text-xs font-semibold text-[#7b5c4b] uppercase mb-1">From Date</label>
-                  <input
-                    type="date"
-                    value={dateFrom}
-                    max={dateTo || undefined}
-                    onChange={(e) => setDateFrom(e.target.value)}
-                    className="w-full p-2.5 rounded-lg border border-[#e6c8a8] text-sm text-[#5a4a3c] bg-white shadow-sm focus:ring-2 focus:ring-[#e0c4a8] outline-none transition-shadow cursor-pointer"
-                  />
-                </div>
-                <div className="flex-1 min-w-[110px]">
-                  <label className="block text-xs font-semibold text-[#7b5c4b] uppercase mb-1">To Date</label>
-                  <input
-                    type="date"
-                    value={dateTo}
-                    min={dateFrom || undefined}
-                    onChange={(e) => setDateTo(e.target.value)}
-                    className="w-full p-2.5 rounded-lg border border-[#e6c8a8] text-sm text-[#5a4a3c] bg-white shadow-sm focus:ring-2 focus:ring-[#e0c4a8] outline-none transition-shadow cursor-pointer"
-                  />
                 </div>
               </div>
 

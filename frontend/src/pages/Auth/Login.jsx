@@ -3,76 +3,38 @@ import { useNavigate } from "react-router-dom";
 import axiosInstance from "@/utilities/axiosInstance";
 import { useSelector } from "react-redux";
 import OnboardingForm from "@/pages/Auth/OnboardingForm.jsx";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
-import { BackgroundBeams } from "@/components/ui/background-beams";
-import { FlipWords } from "@/components/ui/flip-words";
 import useFetchUser from "@/pages/useFetchUser.js";
 import toast from "react-hot-toast";
 import axios from "axios";
-import {GoogleLogin} from "@react-oauth/google";
+import { GoogleLogin } from "@react-oauth/google";
+import { ArrowRight, Eye, EyeOff, Loader2 } from "lucide-react";
 
-// Defined at module level so AnimatePresence gets a stable component reference
-const LoginLoadingSpinner = () => (
-    <motion.div
-        className="absolute inset-0 bg-[#f8ede3]/80 backdrop-blur-sm z-50 flex items-center justify-center rounded-2xl"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.3 }}
-    >
-        <motion.div
-            className="w-12 h-12 border-4 border-[#e7c6a5] border-t-[#4a3a2c] rounded-full"
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-        >
-            <motion.div
-                className="w-full h-full rounded-full border-2 border-[#e7c6a5]/50"
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-            />
-        </motion.div>
-    </motion.div>
-);
+const inputClass =
+    "w-full px-4 py-3 rounded-xl border border-[#e8d5c0] bg-white text-[#2c1a0e] placeholder-[#b0998a] text-sm focus:outline-none focus:ring-2 focus:ring-[#c47d3e]/40 focus:border-[#c47d3e] transition-all disabled:opacity-50";
 
 const Login = () => {
-    const words = ["mazing", "wesome", "mbitious", "daptive", "dvanced"];
     const [isSignup, setIsSignup] = useState(false);
     const [signupCreds, setSignupCreds] = useState(null);
     const [formData, setFormData] = useState({ name: "", emailId: "", password: "" });
+    const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
     const fetchUser = useFetchUser();
-
-    const handleInputChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
     const loggedInUser = useSelector((state) => state.user);
-    // Guard: don't auto-navigate while an auth attempt is in-flight.
-    // Body.jsx calls fetchUser() on mount, which may resolve a valid session
-    // concurrently with a wrong-password attempt — without this guard, navigate()
-    // fires at the same time as toast.error(), causing the toast to be swallowed.
+
     useEffect(() => {
-        if (loggedInUser && !isLoading) {
-            navigate("/main");
-        }
+        if (loggedInUser && !isLoading) navigate("/main");
     }, [loggedInUser, isLoading, navigate]);
+
+    const handleInputChange = (e) =>
+        setFormData({ ...formData, [e.target.name]: e.target.value });
 
     const handleLogin = async (e) => {
         e.preventDefault();
         setIsLoading(true);
         try {
-            const response = await axiosInstance.post(
-                'auth/login',
-                {
-                    emailId: formData.emailId,
-                    password: formData.password,
-                },
-                { withCredentials: true }
-            );
+            await axiosInstance.post("auth/login", { emailId: formData.emailId, password: formData.password }, { withCredentials: true });
             await fetchUser();
             navigate("/main");
         } catch (err) {
@@ -83,149 +45,204 @@ const Login = () => {
     };
 
     const handleGoogleLogin = async (credentialResponse) => {
+        setIsLoading(true);
         try {
-            setIsLoading(true);
-            // Google OAuth requires localhost:5173 and production URL in authorized JavaScript origins
-            // in Google Cloud Console → APIs & Services → Credentials
-            const response = await axiosInstance.post('auth/google-auth', { credential: credentialResponse.credential }, { withCredentials: true });
+            const response = await axiosInstance.post("auth/google-auth", { credential: credentialResponse.credential }, { withCredentials: true });
             if (response.data.isNewUser) {
-                // New Google user — needs to set up their institute
                 setSignupCreds({ isGoogleUser: true });
             } else {
                 await fetchUser();
-                navigate('/main');
+                navigate("/main");
             }
         } catch (err) {
-            if (axios.isAxiosError(err)) {
-                toast.error(err.response?.data?.message || err.message);
-            } else {
-                toast.error("Internal server error");
-            }
-        } finally {
-            setIsLoading(false);
-        }
-    }
-    const handleSignupCreds = (e) => {
-        e.preventDefault();
-        if (!formData.name || !formData.emailId || !formData.password) return;
-        setIsLoading(true);
-        try {
-            setSignupCreds({
-                name: formData.name,
-                emailId: formData.emailId,
-                password: formData.password,
-            });
+            toast.error(axios.isAxiosError(err) ? (err.response?.data?.message || err.message) : "Internal server error");
         } finally {
             setIsLoading(false);
         }
     };
 
+    const handleSignupCreds = (e) => {
+        e.preventDefault();
+        if (!formData.name || !formData.emailId || !formData.password) return;
+        setSignupCreds({ name: formData.name, emailId: formData.emailId, password: formData.password });
+    };
+
     if (signupCreds) return <OnboardingForm adminCreds={signupCreds} />;
 
     return (
-        // <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-            <div className="relative min-h-screen bg-gradient-to-br from-[#fdf5ec] to-[#f5e8dc] flex items-center justify-center px-4 sm:px-6 md:px-8 overflow-hidden">
-                <BackgroundBeams className="absolute top-0 left-0 w-full h-full z-0"/>
-                <motion.div
-                    initial={{opacity: 0, y: 20}}
-                    animate={{opacity: 1, y: 0}}
-                    transition={{duration: 0.8}}
-                    className="relative z-10 w-full max-w-md"
-                >
-                    <Card className="rounded-2xl shadow-xl bg-[#f8ede3]/90 backdrop-blur-sm border border-[#e7c6a5]/50">
-                        <CardContent className="p-6 sm:p-8 relative">
-                            <AnimatePresence>
-                                {isLoading && <LoginLoadingSpinner />}
-                            </AnimatePresence>
-                            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-2 text-[#4a3a2c]">
-                                <span className="inline">TUTORA</span>
-                                <FlipWords className="text-[#e7c6a5]" words={words}/>
-                            </h1>
-                            <p className="text-center text-[#9b8778] text-sm sm:text-base mb-4">
-                                Your smart, modern tutoring platform.
-                            </p>
-                            <form
+        <div className="relative min-h-screen bg-[#faf6f1] flex items-center justify-center px-4 overflow-hidden">
+            {/* Background decoration — matches hero */}
+            <div className="pointer-events-none absolute inset-0 -z-10">
+                <div className="absolute top-[-8%] left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-[#e7c6a5]/25 rounded-full blur-[110px]" />
+                <div className="absolute bottom-0 right-1/4 w-[360px] h-[260px] bg-[#f5d9bc]/15 rounded-full blur-[90px]" />
+                <svg className="absolute inset-0 w-full h-full opacity-[0.055]" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <pattern id="ldots" x="0" y="0" width="28" height="28" patternUnits="userSpaceOnUse">
+                            <circle cx="1.5" cy="1.5" r="1.5" fill="#4a3a2c" />
+                        </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#ldots)" />
+                </svg>
+            </div>
+
+            <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.55, ease: "easeOut" }}
+                className="w-full max-w-sm"
+            >
+                {/* Logo / wordmark */}
+                <div className="text-center mb-8">
+                    <span className="text-3xl font-extrabold tracking-tight text-[#2c1a0e]">Tutora</span>
+                    <p className="mt-1.5 text-sm text-[#9b8778]">
+                        {isSignup ? "Create your free account" : "Welcome back"}
+                    </p>
+                </div>
+
+                {/* Card */}
+                <div className="relative bg-white border border-[#e8d5c0] rounded-3xl shadow-xl overflow-hidden">
+                    {/* Loading overlay */}
+                    <AnimatePresence>
+                        {isLoading && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="absolute inset-0 z-20 bg-white/80 backdrop-blur-sm flex items-center justify-center rounded-3xl"
+                            >
+                                <Loader2 className="w-7 h-7 text-[#8b5e3c] animate-spin" />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    <div className="p-7">
+                        {/* Tab switcher */}
+                        <div className="flex bg-[#f5ede3] rounded-xl p-1 mb-7 gap-1">
+                            {["Login", "Sign up"].map((label, i) => {
+                                const active = isSignup ? i === 1 : i === 0;
+                                return (
+                                    <motion.button
+                                        key={label}
+                                        onClick={() => { setIsSignup(i === 1); setSignupCreds(null); }}
+                                        disabled={isLoading}
+                                        className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors cursor-pointer ${active ? "bg-white text-[#2c1a0e] shadow-sm" : "text-[#9b8778] hover:text-[#5a4a3c]"}`}
+                                        whileTap={{ scale: 0.97 }}
+                                    >
+                                        {label}
+                                    </motion.button>
+                                );
+                            })}
+                        </div>
+
+                        {/* Form */}
+                        <AnimatePresence mode="wait">
+                            <motion.form
+                                key={isSignup ? "signup" : "login"}
+                                initial={{ opacity: 0, x: isSignup ? 20 : -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: isSignup ? -20 : 20 }}
+                                transition={{ duration: 0.22, ease: "easeOut" }}
                                 onSubmit={isSignup ? handleSignupCreds : handleLogin}
-                                className="space-y-4 sm:space-y-5"
+                                className="space-y-3"
                             >
                                 {isSignup && (
-                                    <Input
-                                        type="text"
-                                        name="name"
-                                        placeholder="Username"
-                                        value={formData.name}
+                                    <div>
+                                        <label className="block text-xs font-semibold text-[#7b5c4b] mb-1.5">Name</label>
+                                        <input
+                                            type="text"
+                                            name="name"
+                                            placeholder="Your name"
+                                            value={formData.name}
+                                            onChange={handleInputChange}
+                                            className={inputClass}
+                                            required
+                                            disabled={isLoading}
+                                        />
+                                    </div>
+                                )}
+
+                                <div>
+                                    <label className="block text-xs font-semibold text-[#7b5c4b] mb-1.5">Email</label>
+                                    <input
+                                        type="email"
+                                        name="emailId"
+                                        placeholder="you@example.com"
+                                        value={formData.emailId}
                                         onChange={handleInputChange}
-                                        className="bg-[#f8ede3] border-[#e7c6a5] placeholder-[#9b8778] text-[#4a3a2c] focus:ring-[#e7c6a5] focus:border-[#e7c6a5]"
+                                        className={inputClass}
                                         required
                                         disabled={isLoading}
+                                        autoComplete="email"
                                     />
-                                )}
-                                <Input
-                                    type="email"
-                                    name="emailId"
-                                    placeholder="Email"
-                                    value={formData.emailId}
-                                    onChange={handleInputChange}
-                                    className="bg-[#f8ede3] border-[#e7c6a5] placeholder-[#9b8778] text-[#4a3a2c] focus:ring-[#e7c6a5] focus:border-[#e7c6a5]"
-                                    required
-                                    disabled={isLoading}
-                                />
-                                <Input
-                                    type="password"
-                                    name="password"
-                                    placeholder="Password"
-                                    value={formData.password}
-                                    onChange={handleInputChange}
-                                    className="bg-[#f8ede3] border-[#e7c6a5] placeholder-[#9b8778] text-[#4a3a2c] focus:ring-[#e7c6a5] focus:border-[#e7c6a5]"
-                                    required
-                                    disabled={isLoading}
-                                />
-                                <Button
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-semibold text-[#7b5c4b] mb-1.5">Password</label>
+                                    <div className="relative">
+                                        <input
+                                            type={showPassword ? "text" : "password"}
+                                            name="password"
+                                            placeholder="••••••••"
+                                            value={formData.password}
+                                            onChange={handleInputChange}
+                                            className={`${inputClass} pr-11`}
+                                            required
+                                            disabled={isLoading}
+                                            autoComplete={isSignup ? "new-password" : "current-password"}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(v => !v)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#b0998a] hover:text-[#7b5c4b] transition-colors"
+                                            tabIndex={-1}
+                                        >
+                                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <motion.button
                                     type="submit"
-                                    className="w-full bg-[#4a3a2c] text-white hover:bg-[#3e2f23] text-base sm:text-lg font-semibold rounded-md py-2.5"
                                     disabled={isLoading}
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    className="w-full mt-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-[#2c1a0e] text-white font-semibold text-sm hover:bg-[#3e2510] transition-colors shadow-md cursor-pointer disabled:opacity-60"
                                 >
-                                    {isSignup ? "Next" : `Login as Tutor`}
-                                </Button>
-                            </form>
+                                    {isSignup ? "Continue" : "Log in"}
+                                    <ArrowRight className="w-4 h-4" />
+                                </motion.button>
+                            </motion.form>
+                        </AnimatePresence>
 
-                            <div className="my-6 flex items-center">
-                                <div className="flex-grow h-px bg-[#e7c6a5]/50"/>
-                                <span className="px-4 text-sm sm:text-base text-[#9b8778]">or continue with</span>
-                                <div className="flex-grow h-px bg-[#e7c6a5]/50"/>
-                            </div>
+                        {/* Divider */}
+                        <div className="flex items-center gap-3 my-5">
+                            <div className="flex-1 h-px bg-[#e8d5c0]" />
+                            <span className="text-xs text-[#b0998a] font-medium">or</span>
+                            <div className="flex-1 h-px bg-[#e8d5c0]" />
+                        </div>
 
-                            <p className="mt-6 text-sm sm:text-base text-center text-[#9b8778] cursor-pointer">
-                                {isSignup ? "Already have an account?" : "Don’t have an account?"}{" "}
-                                <button
-                                    onClick={() => {
-                                        setIsSignup(!isSignup);
-                                        setSignupCreds(null);
-                                    }}
-                                    className="text-[#4a3a2c] hover:underline"
-                                    disabled={isLoading}
-                                >
-                                    {isSignup ? "Login" : "Sign up"}
-                                </button>
-                            </p>
-                            <div className="mt-2 w-full flex flex-col items-center">
-                                <GoogleLogin
-                                    onSuccess={async (credentialResponse) => {
-                                        try {
-                                            await handleGoogleLogin(credentialResponse);
-                                        } catch (err) {
-                                            toast.error('Google sign-in failed. Please try again.');
-                                        }
-                                    }}
-                                    onError={() => toast.error('Google sign-in failed. Please try again.')}
-                                    useOneTap
-                                />
-                            </div>
+                        {/* Google */}
+                        <div className="flex justify-center">
+                            <GoogleLogin
+                                onSuccess={async (credentialResponse) => {
+                                    try {
+                                        await handleGoogleLogin(credentialResponse);
+                                    } catch {
+                                        toast.error("Google sign-in failed. Please try again.");
+                                    }
+                                }}
+                                onError={() => toast.error("Google sign-in failed. Please try again.")}
+                                useOneTap
+                            />
+                        </div>
+                    </div>
+                </div>
 
-                        </CardContent>
-                    </Card>
-                </motion.div>
-            </div>
+                <p className="text-center text-xs text-[#b0998a] mt-6">
+                    By continuing you agree to Tutora's terms of use.
+                </p>
+            </motion.div>
+        </div>
     );
 };
 

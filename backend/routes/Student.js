@@ -247,13 +247,6 @@ router.get('/attendance/summary', userAuth, async (req, res) => {
             matchStage.subjectId = new mongoose.Types.ObjectId(req.query.subjectId);
         }
 
-        const startDate = req.query.startDate || null; // 'YYYY-MM-DD'
-        const endDate = req.query.endDate || null;     // 'YYYY-MM-DD'
-        const dateRangeConditions = [
-            ...(startDate ? [{ $gte: ['$classes.date', startDate] }] : []),
-            ...(endDate ? [{ $lte: ['$classes.date', endDate] }] : []),
-        ];
-
         const summary = await Student.aggregate([
             { $match: matchStage },
             // Include admission_date in the projection
@@ -326,8 +319,8 @@ router.get('/attendance/summary', userAuth, async (req, res) => {
                                     $and: [
                                         { $eq: ['$classes.updated', true] },
                                         { $eq: ['$classes.hasHeld', true] },
+                                        // Filter classes on or after admission_date
                                         { $gte: ['$classes.date', { $dateToString: { format: '%Y-%m-%d', date: '$$admissionDate' } }] },
-                                        ...dateRangeConditions,
                                     ],
                                 },
                             },
@@ -376,8 +369,8 @@ router.get('/attendance/summary', userAuth, async (req, res) => {
                                     $and: [
                                         { $eq: ['$classes.updated', true] },
                                         { $eq: ['$classes.hasHeld', true] },
+                                        // Filter classes on or after admission_date
                                         { $gte: ['$classes.date', { $dateToString: { format: '%Y-%m-%d', date: '$$admissionDate' } }] },
-                                        ...dateRangeConditions,
                                     ],
                                 },
                             },
@@ -469,6 +462,7 @@ router.post("/bulk-update-fee-status", userAuth, async (req, res) => {
                 student.fee_status.feeStatus.push({
                     date,
                     paid,
+                    paid_at: paid ? new Date() : null,
                 });
 
                 await student.save();
@@ -682,6 +676,31 @@ router.get("/fees/list", userAuth, async (req, res) => {
                                 }
                             }
                         ]
+                    },
+                    paidAt: {
+                        $let: {
+                            vars: {
+                                match: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: { $ifNull: ["$fee_status.feeStatus", []] },
+                                                as: "fs",
+                                                cond: {
+                                                    $and: [
+                                                        { $eq: [{ $month: { $toDate: "$$fs.date" } }, targetMonthNum + 1] },
+                                                        { $eq: [{ $year: { $toDate: "$$fs.date" } }, targetYearNum] },
+                                                        { $eq: ["$$fs.paid", true] }
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        0
+                                    ]
+                                }
+                            },
+                            in: { $ifNull: ["$$match.paid_at", null] }
+                        }
                     }
                 }
             }

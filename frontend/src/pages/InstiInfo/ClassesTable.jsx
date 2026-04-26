@@ -43,6 +43,8 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
     const [subjectFilter, setSubjectFilter] = useState('All');
     const [gradeFilter, setGradeFilter] = useState('All');
     const [statusFilter, setStatusFilter] = useState('All');
+    const [dateFrom, setDateFrom] = useState('');
+    const [dateTo, setDateTo] = useState('');
     const [page, setPage] = useState(1);
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedClass, setSelectedClass] = useState(null);
@@ -97,17 +99,22 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
                 const subjectMatch = subjectFilter === 'All' || getSubjectName(log.subject_id, log.batch_id) === subjectFilter;
                 const gradeMatch = gradeFilter === 'All' || log.batch_id.forStandard === gradeFilter;
                 const statusMatch = statusFilter === 'All' || cls.status === statusFilter;
-                if (batchMatch && subjectMatch && gradeMatch && statusMatch) rows.push({ log, cls });
+                const clsDate = cls.date?.slice(0, 10); // 'YYYY-MM-DD'
+                const dateFromMatch = !dateFrom || clsDate >= dateFrom;
+                const dateToMatch = !dateTo || clsDate <= dateTo;
+                if (batchMatch && subjectMatch && gradeMatch && statusMatch && dateFromMatch && dateToMatch) rows.push({ log, cls });
             });
         });
         return rows.sort((a, b) => new Date(b.cls.date) - new Date(a.cls.date));
-    }, [newClassLogs, batchFilter, subjectFilter, gradeFilter, statusFilter]);
+    }, [newClassLogs, batchFilter, subjectFilter, gradeFilter, statusFilter, dateFrom, dateTo]);
 
     const totalPages = Math.max(1, Math.ceil(allFilteredRows.length / PAGE_SIZE));
     const safePage = Math.min(page, totalPages);
     const pagedRows = allFilteredRows.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
     const changeFilter = (setter) => (val) => { setter(val); setPage(1); };
+    const changeDateFrom = (val) => { setDateFrom(val); setPage(1); };
+    const changeDateTo = (val) => { setDateTo(val); setPage(1); };;
 
     const handleEditClass = (log, cls) => {
         setSelectedClass({
@@ -152,6 +159,26 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
                         </select>
                     </div>
                 ))}
+                <div className="flex-1 min-w-[120px]">
+                    <label className="block text-xs font-medium text-[#7b5c4b] uppercase mb-1">From Date</label>
+                    <input
+                        type="date"
+                        value={dateFrom}
+                        max={dateTo || undefined}
+                        onChange={(e) => changeDateFrom(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg border border-[#e6c8a8] text-sm text-[#5a4a3c] bg-[#f0d9c0] focus:ring-[#e0c4a8] focus:outline-none"
+                    />
+                </div>
+                <div className="flex-1 min-w-[120px]">
+                    <label className="block text-xs font-medium text-[#7b5c4b] uppercase mb-1">To Date</label>
+                    <input
+                        type="date"
+                        value={dateTo}
+                        min={dateFrom || undefined}
+                        onChange={(e) => changeDateTo(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg border border-[#e6c8a8] text-sm text-[#5a4a3c] bg-[#f0d9c0] focus:ring-[#e0c4a8] focus:outline-none"
+                    />
+                </div>
             </div>
 
             {/* Table — only this scrolls */}

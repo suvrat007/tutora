@@ -14,6 +14,7 @@ import axiosInstance from "@/utilities/axiosInstance.jsx";
 import toast from 'react-hot-toast';
 import { useSelector } from "react-redux";
 import { exportToCSV } from "@/utilities/csvExport.js";
+import { formatDate } from "@/utilities/dateUtils";
 
 const FeesTable = ({ monthFilter, setMonthFilter, onSaveComplete }) => {
     const batchesMetadata = useSelector(state => state.batches) || [];
@@ -149,6 +150,7 @@ const FeesTable = ({ monthFilter, setMonthFilter, onSaveComplete }) => {
             Subjects: s.subjects?.join(" | ") || "",
             "Amount (₹)": s.amount,
             Status: s.isPaidThisMonth ? "Paid" : "Due",
+            "Paid On": s.paidAt ? formatDate(s.paidAt) : "",
             Month: activeMonth,
         }));
         exportToCSV(rows, `fees_${activeMonth.replace(" ", "_")}.csv`);
