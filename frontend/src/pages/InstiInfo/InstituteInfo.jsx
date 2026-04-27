@@ -1,5 +1,5 @@
 import { useSelector } from 'react-redux';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
     Building2, Phone, Mail, GraduationCap, Calendar, Users, PencilIcon
@@ -7,13 +7,10 @@ import {
 
 import processClassLogs from './useClassLogProcessor';
 import useFetchClassLogs from '@/hooks/useFetchClassLogs.js';
-import useFetchBatches from '@/hooks/useFetchBatches.js';
-import useFetchStudents from '@/hooks/useFetchStudents.js';
 
 import ClassesTable from './ClassesTable';
 import WrapperCard from '@/components/ui/WrapperCard.jsx';
 import EditInfoModal from '@/pages/InstiInfo/EditInfoModal.jsx';
-import LoadingPage from '@/pages/LoadingPage.jsx';
 
 const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
@@ -25,21 +22,9 @@ const InstituteInfo = () => {
     const batches = useSelector((state) => state.batches);
     const userData = useSelector((state) => state.user);
     const instiData = userData?.institute_info || { contact_info: {} };
-    // const fetchBatches = useFetchBatches();
-    // const fetchStudents = useFetchStudents();   
-    // const fetchAttendanceSummary = useFetchAttendanceSummary();
     const fetchClassLogs = useFetchClassLogs();
 
-
-    // useEffect(() => {
-    //     fetchBatches();
-    //     fetchStudents();
-    //     fetchAttendanceSummary();
-    //     fetchClassLogs();
-    // }, []);
-
     const [showEditModal, setShowEditModal] = useState(false);
-
 
     const newClassLogs = useMemo(() => processClassLogs(classLogs, batches), [classLogs, batches]);
 
@@ -47,14 +32,8 @@ const InstituteInfo = () => {
         await fetchClassLogs();
     };
 
-    const [loaded, setLoaded] = useState(false);
-
-    if (!loaded) return <LoadingPage onDone={() => setLoaded(true)} />;
-
-    // console.log("Institute Data:", newClassLogs);
-
     return (
-        <div className="h-screen p-6 overflow-y-auto">
+        <div className="h-full p-6 overflow-y-auto">
             {showEditModal && (
                 <EditInfoModal
                     onClose={() => setShowEditModal(false)}

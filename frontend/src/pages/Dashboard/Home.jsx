@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import LoadingPage from "../LoadingPage.jsx";
 import TodaysClasses from "./comps/FuturePhases/TodaysClasses.jsx";
 import ClassStatusUpdates from "./comps/P1/ClassStatusUpdates.jsx";
 import Reminders from "./comps/P1/Reminders.jsx";
@@ -14,24 +13,19 @@ import useFetchStudents from "@/hooks/useFetchStudents.js";
 import useFetchFeeSummary from "@/hooks/useFetchFeeSummary.js";
 
 const Home = () => {
-    const [loaded, setLoaded] = useState(false);
     const [reminderRefreshKey, setReminderRefreshKey] = useState(0);
     const fetchAttendance = useFetchAttendanceSummary();
     const fetchStudents = useFetchStudents();
     const fetchFeeSummary = useFetchFeeSummary();
 
     useEffect(() => {
-        if (loaded) {
-            fetchStudents();
-            fetchAttendance();
-            fetchFeeSummary();
-        }
-    }, [loaded]);
-
-    if (!loaded) return <LoadingPage onDone={() => setLoaded(true)} />;
+        fetchStudents();
+        fetchAttendance();
+        fetchFeeSummary();
+    }, []);
 
     return (
-        <div className="py-3 px-3 sm:px-5 overflow-y-auto flex flex-col gap-4 sm:gap-6 pb-8">
+        <div className="h-full py-3 px-3 sm:px-5 overflow-y-auto flex flex-col gap-4 sm:gap-6 pb-8">
             {/* Today's classes + Pending class updates + Reminders */}
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 sm:h-[400px]">
                 <div className="w-full sm:w-1/3 sm:h-full">

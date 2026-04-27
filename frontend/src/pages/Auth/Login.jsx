@@ -47,11 +47,11 @@ const Login = () => {
     const handleGoogleLogin = async (credentialResponse) => {
         setIsLoading(true);
         try {
-            const response = await axiosInstance.post("auth/google-auth", { credential: credentialResponse.credential }, { withCredentials: true });
-            if (response.data.isNewUser) {
+            await axiosInstance.post("auth/google-auth", { credential: credentialResponse.credential }, { withCredentials: true });
+            const user = await fetchUser();
+            if (!user?.institute_info?.name) {
                 setSignupCreds({ isGoogleUser: true });
             } else {
-                await fetchUser();
                 navigate("/main");
             }
         } catch (err) {

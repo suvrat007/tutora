@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axiosInstance from "../../utilities/axiosInstance.jsx";
 import { FiPlus, FiSearch } from "react-icons/fi";
 import { AiOutlineClose, AiOutlineEdit } from "react-icons/ai";
+import { Link2, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import WrapperCard from "@/components/ui/WrapperCard.jsx";
 import useFetchStudents from "@/hooks/useFetchStudents.js";
@@ -9,6 +10,7 @@ import { useSelector } from "react-redux";
 import useFilterStudentsBySubject from "./funtions/useFilterStudentsBySubject.js";
 import StdDataDisplay from "@/pages/Student/StdDataDisplay.jsx";
 import AddStudent from "@/pages/Student/AddStudent.jsx";
+import PendingApprovals from "@/pages/Student/PendingApprovals.jsx";
 import ConfirmationModal from "@/components/ui/ConfirmationModal.jsx";
 import toast from "react-hot-toast";
 
@@ -38,8 +40,18 @@ const StudentData = () => {
   const [seeStdDetails, setSeeStdDetails] = useState({ show: false, stdDetails: null });
   const [studentToDelete, setStudentToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const user = useSelector((state) => state.user);
+
+  const copyRegistrationLink = () => {
+    const link = `${window.location.origin}/register/${user?._id}`;
+    navigator.clipboard.writeText(link).then(() => {
+      setLinkCopied(true);
+      toast.success('Registration link copied!');
+      setTimeout(() => setLinkCopied(false), 2500);
+    }).catch(() => toast.error('Could not copy link'));
+  };
   const batches = useSelector((state) => state.batches);
   const groupedStudents = useSelector((state) => state.students.groupedStudents);
   const fetchStudents = useFetchStudents();
@@ -113,14 +125,32 @@ const StudentData = () => {
 
   return (
       <>
-        <div className="w-full flex flex-col-reverse lg:flex-row gap-4 h-full p-4 mx-auto overflow-y-auto">
+        <div className="w-full flex flex-col gap-4 h-full p-4 mx-auto overflow-y-auto">
+          {/* Pending student registrations */}
+          <PendingApprovals />
+
+          {/* Main content: student grid + filters */}
+          <div className="flex flex-col-reverse lg:flex-row gap-4 flex-1 min-h-0">
           {/* Students List */}
           <div className="w-full lg:w-2/3">
             <WrapperCard>
               <div className="flex flex-col h-full bg-[#f8ede3] rounded-3xl shadow-[0_8px_24px_rgba(0,0,0,0.15)] overflow-hidden">
-                <h2 className="text-xl sm:text-2xl font-bold text-[#5a4a3c] p-4 sm:p-6 border-b border-[#e6c8a8] bg-[#f0d9c0]">
-                  All Students in <span className="break-words">{user?.institute_info?.name || "Org Name"}</span>
-                </h2>
+                <div className="flex items-center justify-between gap-3 p-4 sm:p-6 border-b border-[#e6c8a8] bg-[#f0d9c0] flex-wrap">
+                  <h2 className="text-xl sm:text-2xl font-bold text-[#5a4a3c] min-w-0">
+                    All Students in <span className="break-words">{user?.institute_info?.name || "Org Name"}</span>
+                  </h2>
+                  <button
+                    onClick={copyRegistrationLink}
+                    title="Copy student registration link"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-[#e6c8a8] bg-white text-[#5a4a3c] hover:bg-[#f0d9c0] transition-colors flex-shrink-0"
+                  >
+                    {linkCopied ? (
+                      <><Check className="w-3.5 h-3.5 text-green-600" /> Copied!</>
+                    ) : (
+                      <><Link2 className="w-3.5 h-3.5" /> Share Registration Link</>
+                    )}
+                  </button>
+                </div>
                 {displayStudents.length === 0 ? (
                     <motion.div
                         variants={placeholderVariants}
@@ -302,6 +332,7 @@ const StudentData = () => {
                 )}
               </div>
             </WrapperCard>
+          </div>
           </div>
         </div>
 

@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { Trophy, Filter } from "lucide-react";
 import { motion } from "framer-motion";
+import { TEST_STATUS } from "@/utilities/constants";
 
 const MEDALS = [
     { label: "1st", bg: "#FFD70030", color: "#C8A800", border: "#FFD70060" },
@@ -21,12 +22,47 @@ const PctBar = ({ value }) => (
     </div>
 );
 
+// Composite = 40% attendance + 40% marks + 20% fee
+// If no test data: redistribute proportionally → 66.7% attendance + 33.3% fee
+const computeComposite = (attendancePct, marksPct, feePct) => {
+    if (marksPct === null) {
+        return attendancePct * 0.667 + feePct * 0.333;
+    }
+    return attendancePct * 0.40 + marksPct * 0.40 + feePct * 0.20;
+};
+
 const TopStudents = () => {
     const attendance = useSelector(s => s.attendance);
     const batches = useSelector(s => s.batches);
+    const tests = useSelector(s => s.tests?.tests || []);
+    const feeSummary = useSelector(s => s.feeSummary);
     const [selectedBatch, setSelectedBatch] = useState("all");
 
     const allStudents = attendance?.data || [];
+    const pendingStudents = feeSummary?.pendingStudents || [];
+
+    // Build per-student marks score from completed tests
+    const marksMap = useMemo(() => {
+        const map = {};
+        tests
+            .filter(t => t.status === TEST_STATUS.COMPLETED && t.maxMarks > 0)
+            .forEach(t => {
+                (t.studentResults || []).forEach(r => {
+                    if (!r.appeared) return;
+                    const sid = String(r.studentId?._id || r.studentId);
+                    if (!map[sid]) map[sid] = { totalObtained: 0, totalMax: 0 };
+                    map[sid].totalObtained += r.marks || 0;
+                    map[sid].totalMax += t.maxMarks;
+                });
+            });
+        return map;
+    }, [tests]);
+
+    // Build set of unpaid student IDs
+    const unpaidIds = useMemo(
+        () => new Set(pendingStudents.map(p => String(p.studentId))),
+        [pendingStudents]
+    );
 
     const ranked = useMemo(() => {
         return allStudents
@@ -35,14 +71,28 @@ const TopStudents = () => {
                     ? s.subjects
                     : s.subjects.filter(sub => String(sub.batchId) === String(selectedBatch));
                 if (!subs || subs.length === 0) return null;
-                const avgPct = subs.reduce((sum, sub) => sum + sub.percentage, 0) / subs.length;
+
+                const attendancePct = subs.reduce((sum, sub) => sum + sub.percentage, 0) / subs.length;
                 const totalAttended = subs.reduce((sum, sub) => sum + sub.attended, 0);
                 const totalClasses = subs.reduce((sum, sub) => sum + sub.total, 0);
+
+                const sid = String(s.studentId);
+                const marksData = marksMap[sid];
+                const marksPct = marksData && marksData.totalMax > 0
+                    ? (marksData.totalObtained / marksData.totalMax) * 100
+                    : null;
+
+                const feePct = unpaidIds.has(sid) ? 0 : 100;
+                const composite = computeComposite(attendancePct, marksPct, feePct);
+
                 const batch = batches.find(b => String(b._id) === String(subs[0].batchId));
                 return {
-                    studentId: s.studentId,
+                    studentId: sid,
                     name: s.studentName,
-                    avgPct,
+                    composite,
+                    attendancePct,
+                    marksPct,
+                    feePaid: !unpaidIds.has(sid),
                     totalAttended,
                     totalClasses,
                     batchName: batch?.name || "Unknown",
@@ -50,9 +100,9 @@ const TopStudents = () => {
                 };
             })
             .filter(Boolean)
-            .sort((a, b) => b.avgPct - a.avgPct)
+            .sort((a, b) => b.composite - a.composite)
             .slice(0, 3);
-    }, [allStudents, selectedBatch, batches]);
+    }, [allStudents, selectedBatch, batches, marksMap, unpaidIds]);
 
     return (
         <div className="bg-[#f8ede3] rounded-3xl border border-[#e6c8a8] shadow-xl p-4 sm:p-6 sm:h-full flex flex-col overflow-hidden">
@@ -82,7 +132,7 @@ const TopStudents = () => {
                 {allStudents.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full gap-2 text-[#7b5c4b]">
                         <Trophy className="w-9 h-9 text-[#e0c4a8]" />
-                        <p className="text-sm font-medium">No attendance data yet.</p>
+                        <p className="text-sm font-medium">No data yet.</p>
                         <p className="text-xs text-[#b0998a]">Start logging classes to see rankings.</p>
                     </div>
                 ) : ranked.length === 0 ? (
@@ -113,11 +163,20 @@ const TopStudents = () => {
                                 <p className="text-xs text-[#b0998a] truncate">
                                     {s.batchName}{s.forStandard ? ` · Class ${s.forStandard}` : ""}
                                 </p>
-                                <PctBar value={s.avgPct} />
+                                <PctBar value={s.composite} />
+                                <div className="flex gap-2 mt-1 text-[10px] text-[#b0998a]">
+                                    <span title="Attendance">A: {s.attendancePct.toFixed(0)}%</span>
+                                    <span className="opacity-40">·</span>
+                                    <span title="Test marks">{s.marksPct !== null ? `M: ${s.marksPct.toFixed(0)}%` : "M: —"}</span>
+                                    <span className="opacity-40">·</span>
+                                    <span title="Fee status" className={s.feePaid ? "text-green-600" : "text-red-500"}>
+                                        F: {s.feePaid ? "✓" : "✗"}
+                                    </span>
+                                </div>
                             </div>
                             <div className="text-right flex-shrink-0">
-                                <p className="text-base font-bold text-[#8b5e3c]">{s.avgPct.toFixed(1)}%</p>
-                                <p className="text-xs text-[#b0998a]">{s.totalAttended}/{s.totalClasses}</p>
+                                <p className="text-base font-bold text-[#8b5e3c]">{s.composite.toFixed(1)}%</p>
+                                <p className="text-[10px] text-[#b0998a]">composite</p>
                             </div>
                         </motion.div>
                     ))

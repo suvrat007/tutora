@@ -16,6 +16,7 @@ const AuthRouter = require("./routes/Auth.js");
 const InstituteRouter = require("./routes/Institute.js");
 const TestRouter = require("./routes/Test.js");
 const TeacherRouter = require("./routes/Teacher.js");
+const RegistrationRouter = require("./routes/Registration.js");
 
 app.use(cors({
     origin:['http://localhost:5173','https://tutor-a.vercel.app'],
@@ -53,6 +54,7 @@ app.use('/api/v1/auth', AuthRouter);
 app.use('/api/v1/institute', InstituteRouter);
 app.use('/api/v1/test', TestRouter);
 app.use('/api/v1/teacher', TeacherRouter);
+app.use('/api/v1/register', RegistrationRouter);
 
 app.use((err, req, res, next) => {
     console.error(err.stack);

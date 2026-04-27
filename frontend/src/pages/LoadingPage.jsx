@@ -57,6 +57,7 @@ const LoadingPage = ({ onDone }) => {
                 setTimeout(() => onDone(), 500);
             } catch (err) {
                 console.error("Error while loading data:", err);
+                setTimeout(() => onDone(), 500);
             }
         };
 

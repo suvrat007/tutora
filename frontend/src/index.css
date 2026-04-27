@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+html, body, #root {
+    background-color: #f8ede3;
+    min-height: 100%;
+}
+
 .add-student-inputbar {
     border: 1px solid #d1d5db;
     border-radius: 0.75rem;

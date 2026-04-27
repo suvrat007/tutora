@@ -21,13 +21,44 @@ const InstituteInfo = lazy(() => import('@/pages/InstiInfo/InstituteInfo.jsx'));
 const Fees = lazy(() => import('@/pages/Fees Management/Fees.jsx'));
 const TestManagementPage = lazy(() => import('@/pages/TestManagement/TestManagementPage.jsx'));
 const TeacherPage = lazy(() => import('@/pages/TeacherManagement/TeacherPage.jsx'));
+const StudentOnboardingPage = lazy(() => import('@/pages/StudentRegistration/StudentOnboardingPage.jsx'));
 
 const PageLoader = () => (
-    <div className="flex items-center justify-center h-full w-full min-h-[200px]">
-        <div className="w-8 h-8 border-4 border-[#e6c8a8] border-t-[#8b5e3c] rounded-full animate-spin" />
+    <div className="fixed inset-0 bg-[#f8ede3] flex flex-col items-center justify-center z-50">
+        <div className="absolute top-1/4 -left-20 w-72 h-72 bg-[#e0c4a8] rounded-full blur-3xl opacity-20 pointer-events-none" />
+        <div className="absolute bottom-1/4 -right-16 w-56 h-56 bg-[#d4b896] rounded-full blur-3xl opacity-15 pointer-events-none" />
+        <div
+            className="text-4xl font-bold text-[#5a4a3c] tracking-wide mb-6"
+            style={{ animation: "tutora-pulse 1.6s ease-in-out infinite" }}
+        >
+            Tutora
+        </div>
+        <div className="flex gap-1.5">
+            {[0, 1, 2].map((i) => (
+                <div
+                    key={i}
+                    className="w-2 h-2 bg-[#8b5e3c] rounded-full"
+                    style={{ animation: `tutora-bounce 1s ease-in-out ${i * 0.18}s infinite` }}
+                />
+            ))}
+        </div>
+        <style>{`
+            @keyframes tutora-pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.55; }
+            }
+            @keyframes tutora-bounce {
+                0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+                40% { transform: translateY(-8px); opacity: 1; }
+            }
+        `}</style>
     </div>
 );
 const appRouter = createBrowserRouter([
+    {
+        path: "/register/:adminId",
+        element: <Suspense fallback={<PageLoader />}><StudentOnboardingPage /></Suspense>,
+    },
     {
         path: "/",
         element: <Body />,
