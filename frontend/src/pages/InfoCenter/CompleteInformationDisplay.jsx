@@ -7,6 +7,7 @@ import { useCombinedStudentAttendance } from './useCombinedStudentAttendance';
 import WrapperCard from "@/components/ui/WrapperCard.jsx";
 import StudentProfile from "@/pages/InfoCenter/StudentProfile.jsx";
 import toast from "react-hot-toast";
+import Dropdown from "@/components/ui/Dropdown";
 
 const CompleteInformationDisplay = () => {
   const navigate = useNavigate();
@@ -67,21 +68,20 @@ const CompleteInformationDisplay = () => {
   };
 
   const renderDropdown = (value, setValue, options, placeholder, disabled = false) => (
-      <select
+      <Dropdown
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          className="border border-[#ddb892] rounded px-2 py-1 text-sm text-[#4a3a2c] bg-[#f0d9c0] cursor-pointer"
           disabled={disabled}
-      >
-        <option value="">{placeholder}</option>
-        {options.map((opt) =>
-            typeof opt === 'object' ? (
-                <option key={opt._id} value={opt.name}>{opt.name}</option>
-            ) : (
-                <option key={opt} value={opt}>{opt}</option>
-            )
-        )}
-      </select>
+          placeholder={placeholder}
+          options={[
+              { label: placeholder, value: "" },
+              ...options.map((opt) => 
+                  typeof opt === 'object' 
+                      ? { label: opt.name, value: opt.name }
+                      : { label: opt, value: opt }
+              )
+          ]}
+      />
   );
 
   if (showStudentProfile.show) {
@@ -142,10 +142,10 @@ const CompleteInformationDisplay = () => {
           {/* Attendance Summary */}
           <WrapperCard>
             <Card className="w-full h-full bg-[#f8ede3] text-[#4a3a2c] p-4 rounded-2xl flex flex-col border border-[#ddb892]">
-              {/* Header — always one row */}
-              <div className="flex items-center justify-between gap-2 mb-3 min-w-0">
-                <h2 className="text-base font-semibold shrink-0">Avg. Attendance</h2>
-                <div className="flex gap-2 shrink-0">
+              {/* Header */}
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <h2 className="text-base font-semibold">Avg. Attendance</h2>
+                <div className="flex flex-wrap gap-2">
                   {renderDropdown(batchName, (v) => { setBatchName(v); setSubjectName(''); }, batches, "All Batches", isLoadingBatches)}
                   {renderDropdown(subjectName, setSubjectName, batches.find((b) => b.name === batchName)?.subject || [], "All Subjects", !batchName)}
                 </div>
@@ -239,52 +239,50 @@ const CompleteInformationDisplay = () => {
               <div className="flex flex-wrap gap-3 p-4 border-b border-[#e6c8a8] bg-[#f8ede3]">
                 <div className="flex-1 min-w-[110px]">
                   <label className="block text-xs font-semibold text-[#7b5c4b] uppercase mb-1">Batch</label>
-                  <select
+                  <Dropdown
                     value={batchName}
                     onChange={(e) => { setBatchName(e.target.value); setSubjectName(''); }}
                     disabled={isLoadingBatches}
-                    className="w-full p-2.5 rounded-lg border border-[#e6c8a8] text-sm text-[#5a4a3c] bg-white shadow-sm focus:ring-2 focus:ring-[#e0c4a8] outline-none transition-shadow cursor-pointer"
-                  >
-                    <option value="">All Batches</option>
-                    {batches.map((b) => <option key={b._id} value={b.name}>{b.name}</option>)}
-                  </select>
+                    options={[
+                        { label: "All Batches", value: "" },
+                        ...batches.map(b => ({ label: b.name, value: b.name }))
+                    ]}
+                  />
                 </div>
                 <div className="flex-1 min-w-[110px]">
                   <label className="block text-xs font-semibold text-[#7b5c4b] uppercase mb-1">Subject</label>
-                  <select
+                  <Dropdown
                     value={subjectName}
                     onChange={(e) => setSubjectName(e.target.value)}
                     disabled={!batchName}
-                    className="w-full p-2.5 rounded-lg border border-[#e6c8a8] text-sm text-[#5a4a3c] bg-white shadow-sm focus:ring-2 focus:ring-[#e0c4a8] outline-none transition-shadow cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <option value="">All Subjects</option>
-                    {(batches.find((b) => b.name === batchName)?.subject || []).map((s) => (
-                      <option key={s._id} value={s.name}>{s.name}</option>
-                    ))}
-                  </select>
+                    options={[
+                        { label: "All Subjects", value: "" },
+                        ...(batches.find((b) => b.name === batchName)?.subject || []).map(s => ({ label: s.name, value: s.name }))
+                    ]}
+                  />
                 </div>
                 <div className="flex-1 min-w-[110px]">
                   <label className="block text-xs font-semibold text-[#7b5c4b] uppercase mb-1">Grade</label>
-                  <select
+                  <Dropdown
                     value={gradeFilter}
                     onChange={(e) => setGradeFilter(e.target.value)}
-                    className="w-full p-2.5 rounded-lg border border-[#e6c8a8] text-sm text-[#5a4a3c] bg-white shadow-sm focus:ring-2 focus:ring-[#e0c4a8] outline-none transition-shadow cursor-pointer"
-                  >
-                    <option value="">All Grades</option>
-                    {uniqueGrades.map((g) => <option key={g} value={g}>Class {g}</option>)}
-                  </select>
+                    options={[
+                        { label: "All Grades", value: "" },
+                        ...uniqueGrades.map(g => ({ label: `Class ${g}`, value: g }))
+                    ]}
+                  />
                 </div>
                 <div className="flex-1 min-w-[110px]">
                   <label className="block text-xs font-semibold text-[#7b5c4b] uppercase mb-1">Attendance</label>
-                  <select
+                  <Dropdown
                     value={attendanceFilter}
                     onChange={(e) => setAttendanceFilter(e.target.value)}
-                    className="w-full p-2.5 rounded-lg border border-[#e6c8a8] text-sm text-[#5a4a3c] bg-white shadow-sm focus:ring-2 focus:ring-[#e0c4a8] outline-none transition-shadow cursor-pointer"
-                  >
-                    <option value="">All</option>
-                    <option value=">50">Above 50%</option>
-                    <option value="<50">Below 50%</option>
-                  </select>
+                    options={[
+                        { label: "All", value: "" },
+                        { label: "Above 50%", value: ">50" },
+                        { label: "Below 50%", value: "<50" }
+                    ]}
+                  />
                 </div>
               </div>
 

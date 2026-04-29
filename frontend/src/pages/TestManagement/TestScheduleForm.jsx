@@ -6,8 +6,7 @@ import { useForm } from './hooks/useForm';
 import { API, TEST_STATUS } from '../../utilities/constants';
 import { toDatetimeLocalString } from '../../utilities/dateUtils';
 import toast from 'react-hot-toast';
-
-const selectClass = "w-full px-3 py-2 border border-[#e6c8a8] rounded-lg bg-white text-sm text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8]";
+import Dropdown from '@/components/ui/Dropdown';
 
 const TestScheduleForm = ({ batches, editingTest, setEditingTest, fetchTests, showTitle = true }) => {
     const [formError, setFormError] = useState(null);
@@ -129,34 +128,34 @@ const TestScheduleForm = ({ batches, editingTest, setEditingTest, fetchTests, sh
                 type="datetime-local"
                 className="border-[#e6c8a8] bg-white focus:ring-[#e0c4a8] text-[#5a4a3c]"
             />
-            <select {...register('batchId')} className={selectClass}>
-                <option value="">Select Batch</option>
-                {!editingTest && (
-                    <option value="all">All Batches</option>
-                )}
-                {batches.map(batch => (
-                    <option key={batch._id} value={batch._id}>{batch.name}</option>
-                ))}
-            </select>
+            <Dropdown 
+                {...register('batchId')} 
+                placeholder="Select Batch"
+                options={[
+                    ...(!editingTest ? [{ label: 'All Batches', value: 'all' }] : []),
+                    ...batches.map(b => ({ label: b.name, value: b._id }))
+                ]}
+            />
             {isAllBatches ? (
                 <p className="text-xs text-[#b0998a] px-1">
                     Subject selection is per-batch — not available when scheduling for all batches.
                 </p>
             ) : (
-                <select {...register('subjectId')} className={selectClass}>
-                    <option value="">No Subject (Optional)</option>
-                    {selectedBatch?.subject.map(subject => (
-                        <option key={subject._id} value={subject._id}>{subject.name}</option>
-                    ))}
-                </select>
+                <Dropdown 
+                    {...register('subjectId')} 
+                    placeholder="No Subject (Optional)"
+                    options={(selectedBatch?.subject || []).map(s => ({ label: s.name, value: s._id }))}
+                />
             )}
-            <select {...register('status')} className={selectClass}>
-                <option value={TEST_STATUS.SCHEDULED}>Scheduled</option>
-                <option value={TEST_STATUS.COMPLETED} disabled={isFutureTest}>
-                    Completed{isFutureTest ? ' (date not yet reached)' : ''}
-                </option>
-                <option value={TEST_STATUS.CANCELLED}>Cancelled</option>
-            </select>
+            <Dropdown 
+                {...register('status')} 
+                placeholder="Status"
+                options={[
+                    { label: 'Scheduled', value: TEST_STATUS.SCHEDULED },
+                    { label: `Completed${isFutureTest ? ' (date not yet reached)' : ''}`, value: TEST_STATUS.COMPLETED },
+                    { label: 'Cancelled', value: TEST_STATUS.CANCELLED }
+                ]}
+            />
             {formData.status === TEST_STATUS.CANCELLED && (
                 <Input
                     {...register('cancellationReason')}

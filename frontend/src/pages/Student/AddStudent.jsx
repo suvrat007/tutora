@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import useFetchStudents from "@/hooks/useFetchStudents.js";
 import { useSelector } from "react-redux";
 import toast from 'react-hot-toast';
+import Dropdown from "@/components/ui/Dropdown";
 
 const modalVariants = {
     hidden: { opacity: 0, scale: 0.95 },
@@ -297,22 +298,21 @@ const AddStudent = ({
                                 <p className="text-xs sm:text-sm">No batches available for this grade</p>
                             </motion.div>
                         ) : (
-                            <select
+                            <Dropdown
                                 value={selectedBatchId}
                                 onChange={(e) => {
                                     setSelectedBatchId(e.target.value);
                                     setNewStudent((prev) => ({ ...prev, subjectId: [] }));
                                 }}
                                 disabled={isSubmitting}
-                                className="w-full border border-[#e6c8a8] bg-[#f0d9c0] rounded-lg px-3 py-1.5 sm:py-2 text-sm sm:text-base text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] transition disabled:opacity-50"
-                            >
-                                <option value="">No Batch / Deselect</option>
-                                {eligibleBatches.map((batch) => (
-                                    <option key={batch._id} value={batch._id}>
-                                        {batch.name} (Class {batch.forStandard})
-                                    </option>
-                                ))}
-                            </select>
+                                options={[
+                                    { label: "No Batch / Deselect", value: "" },
+                                    ...eligibleBatches.map(batch => ({
+                                        label: `${batch.name} (Class ${batch.forStandard})`,
+                                        value: batch._id
+                                    }))
+                                ]}
+                            />
                         )}
                         {formErrors.batchGradeMismatch && <p className="text-red-500 text-xs sm:text-sm mt-1">{formErrors.batchGradeMismatch}</p>}
                         {formErrors.subjectId && <p className="text-red-500 text-xs sm:text-sm mt-1">{formErrors.subjectId}</p>}

@@ -81,7 +81,7 @@ const ClassStatusUpdates = () => {
                             <Loader2 className="animate-spin w-5 h-5 mr-2" /> Loading classes...
                         </div>
                     ) : filteredLogs.length === 0 ? (
-                        <p className="text-[#7b5c4b] text-center py-4">No classes to update at the moment. 🎉</p>
+                        <p className="text-[#7b5c4b] text-center py-4">No classes to update at the moment.</p>
                     ) : (
                         <AnimatePresence>
                             {filteredLogs.map((cls, index) => (

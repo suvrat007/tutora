@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { motion } from "framer-motion"; // eslint-disable-line no-unused-vars
+import { motion, AnimatePresence } from "framer-motion";
 import {
     Users,
     Building2,
@@ -8,8 +8,10 @@ import {
     XCircle,
     Download,
     Loader2,
+    ChevronDown,
 } from "lucide-react";
 import WrapperCard from "@/components/ui/WrapperCard.jsx";
+import Dropdown from "@/components/ui/Dropdown";
 import axiosInstance from "@/utilities/axiosInstance.jsx";
 import toast from 'react-hot-toast';
 import { useSelector } from "react-redux";
@@ -40,10 +42,30 @@ const FeesTable = ({ monthFilter, setMonthFilter, onSaveComplete }) => {
     const currentMonth = `${new Date().toLocaleString("default", { month: "long" })} ${new Date().getFullYear()}`;
 
     const isMounted = useRef(true);
+    const dropdownRef = useRef(null);
+    const checkNoStudentsRef = useRef(false);
+    const [isMonthDropdownOpen, setIsMonthDropdownOpen] = useState(false);
+
     useEffect(() => {
         isMounted.current = true;
-        return () => { isMounted.current = false; };
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsMonthDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => { 
+            isMounted.current = false; 
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
     }, []);
+
+    const handleMonthSelect = (mStr) => {
+        setMonthFilter(mStr);
+        setPage(1);
+        setIsMonthDropdownOpen(false);
+        checkNoStudentsRef.current = true;
+    };
 
     const fetchFeesList = useCallback(async () => {
         if (!isMounted.current) return;
@@ -63,6 +85,16 @@ const FeesTable = ({ monthFilter, setMonthFilter, onSaveComplete }) => {
                 setStudents(res.data.data);
                 setTotalPages(res.data.pagination.totalPages);
                 setPendingChanges({});
+
+                if (checkNoStudentsRef.current) {
+                    if (res.data.data.length === 0) {
+                        toast("There were no students enrolled on this month", { 
+                            icon: "ℹ️", 
+                            style: { background: '#f8ede3', color: '#5a4a3c', border: '1px solid #e6c8a8' } 
+                        });
+                    }
+                    checkNoStudentsRef.current = false;
+                }
             }
         } catch (error) {
             console.error("Failed to fetch students fee list", error);
@@ -144,16 +176,42 @@ const FeesTable = ({ monthFilter, setMonthFilter, onSaveComplete }) => {
     const handleExportCSV = () => {
         if (!students.length) { toast("No data to export."); return; }
         const activeMonth = monthFilter === "Present Month" ? currentMonth : monthFilter;
-        const rows = students.map(s => ({
-            Name: s.name,
-            Batch: s.batchName,
-            Subjects: s.subjects?.join(" | ") || "",
-            "Amount (₹)": s.amount,
-            Status: s.isPaidThisMonth ? "Paid" : "Due",
-            "Paid On": s.paidAt ? formatDate(s.paidAt) : "",
-            Month: activeMonth,
-        }));
-        exportToCSV(rows, `fees_${activeMonth.replace(" ", "_")}.csv`);
+        
+        if (activeMonth.startsWith("Whole Year")) {
+            const year = activeMonth.split(" ")[2];
+            const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            
+            const rows = students.map(s => {
+                const row = {
+                    Name: s.name,
+                    Batch: s.batchName,
+                    Subjects: s.subjects?.join(" | ") || "",
+                    "Monthly Amount (₹)": s.amount,
+                };
+                
+                months.forEach((m, index) => {
+                    const mStatus = (s.yearlyFeeStatuses || []).find(fs => new Date(fs.date).getMonth() === index);
+                    if (mStatus) {
+                        row[m] = mStatus.paid ? `Paid (${formatDate(mStatus.paid_at || mStatus.date)})` : "Due";
+                    } else {
+                        row[m] = "-";
+                    }
+                });
+                return row;
+            });
+            exportToCSV(rows, `fees_yearly_summary_${year}.csv`);
+        } else {
+            const rows = students.map(s => ({
+                Name: s.name,
+                Batch: s.batchName,
+                Subjects: s.subjects?.join(" | ") || "",
+                "Amount (₹)": s.amount,
+                Status: s.isPaidThisMonth ? "Paid" : "Due",
+                "Paid On": s.paidAt ? formatDate(s.paidAt) : "",
+                Month: activeMonth,
+            }));
+            exportToCSV(rows, `fees_${activeMonth.replace(" ", "_")}.csv`);
+        }
     };
 
     const availableSubjects = [...new Set(batchesMetadata.flatMap(b => (b.subject || []).map(s => s.name)))];
@@ -204,58 +262,93 @@ const FeesTable = ({ monthFilter, setMonthFilter, onSaveComplete }) => {
                     <div className="flex flex-col sm:flex-row flex-wrap gap-4 p-4 bg-[#f8ede3] border-b border-[#e6c8a8] z-20">
                         <div className="flex-1 min-w-[120px]">
                             <label className="block text-xs font-semibold text-[#7b5c4b] uppercase mb-1">Batch</label>
-                            <select
+                            <Dropdown
                                 value={batchFilter}
                                 onChange={(e) => { setBatchFilter(e.target.value); setPage(1); }}
-                                className="w-full p-2.5 rounded-lg border border-[#e6c8a8] text-sm text-[#5a4a3c] bg-white shadow-sm focus:ring-2 focus:ring-[#e0c4a8] focus:border-[#e0c4a8] outline-none transition-shadow"
-                            >
-                                <option value="">All Batches</option>
-                                {batchesMetadata.map((batch) => (
-                                    <option key={batch._id} value={batch._id}>
-                                        {batch.name} {batch.forStandard ? `(Class ${batch.forStandard})` : ''}
-                                    </option>
-                                ))}
-                            </select>
+                                options={[
+                                    { label: 'All Batches', value: '' },
+                                    ...batchesMetadata.map(b => ({
+                                        label: `${b.name} ${b.forStandard ? `(Class ${b.forStandard})` : ''}`,
+                                        value: b._id
+                                    }))
+                                ]}
+                            />
                         </div>
                         <div className="flex-1 min-w-[120px]">
                             <label className="block text-xs font-semibold text-[#7b5c4b] uppercase mb-1">Subject</label>
-                            <select
+                            <Dropdown
                                 value={subjectFilter}
                                 onChange={(e) => { setSubjectFilter(e.target.value); setPage(1); }}
-                                className="w-full p-2.5 rounded-lg border border-[#e6c8a8] text-sm text-[#5a4a3c] bg-white shadow-sm focus:ring-2 focus:ring-[#e0c4a8] focus:border-[#e0c4a8] outline-none transition-shadow"
-                            >
-                                <option value="">All Subjects</option>
-                                {availableSubjects.map((subject) => (
-                                    <option key={subject} value={subject}>{subject}</option>
-                                ))}
-                            </select>
+                                options={[
+                                    { label: 'All Subjects', value: '' },
+                                    ...availableSubjects.map(s => ({ label: s, value: s }))
+                                ]}
+                            />
                         </div>
                         <div className="flex-1 min-w-[120px]">
                             <label className="block text-xs font-semibold text-[#7b5c4b] uppercase mb-1">Status</label>
-                            <select
+                            <Dropdown
                                 value={paidFilter}
                                 onChange={(e) => { setPaidFilter(e.target.value); setPage(1); }}
-                                className="w-full p-2.5 rounded-lg border border-[#e6c8a8] text-sm text-[#5a4a3c] bg-white shadow-sm focus:ring-2 focus:ring-[#e0c4a8] focus:border-[#e0c4a8] outline-none transition-shadow"
-                            >
-                                <option value="">All Statuses</option>
-                                <option value="paid">Paid</option>
-                                <option value="unpaid">Unpaid</option>
-                            </select>
+                                options={[
+                                    { label: 'All Statuses', value: '' },
+                                    { label: 'Paid', value: 'paid' },
+                                    { label: 'Unpaid', value: 'unpaid' }
+                                ]}
+                            />
                         </div>
-                        <div className="flex-1 min-w-[120px]">
+                        <div className="flex-1 min-w-[120px] relative" ref={dropdownRef}>
                             <label className="block text-xs font-semibold text-[#7b5c4b] uppercase mb-1">Target Month</label>
-                            <select
-                                value={monthFilter}
-                                onChange={(e) => { setMonthFilter(e.target.value); setPage(1); }}
-                                className="w-full p-2.5 rounded-lg border border-[#e6c8a8] text-sm text-[#5a4a3c] bg-white shadow-sm focus:ring-2 focus:ring-[#e0c4a8] focus:border-[#e0c4a8] outline-none transition-shadow"
+                            <button
+                                onClick={() => setIsMonthDropdownOpen(!isMonthDropdownOpen)}
+                                className="w-full p-2.5 rounded-lg border border-[#e6c8a8] text-sm text-[#5a4a3c] bg-white shadow-sm hover:border-[#e0c4a8] outline-none transition-shadow text-left flex justify-between items-center"
                             >
-                                {[...Array(6)].map((_, i) => {
-                                    const d = new Date();
-                                    d.setMonth(d.getMonth() - i);
-                                    const mStr = `${d.toLocaleString("default", { month: "long" })} ${d.getFullYear()}`;
-                                    return <option key={mStr} value={mStr}>{mStr}</option>;
-                                })}
-                            </select>
+                                <span>{monthFilter}</span>
+                                <ChevronDown className="w-4 h-4 text-[#a08a78]" />
+                            </button>
+                            
+                            <AnimatePresence>
+                                {isMonthDropdownOpen && (
+                                    <motion.div 
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: 10 }}
+                                        className="absolute top-full right-0 sm:left-0 mt-2 p-3 bg-white border border-[#e6c8a8] shadow-lg rounded-xl z-50 w-[280px]"
+                                    >
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].map((m) => {
+                                                const mStr = `${m} ${new Date().getFullYear()}`;
+                                                const isSelected = monthFilter === mStr || (monthFilter === "Present Month" && currentMonth === mStr);
+                                                return (
+                                                    <button
+                                                        key={m}
+                                                        onClick={() => handleMonthSelect(mStr)}
+                                                        className={`py-2 text-xs font-medium rounded-lg border transition-colors ${
+                                                            isSelected 
+                                                                ? "bg-[#e0c4a8] border-[#cda886] text-[#5a4a3c] shadow-sm" 
+                                                                : "bg-[#fdfaf7] border-[#f0d9c0] text-[#7b5c4b] hover:bg-[#f0e8df] hover:border-[#e0c4a8]"
+                                                        }`}
+                                                    >
+                                                        {m.slice(0, 3)}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                        <div className="mt-2 pt-2 border-t border-[#f0d9c0]">
+                                            <button
+                                                onClick={() => handleMonthSelect(`Whole Year ${new Date().getFullYear()}`)}
+                                                className={`w-full py-2 text-xs font-bold rounded-lg border transition-colors ${
+                                                    monthFilter.startsWith("Whole Year")
+                                                        ? "bg-[#e0c4a8] border-[#cda886] text-[#5a4a3c] shadow-sm" 
+                                                        : "bg-[#fdfaf7] border-[#f0d9c0] text-[#7b5c4b] hover:bg-[#f0e8df] hover:border-[#e0c4a8]"
+                                                }`}
+                                            >
+                                                Whole Year {new Date().getFullYear()} Summary
+                                            </button>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
                     </div>
 
@@ -317,6 +410,37 @@ const FeesTable = ({ monthFilter, setMonthFilter, onSaveComplete }) => {
                                                     <span className="font-bold text-gray-800">₹{student.amount.toLocaleString()}</span>
                                                 </td>
                                                 <td className="px-6 py-4">
+                                                    {monthFilter.startsWith("Whole Year") ? (() => {
+                                                        const unpaidStatuses = (student.yearlyFeeStatuses || []).filter(fs => !fs.paid);
+                                                        const paidCount = (student.yearlyFeeStatuses || []).filter(fs => fs.paid).length;
+                                                        const totalCount = (student.yearlyFeeStatuses || []).length;
+                                                        
+                                                        if (totalCount === 0) {
+                                                            return <span className="text-xs text-gray-500 font-medium">No Data</span>;
+                                                        }
+                                                        
+                                                        if (unpaidStatuses.length === 0) {
+                                                            return (
+                                                                <div className="flex flex-col gap-1">
+                                                                    <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wide bg-green-50 text-green-700 border border-green-200 w-fit">
+                                                                        <CheckCircle className="w-3.5 h-3.5 text-green-600" /> All Paid ({totalCount}/{totalCount})
+                                                                    </span>
+                                                                </div>
+                                                            );
+                                                        }
+                                                        
+                                                        const dueMonths = unpaidStatuses.map(fs => new Date(fs.date).toLocaleString('default', { month: 'short' })).join(', ');
+                                                        return (
+                                                            <div className="flex flex-col gap-1">
+                                                                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wide bg-red-50 text-red-700 border border-red-200 w-fit">
+                                                                    <XCircle className="w-3.5 h-3.5 text-red-500" /> Due: {dueMonths}
+                                                                </span>
+                                                                <span className="text-[10px] text-gray-500 font-medium ml-1">
+                                                                    Paid {paidCount} of {totalCount} months
+                                                                </span>
+                                                            </div>
+                                                        );
+                                                    })() : (
                                                     <button
                                                         onClick={() => togglePaidStatus(student.studentId)}
                                                         disabled={saving}
@@ -332,6 +456,7 @@ const FeesTable = ({ monthFilter, setMonthFilter, onSaveComplete }) => {
                                                         }
                                                         {student.isPaidThisMonth ? "Paid" : "Due"}
                                                     </button>
+                                                    )}
                                                 </td>
                                             </motion.tr>
                                         );

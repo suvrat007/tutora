@@ -18,12 +18,10 @@ const ClassLogSchema = new Schema({
             updated: { type: Boolean, default: false, required: true }
         }
     ]
-}, {
-    indexes: [
-        // Enforces one ClassLog doc per admin+batch+subject combination
-        { key: { adminId: 1, batch_id: 1, subject_id: 1 }, unique: true }
-    ]
 });
+
+// Enforces one ClassLog doc per admin+batch+subject combination
+ClassLogSchema.index({ adminId: 1, batch_id: 1, subject_id: 1 }, { unique: true });
 
 // Optimizes ClassLog.find({ adminId }) queries for attendance status and today-pending
 ClassLogSchema.index({ adminId: 1 });

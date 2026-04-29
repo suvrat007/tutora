@@ -13,8 +13,10 @@ import { StudentList } from "@/pages/Attendence/components/StudentList.jsx";
 import { useAttendanceSubmission } from "@/pages/Attendence/hooks/useAttendanceSubmission.js";
 import WrapperCard from "@/components/ui/WrapperCard.jsx";
 import useFetchStudents from "@/hooks/useFetchStudents.js";
+import useFetchClassLogs from "@/hooks/useFetchClassLogs.js";
+import Dropdown from "@/components/ui/Dropdown";
 
-const selectClass = "border border-[#e6c8a8] px-3 py-2 rounded-lg text-sm text-[#5a4a3c] bg-white focus:ring-2 focus:ring-[#e0c4a8] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed";
+const selectClass = "w-40";
 
 export const AttendancePage = () => {
     const state = useAttendanceState();
@@ -33,6 +35,7 @@ export const AttendancePage = () => {
     const batches = useSelector((s) => s.batches);
     const groupedStudents = useSelector((s) => s.students.groupedStudents);
     const fetchGroupedStudents = useFetchStudents();
+    const fetchClassLogs = useFetchClassLogs();
     const location = useLocation();
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [saving, setSaving] = useState(false);
@@ -103,6 +106,7 @@ export const AttendancePage = () => {
                     .map(s => ({ _id: s._id, name: s.name, time: now }));
                 state.setMarkedPresentStudents(newMarked);
                 setRefreshTrigger((t) => t + 1);
+                fetchClassLogs().catch(console.error);
             }
         }, 800);
         return () => clearTimeout(saveTimeoutRef.current);
@@ -123,28 +127,28 @@ export const AttendancePage = () => {
                         <div className="flex flex-wrap items-center gap-3">
                             <h1 className="text-lg font-bold text-[#5a4a3c] shrink-0 mr-1">Attendance</h1>
 
-                            <select
-                                value={batchName}
-                                onChange={(e) => { setBatchName(e.target.value); setSubjectName(""); setDate(""); resetStudentData(); }}
-                                className={selectClass}
-                            >
-                                <option value="">Select Batch</option>
-                                {batches.map((b) => (
-                                    <option key={b._id} value={b.name}>{b.name}</option>
-                                ))}
-                            </select>
+                            <div className={selectClass}>
+                                <Dropdown
+                                    value={batchName}
+                                    onChange={(e) => { setBatchName(e.target.value); setSubjectName(""); setDate(""); resetStudentData(); }}
+                                    options={[
+                                        { label: "Select Batch", value: "" },
+                                        ...batches.map((b) => ({ label: b.name, value: b.name }))
+                                    ]}
+                                />
+                            </div>
 
-                            <select
-                                value={subjectName}
-                                onChange={(e) => { setSubjectName(e.target.value); setDate(""); resetStudentData(); }}
-                                disabled={!batchName}
-                                className={selectClass}
-                            >
-                                <option value="">Select Subject</option>
-                                {selectedBatch?.subject.map((s) => (
-                                    <option key={s._id} value={s.name}>{s.name}</option>
-                                ))}
-                            </select>
+                            <div className={selectClass}>
+                                <Dropdown
+                                    value={subjectName}
+                                    onChange={(e) => { setSubjectName(e.target.value); setDate(""); resetStudentData(); }}
+                                    disabled={!batchName}
+                                    options={[
+                                        { label: "Select Subject", value: "" },
+                                        ...(selectedBatch?.subject || []).map((s) => ({ label: s.name, value: s.name }))
+                                    ]}
+                                />
+                            </div>
 
                             <input
                                 type="date"
@@ -152,7 +156,7 @@ export const AttendancePage = () => {
                                 onChange={(e) => setDate(e.target.value)}
                                 disabled={!batchName || !subjectName}
                                 max={new Date().toISOString().split("T")[0]}
-                                className={selectClass}
+                                className="border border-[#e6c8a8] px-3 py-2 rounded-lg text-sm text-[#5a4a3c] bg-white focus:ring-2 focus:ring-[#e0c4a8] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                             />
 
                             <button

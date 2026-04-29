@@ -13,6 +13,7 @@ import AddStudent from "@/pages/Student/AddStudent.jsx";
 import PendingApprovals from "@/pages/Student/PendingApprovals.jsx";
 import ConfirmationModal from "@/components/ui/ConfirmationModal.jsx";
 import toast from "react-hot-toast";
+import Dropdown from "@/components/ui/Dropdown";
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -272,51 +273,39 @@ const StudentData = () => {
                   </div>
                   <div>
                     <label className="block text-xs sm:text-sm font-medium text-[#5a4a3c] mb-1">Batch</label>
-                    <select
+                    <Dropdown
                         value={selectedBatch}
                         onChange={(e) => {
                           setSelectedBatch(e.target.value);
                           setSelectedSubject("");
                         }}
-                        className="w-full border border-[#e6c8a8] bg-[#f0d9c0] rounded-lg text-sm sm:text-base p-1.5 sm:p-2 text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] transition"
-                    >
-                      <option value="">All Batches</option>
-                      {batches.map((batch) => (
-                          <option key={batch._id} value={batch._id}>
-                            {batch.name} (Class {batch.forStandard})
-                          </option>
-                      ))}
-                    </select>
+                        options={[
+                            { label: "All Batches", value: "" },
+                            ...batches.map(b => ({ label: `${b.name} (Class ${b.forStandard})`, value: b._id }))
+                        ]}
+                    />
                   </div>
                   <div>
                     <label className="block text-xs sm:text-sm font-medium text-[#5a4a3c] mb-1">Subject</label>
-                    <select
+                    <Dropdown
                         value={selectedSubject}
                         onChange={(e) => setSelectedSubject(e.target.value)}
-                        className="w-full border border-[#e6c8a8] bg-[#f0d9c0] rounded-lg text-sm sm:text-base p-1.5 sm:p-2 text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] transition"
-                    >
-                      <option value="">All Subjects</option>
-                      {uniqueSubjects.map((subject) => (
-                          <option key={subject} value={subject}>
-                            {subject.charAt(0).toUpperCase() + subject.slice(1)}
-                          </option>
-                      ))}
-                    </select>
+                        options={[
+                            { label: "All Subjects", value: "" },
+                            ...uniqueSubjects.map(s => ({ label: s.charAt(0).toUpperCase() + s.slice(1), value: s }))
+                        ]}
+                    />
                   </div>
                   <div>
                     <label className="block text-xs sm:text-sm font-medium text-[#5a4a3c] mb-1">Grade</label>
-                    <select
+                    <Dropdown
                         value={selectedGrade}
                         onChange={(e) => setSelectedGrade(e.target.value)}
-                        className="w-full border border-[#e6c8a8] bg-[#f0d9c0] rounded-lg text-sm sm:text-base p-1.5 sm:p-2 text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] transition"
-                    >
-                      <option value="">All Grades</option>
-                      {uniqueGrades.map((grade) => (
-                          <option key={grade} value={grade}>
-                            Class {grade}
-                          </option>
-                      ))}
-                    </select>
+                        options={[
+                            { label: "All Grades", value: "" },
+                            ...uniqueGrades.map(g => ({ label: `Class ${g}`, value: g }))
+                        ]}
+                    />
                   </div>
                 </div>
 

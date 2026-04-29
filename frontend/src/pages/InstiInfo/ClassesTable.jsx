@@ -7,11 +7,13 @@ import {
     AlertCircle,
     CheckCircle,
     XCircle,
-    PencilIcon
+    PencilIcon,
+    Download
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import EditClassModal from './EditClassModal';
+import Dropdown from '@/components/ui/Dropdown';
 
 // Animation variants
 const fadeInUp = {
@@ -82,6 +84,13 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
         setExpandedNotes(prev => ({ ...prev, [classId]: !prev[classId] }));
     };
 
+    const toYYYYMMDD = (dateStr) => {
+        if (!dateStr) return '';
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return dateStr;
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    };
+
     const filterOptions = useMemo(() => {
         const batches = [...new Set(newClassLogs.map(log => log.batch_id.name))];
         const subjects = [...new Set(newClassLogs.flatMap(log => log.batch_id.subject.map(s => s.name)))];
@@ -105,7 +114,7 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
                 if (batchMatch && subjectMatch && gradeMatch && statusMatch && dateFromMatch && dateToMatch) rows.push({ log, cls });
             });
         });
-        return rows.sort((a, b) => new Date(b.cls.date) - new Date(a.cls.date));
+        return rows.sort((a, b) => b.cls.date.localeCompare(a.cls.date));
     }, [newClassLogs, batchFilter, subjectFilter, gradeFilter, statusFilter, dateFrom, dateTo]);
 
     const totalPages = Math.max(1, Math.ceil(allFilteredRows.length / PAGE_SIZE));
@@ -130,6 +139,36 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
         setModalOpen(true);
     };
 
+    const handleExportCSV = () => {
+        const headers = ['S.No.', 'Batch', 'Grade', 'Subject', 'Date', 'Status', 'Note', 'Attendance Count'];
+        const csvRows = [headers.join(',')];
+
+        allFilteredRows.forEach(({ log, cls }, index) => {
+            const row = [
+                index + 1,
+                `"${log.batch_id.name}"`,
+                `"${log.batch_id.forStandard}"`,
+                `"${getSubjectName(log.subject_id, log.batch_id)}"`,
+                `"${formatDate(cls.date)}"`,
+                `"${cls.status}"`,
+                `"${cls.note?.replace(/"/g, '""') || ''}"`,
+                cls.attendance.length
+            ];
+            csvRows.push(row.join(','));
+        });
+
+        const csvContent = csvRows.join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `class_logs_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     return (
         <motion.div
             variants={fadeInUp}
@@ -137,8 +176,26 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
             animate="show"
             className="h-full flex flex-col bg-[#f8ede3] overflow-hidden"
         >
+            {/* Header */}
+            <div className="flex-shrink-0 px-6 py-4 bg-[#f0d9c0] border-b border-[#e6c8a8] flex items-center justify-between">
+                <div>
+                    <h2 className="text-xl font-semibold text-[#5a4a3c] flex items-center gap-2">
+                        <Calendar className="w-5 h-5 text-[#e6c8a8]"/>
+                        Class Management
+                    </h2>
+                    <p className="text-sm text-[#7b5c4b]">Overview of all scheduled classes</p>
+                </div>
+                <button
+                    onClick={handleExportCSV}
+                    className="flex items-center gap-2 px-4 py-2 h-[38px] bg-[#e0c4a8] hover:bg-[#d0b498] text-[#5a4a3c] text-sm font-semibold rounded-lg shadow-sm transition-colors border border-[#d0b498]"
+                >
+                    <Download className="w-4 h-4" />
+                    Export CSV
+                </button>
+            </div>
+
             {/* Filters — always visible */}
-            <div className="flex-shrink-0 flex flex-wrap gap-4 p-4 bg-[#f0d9c0] border-b border-[#e6c8a8]">
+            <div className="flex-shrink-0 flex flex-wrap items-end gap-4 p-4 bg-[#f0d9c0] border-b border-[#e6c8a8]">
                 {[{
                     label: 'Batch', value: batchFilter, onChange: changeFilter(setBatchFilter), options: filterOptions.batches
                 }, {
@@ -150,13 +207,11 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
                 }].map((filter, i) => (
                     <div key={i} className="flex-1 min-w-[120px]">
                         <label className="block text-xs font-medium text-[#7b5c4b] uppercase mb-1">{filter.label}</label>
-                        <select
+                        <Dropdown
                             value={filter.value}
                             onChange={(e) => filter.onChange(e.target.value)}
-                            className="w-full px-3 py-2 rounded-lg border border-[#e6c8a8] text-sm text-[#5a4a3c] bg-[#f0d9c0] focus:ring-[#e0c4a8] focus:outline-none"
-                        >
-                            {filter.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                        </select>
+                            options={filter.options}
+                        />
                     </div>
                 ))}
                 <div className="flex-1 min-w-[120px]">
@@ -270,7 +325,7 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
                                                     state: {
                                                         batchName: log.batch_id.name,
                                                         subjectName: getSubjectName(log.subject_id, log.batch_id),
-                                                        date: cls.date,
+                                                        date: toYYYYMMDD(cls.date),
                                                     }
                                                 })}
                                             >

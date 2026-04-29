@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { Trophy, Filter } from "lucide-react";
 import { motion } from "framer-motion";
 import { TEST_STATUS } from "@/utilities/constants";
+import Dropdown from "@/components/ui/Dropdown";
 
 const MEDALS = [
     { label: "1st", bg: "#FFD70030", color: "#C8A800", border: "#FFD70060" },
@@ -113,18 +114,19 @@ const TopStudents = () => {
                 </h2>
                 <div className="flex items-center gap-1.5">
                     <Filter className="w-3.5 h-3.5 text-[#b0998a]" />
-                    <select
-                        value={selectedBatch}
-                        onChange={e => setSelectedBatch(e.target.value)}
-                        className="bg-white border border-[#e6c8a8] rounded-lg px-2.5 py-1.5 text-xs text-[#2c1a0e] focus:outline-none focus:ring-2 focus:ring-[#c47d3e]/30 cursor-pointer"
-                    >
-                        <option value="all">All Batches</option>
-                        {batches.map(b => (
-                            <option key={b._id} value={b._id}>
-                                {b.name}{b.forStandard ? ` (Class ${b.forStandard})` : ""}
-                            </option>
-                        ))}
-                    </select>
+                    <div className="w-32">
+                        <Dropdown
+                            value={selectedBatch}
+                            onChange={e => setSelectedBatch(e.target.value)}
+                            options={[
+                                { label: "All Batches", value: "all" },
+                                ...batches.map(b => ({
+                                    label: `${b.name}${b.forStandard ? ` (Class ${b.forStandard})` : ""}`,
+                                    value: b._id
+                                }))
+                            ]}
+                        />
+                    </div>
                 </div>
             </div>
 

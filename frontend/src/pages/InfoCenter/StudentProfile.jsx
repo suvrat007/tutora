@@ -14,6 +14,7 @@ import Card from "@/pages/Dashboard/comps/uii/Card.jsx";
 import { useSelector } from "react-redux";
 import { useState, useMemo } from 'react';
 import WrapperCard from "@/components/ui/WrapperCard.jsx";
+import Dropdown from "@/components/ui/Dropdown";
 
 
 // StatusBadge with consistent status colors (retaining green/red/yellow for clarity)
@@ -324,27 +325,25 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
                                     Attendance History
                                 </h2>
                                 <div className="flex flex-wrap sm:flex-nowrap items-center justify-center mt-2 gap-2">
-                                    <select
+                                    <Dropdown
                                         value={statusFilter}
                                         onChange={(e) => setStatusFilter(e.target.value)}
-                                        className="px-3 py-2 rounded-md text-sm border border-[#ddb892] bg-[#e7c6a5] text-[#4a3a2c] focus:ring-[#d7b48f] focus:outline-none"
-                                    >
-                                        <option value="">All Status</option>
-                                        <option value="Present">Present</option>
-                                        <option value="Absent">Absent</option>
-                                        <option value="No Class">No Class</option>
-                                        <option value="No Data">No Data</option>
-                                    </select>
-                                    <select
+                                        options={[
+                                            { label: "All Status", value: "" },
+                                            { label: "Present", value: "Present" },
+                                            { label: "Absent", value: "Absent" },
+                                            { label: "No Class", value: "No Class" },
+                                            { label: "No Data", value: "No Data" }
+                                        ]}
+                                    />
+                                    <Dropdown
                                         value={subjectFilter}
                                         onChange={(e) => setSubjectFilter(e.target.value)}
-                                        className="px-3 py-2 rounded-md text-sm border border-[#ddb892] bg-[#e7c6a5] text-[#4a3a2c] focus:ring-[#d7b48f] focus:outline-none"
-                                    >
-                                        <option value="">All Subjects</option>
-                                        {studentSubjects.map(subject => (
-                                            <option key={subject} value={subject}>{subject}</option>
-                                        ))}
-                                    </select>
+                                        options={[
+                                            { label: "All Subjects", value: "" },
+                                            ...studentSubjects.map(subject => ({ label: subject, value: subject }))
+                                        ]}
+                                    />
                                     <button
                                         onClick={resetFilters}
                                         className="px-3 py-2 text-sm bg-[#d7b48f] text-[#4a3a2c] hover:bg-[#d7b48f]/80 rounded-md"

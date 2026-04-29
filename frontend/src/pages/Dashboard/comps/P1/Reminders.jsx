@@ -111,7 +111,7 @@ const Reminders = ({ refreshKey = 0 }) => {
                     </div>
                 ) : reminders.length === 0 ? (
                     <div className="text-center text-[#7b5c4b] py-6">
-                        <p className="text-sm">You have no reminders for today 🎉</p>
+                        <p className="text-sm">You have no reminders for today</p>
                     </div>
                 ) : (
                     <AnimatePresence>

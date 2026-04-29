@@ -1,5 +1,5 @@
 import { useSelector } from 'react-redux';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
     Building2, Phone, Mail, GraduationCap, Calendar, Users, PencilIcon
@@ -25,6 +25,10 @@ const InstituteInfo = () => {
     const fetchClassLogs = useFetchClassLogs();
 
     const [showEditModal, setShowEditModal] = useState(false);
+
+    useEffect(() => {
+        fetchClassLogs().catch(console.error);
+    }, []);
 
     const newClassLogs = useMemo(() => processClassLogs(classLogs, batches), [classLogs, batches]);
 
@@ -176,13 +180,6 @@ const InstituteInfo = () => {
                 >
                     <WrapperCard>
                         <div className="bg-[#f8ede3] rounded-2xl h-[600px] flex flex-col border border-[#e6c8a8] shadow-[0_8px_24px_rgba(0,0,0,0.15)] overflow-hidden">
-                            <div className="flex-shrink-0 px-6 py-4 bg-[#f0d9c0] border-b border-[#e6c8a8]">
-                                <h2 className="text-xl font-semibold text-[#5a4a3c] flex items-center gap-2">
-                                    <Calendar className="w-5 h-5 text-[#e6c8a8]"/>
-                                    Class Management
-                                </h2>
-                                <p className="text-sm text-[#7b5c4b]">Overview of all scheduled classes</p>
-                            </div>
                             <div className="flex-1 min-h-0">
                                 <ClassesTable newClassLogs={newClassLogs} onUpdate={onUpdate}/>
                             </div>

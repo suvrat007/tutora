@@ -1,145 +1,124 @@
-import { ArrowRight, Sparkles, Play, BookOpen, GraduationCap, Pencil, Lightbulb, ClipboardList, Users, Calendar, Bell, FlaskConical, Ruler } from "lucide-react";
+import { ArrowRight, Sparkles, Play } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-
-const FLOATERS = [
-    { Icon: GraduationCap, x: 5,   y: 10, size: 64, fy: 12, r: 6,   delay: 0,    dur: 6.0 },
-    { Icon: BookOpen,      x: 88,  y: 8,  size: 52, fy: 10, r: -8,  delay: 0.8,  dur: 5.4 },
-    { Icon: Pencil,        x: 78,  y: 58, size: 44, fy: 14, r: 10,  delay: 1.4,  dur: 5.8 },
-    { Icon: Lightbulb,     x: 12,  y: 60, size: 48, fy: 12, r: -7,  delay: 0.5,  dur: 4.9 },
-    { Icon: ClipboardList, x: 4,   y: 35, size: 40, fy: 10, r: 8,   delay: 2.0,  dur: 6.2 },
-    { Icon: Users,         x: 90,  y: 35, size: 50, fy: 14, r: -9,  delay: 1.0,  dur: 5.1 },
-    { Icon: Calendar,      x: 22,  y: 82, size: 44, fy: 12, r: 7,   delay: 2.4,  dur: 5.6 },
-    { Icon: FlaskConical,  x: 68,  y: 80, size: 40, fy: 16, r: -10, delay: 1.6,  dur: 4.7 },
-    { Icon: Ruler,         x: 46,  y: 5,  size: 42, fy: 10, r: 5,   delay: 0.7,  dur: 5.3 },
-    { Icon: Bell,          x: 56,  y: 88, size: 38, fy: 14, r: -6,  delay: 1.9,  dur: 4.5 },
-];
-
-const Floater = ({ Icon, x, y, size, fy, r, delay, dur }) => (
-    <motion.div
-        initial={{ opacity: 0 }}
-        animate={{
-            opacity: [0, 0.1, 0.13, 0.1, 0],
-            y:       [0, -fy, 0, fy * 0.35, 0],
-            rotate:  [0, r,  0, -r * 0.4, 0],
-        }}
-        transition={{
-            duration: dur,
-            delay,
-            repeat: Infinity,
-            ease: "easeInOut",
-            times: [0, 0.3, 0.5, 0.75, 1],
-        }}
-        className="absolute pointer-events-none select-none"
-        style={{ left: `${x}%`, top: `${y}%`, color: "#8b5e3c" }}
-    >
-        <Icon style={{ width: size, height: size }} strokeWidth={1} />
-    </motion.div>
-);
 
 const Hero = ({ user, setIsModalOpen }) => {
     const navigate = useNavigate();
 
     return (
-        <section
-            className="relative min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 overflow-hidden"
-            style={{ background: "linear-gradient(135deg, #f5b87a 0%, #f8cfa0 18%, #faebd8 42%, #fdf6ee 58%, #f8e4b8 78%, #f5cc80 100%)" }}
-        >
-            {/* Dot grid overlay */}
-            <div className="pointer-events-none absolute inset-0 -z-10">
-                <svg className="absolute inset-0 w-full h-full opacity-[0.06]" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <pattern id="dots" x="0" y="0" width="28" height="28" patternUnits="userSpaceOnUse">
-                            <circle cx="1.5" cy="1.5" r="1.5" fill="#4a3a2c" />
-                        </pattern>
-                    </defs>
-                    <rect width="100%" height="100%" fill="url(#dots)" />
-                </svg>
+        <section className="relative min-h-screen pt-32 pb-16 px-4 sm:px-6 overflow-hidden bg-[#fdfcfb]">
+            {/* Soft top glow */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1000px] h-[500px] bg-gradient-to-b from-[#f0d9c0]/50 to-transparent opacity-60 blur-3xl rounded-full pointer-events-none" />
+
+            {/* Subtle grid background */}
+            <div className="absolute inset-0 z-0 pointer-events-none" 
+                 style={{ 
+                     backgroundImage: 'radial-gradient(#e6c8a8 1px, transparent 1px)', 
+                     backgroundSize: '32px 32px',
+                     opacity: 0.3 
+                 }}>
             </div>
 
-            {/* Floating icons */}
-            <div className="pointer-events-none absolute inset-0 overflow-hidden">
-                {FLOATERS.map((f, i) => <Floater key={i} {...f} />)}
-            </div>
-
-            {/* Content */}
-            <div className="relative z-10 max-w-4xl w-full text-center space-y-8">
+            <div className="relative z-10 max-w-5xl mx-auto flex flex-col items-center text-center">
+                {/* Badge */}
                 <motion.div
-                    initial={{ opacity: 0, y: -12 }}
+                    initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#ddb892]/60 bg-white/70 backdrop-blur-sm text-xs font-semibold text-[#7b5c4b] tracking-wide shadow-sm"
+                    transition={{ duration: 0.5, ease: "easeOut" }}
+                    className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#ddb892]/40 bg-white/60 backdrop-blur-md text-xs font-bold text-[#8b5e3c] tracking-wide shadow-sm mb-8"
                 >
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                    Free for solo educators
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#8b5e3c] opacity-40"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-[#8b5e3c]"></span>
+                    </span>
+                    TUTORA FOR EDUCATORS
                 </motion.div>
 
+                {/* Headline */}
                 <motion.h1
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.65, delay: 0.05 }}
-                    className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold text-[#2c1a0e] leading-[1.05] tracking-tight"
+                    transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
+                    className="text-5xl sm:text-6xl md:text-7xl font-extrabold text-[#2c1a0e] leading-[1.1] tracking-tight mb-6"
                 >
-                    Teaching tools
+                    Teaching tools that
                     <br />
-                    <span className="bg-gradient-to-r from-[#8b5e3c] via-[#c47d3e] to-[#8b5e3c] bg-clip-text text-transparent">
-                        that get out of the way
+                    <span className="bg-gradient-to-r from-[#8b5e3c] via-[#d08f56] to-[#8b5e3c] bg-clip-text text-transparent">
+                        get out of the way
                     </span>
                 </motion.h1>
 
+                {/* Subheadline */}
                 <motion.p
-                    initial={{ opacity: 0, y: 12 }}
+                    initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.55, delay: 0.15 }}
-                    className="text-lg sm:text-xl text-[#7b5c4b] max-w-2xl mx-auto leading-relaxed"
+                    transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+                    className="text-lg sm:text-xl text-[#7b5c4b] max-w-2xl mx-auto leading-relaxed mb-10"
                 >
-                    Tutora handles attendance, fees, reminders, and class logs —
-                    so you can focus on teaching.
+                    Manage attendance, track fees, and organize class schedules effortlessly. 
+                    Built exclusively for independent tutors and coaching centers.
                 </motion.p>
 
+                {/* CTA Buttons */}
                 <motion.div
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.22 }}
-                    className="flex flex-col sm:flex-row justify-center gap-3"
+                    transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
+                    className="flex flex-col sm:flex-row justify-center gap-4 w-full sm:w-auto mb-16"
                 >
-                    <motion.button
-                        whileHover={{ scale: 1.04, boxShadow: "0 10px 30px rgba(44,26,14,0.20)" }}
-                        whileTap={{ scale: 0.96 }}
+                    <button
                         onClick={() => navigate(user ? "/main" : "/login")}
-                        className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-[#2c1a0e] text-white font-semibold text-base shadow-lg transition-colors hover:bg-[#3e2510] cursor-pointer"
+                        className="group relative inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-[#2c1a0e] text-white font-semibold text-base shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden"
                     >
-                        <Sparkles className="w-4 h-4" />
-                        {user ? "Go to Dashboard" : "Get Started Free"}
-                        <ArrowRight className="w-4 h-4" />
-                    </motion.button>
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
+                        <Sparkles className="w-5 h-5 text-[#f0d9c0]" />
+                        {user ? "Go to Dashboard" : "Start for Free"}
+                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </button>
 
-                    <motion.button
-                        whileHover={{ scale: 1.04 }}
-                        whileTap={{ scale: 0.96 }}
+                    <button
                         onClick={() => setIsModalOpen(true)}
-                        className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl border-2 border-[#ddb892] bg-white/60 backdrop-blur-sm text-[#4a3a2c] font-semibold text-base hover:bg-[#fdf0e3] transition-colors cursor-pointer shadow-sm"
+                        className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl border-2 border-[#e6c8a8] bg-white/50 backdrop-blur-sm text-[#4a3a2c] font-semibold text-base hover:bg-white hover:border-[#ddb892] hover:shadow-md transition-all duration-300"
                     >
-                        <Play className="w-4 h-4" />
+                        <Play className="w-5 h-5" />
                         Watch Demo
-                    </motion.button>
+                    </button>
+                </motion.div>
+
+                {/* Dashboard Showcase Mockup */}
+                <motion.div
+                    initial={{ opacity: 0, y: 60 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    className="w-full relative px-4 sm:px-0"
+                >
+                    <div className="relative rounded-t-2xl sm:rounded-t-3xl overflow-hidden border border-[#e6c8a8]/60 bg-white/40 backdrop-blur-md shadow-[0_20px_50px_rgba(44,26,14,0.08)] mx-auto max-w-5xl">
+                        {/* Fake Browser Chrome */}
+                        <div className="h-10 bg-[#f8ede3]/80 backdrop-blur-md border-b border-[#e6c8a8]/60 flex items-center px-4 gap-2">
+                            <div className="w-3 h-3 rounded-full bg-red-400/80" />
+                            <div className="w-3 h-3 rounded-full bg-yellow-400/80" />
+                            <div className="w-3 h-3 rounded-full bg-green-400/80" />
+                        </div>
+                        {/* The Mockup Image */}
+                        <img 
+                            src="/dashboard-mockup.png" 
+                            alt="MeriKaksha Dashboard Preview" 
+                            className="w-full h-auto object-cover"
+                            style={{ 
+                                maskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)',
+                                WebkitMaskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)'
+                            }}
+                        />
+                    </div>
                 </motion.div>
             </div>
-
-            {/* Scroll cue */}
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1 }}
-                className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5"
-            >
-                <span className="text-xs text-[#b0998a] tracking-widest uppercase">scroll</span>
-                <motion.div
-                    animate={{ y: [0, 6, 0] }}
-                    transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-                    className="w-px h-8 bg-gradient-to-b from-[#b0998a] to-transparent"
-                />
-            </motion.div>
+            
+            {/* Global style for shimmer animation */}
+            <style dangerouslySetInnerHTML={{__html: `
+                @keyframes shimmer {
+                    100% { transform: translateX(100%); }
+                }
+            `}} />
         </section>
     );
 };
