@@ -19,9 +19,15 @@ const testSlice = createSlice({
                 ...action.payload,
             ];
         },
+        removeTestById: (state, action) => {
+            state.tests = state.tests.filter(t => t._id !== action.payload);
+        },
+        removeTestsByGroupId: (state, action) => {
+            state.tests = state.tests.filter(t => t.groupId !== action.payload);
+        },
     },
 });
 
-export const { setTests, mergeTests } = testSlice.actions;
+export const { setTests, mergeTests, removeTestById, removeTestsByGroupId } = testSlice.actions;
 
 export default testSlice.reducer;

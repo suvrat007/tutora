@@ -12,10 +12,10 @@ const Navbar = () => {
                     <img
                         src={adminData.institute_info.logo_URL}
                         alt="Institute Logo"
-                        className="w-12 h-12 sm:w-16 sm:h-16 rounded-full border border-gray-400 shadow-sm p-1"
+                        className="w-20 h-12 sm:w-24 sm:h-14 rounded-2xl border border-gray-400 shadow-sm p-1 object-cover"
                     />
                 ) : (
-                    <div className="bg-[#4a3a2c] text-white w-9 h-9 flex items-center justify-center rounded-full font-bold text-sm shrink-0">
+                    <div className="bg-[#4a3a2c] text-white w-16 h-9 flex items-center justify-center rounded-2xl font-bold text-sm shrink-0">
                         T
                     </div>
                 )}

@@ -56,9 +56,15 @@ router.post("/add-class-updates", userAuth, async (req, res) => {
                 );
 
                 if (existingClass) {
-                    existingClass.hasHeld = hasHeld !== undefined ? hasHeld : existingClass.hasHeld;
-                    existingClass.note = note || existingClass.note;
-                    existingClass.updated = updated !== undefined ? updated : existingClass.updated;
+                    // If the record was already explicitly recorded by the user (updated=true)
+                    // and this request carries no `updated` flag, it's the app-startup
+                    // "ensure-exists" call from Body.jsx — skip to avoid overwriting real data.
+                    if (!(existingClass.updated && updated === undefined)) {
+                        existingClass.hasHeld = hasHeld !== undefined ? hasHeld : existingClass.hasHeld;
+                        existingClass.note = note || existingClass.note;
+                        existingClass.updated = updated !== undefined ? updated : existingClass.updated;
+                        await classLog.save();
+                    }
                 } else {
                     classLog.classes.push({
                         date: formattedDate,
@@ -67,8 +73,8 @@ router.post("/add-class-updates", userAuth, async (req, res) => {
                         attendance: [],
                         updated: updated !== undefined ? updated : false,
                     });
+                    await classLog.save();
                 }
-                await classLog.save();
             } else {
                 classLog = new ClassLog({
                     adminId,

@@ -43,6 +43,7 @@ export const API = {
   CREATE_TEST: 'test/createTest',
   GET_ALL_TESTS: 'test/getAllTests',
   UPDATE_TEST: (id) => `test/updateTest/${id}`,
+  UPDATE_GROUP_TEST: (groupId) => `test/updateGroupTest/${groupId}`,
   DELETE_TEST: (id) => `test/${id}`,
 
   // Teachers

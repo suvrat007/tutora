@@ -4,12 +4,17 @@ import axiosInstance from '../../utilities/axiosInstance';
 import { Input } from '../../components/ui/input';
 import { API, TEST_STATUS } from '../../utilities/constants';
 import { FiSettings } from 'react-icons/fi';
+import { Ban } from 'lucide-react';
 import { formatDateTime } from '../../utilities/dateUtils';
+
+const DETAIL_PAGE_SIZE = 10;
 
 const TestDetail = ({ test, fetchTests, setEditingTest }) => {
     const batches = useSelector(state => state.batches);
     const [results, setResults] = useState([]);
     const [saving, setSaving] = useState(false);
+    const [nameSearch, setNameSearch] = useState('');
+    const [detailPage, setDetailPage] = useState(1);
     const resultsRef = useRef(results);
     const autoCompletedRef = useRef(false);
 
@@ -17,6 +22,8 @@ const TestDetail = ({ test, fetchTests, setEditingTest }) => {
         setResults(test.studentResults || []);
         resultsRef.current = test.studentResults || [];
         autoCompletedRef.current = false;
+        setNameSearch('');
+        setDetailPage(1);
     }, [test._id]);
 
     const getSubjectName = (batchId, subjectId) => {
@@ -34,23 +41,38 @@ const TestDetail = ({ test, fetchTests, setEditingTest }) => {
     };
 
     const saveToBackend = async (dataToSave) => {
-        const isOverdue = !autoCompletedRef.current
-            && test.status === TEST_STATUS.SCHEDULED
-            && new Date(test.testDate) < new Date();
-
         setSaving(true);
         try {
-            const formattedResults = dataToSave.map(r => ({
-                studentId: r.studentId._id ? r.studentId._id : r.studentId,
-                appeared: r.appeared,
-                marks: r.marks
-            }));
-            const payload = { studentResults: formattedResults };
-            if (isOverdue) payload.status = TEST_STATUS.COMPLETED;
-            await axiosInstance.put(API.UPDATE_TEST(test._id), payload);
-            if (isOverdue) {
-                autoCompletedRef.current = true;
-                fetchTests(test.batchId);
+            if (test._isGroup) {
+                // Split results by _testId and save each group-member test separately
+                const byTest = {};
+                dataToSave.forEach(r => {
+                    if (!byTest[r._testId]) byTest[r._testId] = [];
+                    byTest[r._testId].push({
+                        studentId: r.studentId._id || r.studentId,
+                        appeared: r.appeared,
+                        marks: r.marks,
+                    });
+                });
+                await Promise.all(Object.entries(byTest).map(([testId, results]) =>
+                    axiosInstance.put(API.UPDATE_TEST(testId), { studentResults: results })
+                ));
+            } else {
+                const isOverdue = !autoCompletedRef.current
+                    && test.status === TEST_STATUS.SCHEDULED
+                    && new Date(test.testDate) < new Date();
+                const formattedResults = dataToSave.map(r => ({
+                    studentId: r.studentId._id ? r.studentId._id : r.studentId,
+                    appeared: r.appeared,
+                    marks: r.marks,
+                }));
+                const payload = { studentResults: formattedResults };
+                if (isOverdue) payload.status = TEST_STATUS.COMPLETED;
+                await axiosInstance.put(API.UPDATE_TEST(test._id), payload);
+                if (isOverdue) {
+                    autoCompletedRef.current = true;
+                    fetchTests(test.batchId);
+                }
             }
         } catch (error) {
             console.error('Failed to save test results', error);
@@ -119,7 +141,15 @@ const TestDetail = ({ test, fetchTests, setEditingTest }) => {
                 </div>
             )}
 
-            <div>
+            <div className="relative">
+                {test.status === TEST_STATUS.CANCELLED && (
+                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-xl backdrop-blur-sm bg-white/40 gap-2">
+                        <Ban className="w-8 h-8 text-[#8b5e3c]" />
+                        <p className="text-[#5a4a3c] font-semibold text-sm text-center px-4">
+                            This test was cancelled — results cannot be entered.
+                        </p>
+                    </div>
+                )}
                 {results.length > 0 && test.passMarks > 0 && (() => {
                     const appeared = results.filter(r => r.appeared);
                     const passed = appeared.filter(r => r.marks >= test.passMarks).length;
@@ -137,27 +167,46 @@ const TestDetail = ({ test, fetchTests, setEditingTest }) => {
                     );
                 })()}
 
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
                     <h4 className="font-bold text-lg text-[#5a4a3c]">Student Results</h4>
-                    <span className="text-sm font-medium">
-                        {saving ? (
-                            <span className="text-[#8b5e3c] animate-pulse flex items-center">
-                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                Saving...
-                            </span>
-                        ) : (
-                            <span className="text-[#34C759] flex items-center">
-                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                                Sync Active
-                            </span>
+                    <div className="flex items-center gap-3">
+                        {results.length > 0 && (
+                            <input
+                                type="text"
+                                value={nameSearch}
+                                onChange={e => { setNameSearch(e.target.value); setDetailPage(1); }}
+                                placeholder="Search by name…"
+                                className="px-3 py-1.5 text-sm rounded-full border border-[#e6c8a8] bg-white text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] w-44"
+                            />
                         )}
-                    </span>
+                        <span className="text-sm font-medium">
+                            {saving ? (
+                                <span className="text-[#8b5e3c] animate-pulse flex items-center">
+                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Saving...
+                                </span>
+                            ) : (
+                                <span className="text-[#34C759] flex items-center">
+                                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                    Sync Active
+                                </span>
+                            )}
+                        </span>
+                    </div>
                 </div>
 
-                {results.length > 0 ? (
+                {results.length > 0 ? (() => {
+                    const filtered = nameSearch
+                        ? results.filter(r => (r.studentId?.name || '').toLowerCase().includes(nameSearch.toLowerCase()))
+                        : results;
+                    const totalDetailPages = Math.max(1, Math.ceil(filtered.length / DETAIL_PAGE_SIZE));
+                    const safeDetailPage = Math.min(detailPage, totalDetailPages);
+                    const pagedResults = filtered.slice((safeDetailPage - 1) * DETAIL_PAGE_SIZE, safeDetailPage * DETAIL_PAGE_SIZE);
+                    return (
+                    <>
                     <div className="overflow-x-auto rounded-xl border border-[#e6c8a8]">
                         <table className="min-w-full text-left text-sm whitespace-nowrap">
                             <thead className="uppercase tracking-wider border-b border-[#e6c8a8] bg-[#f0d9c0] text-[#7b5c4b] font-semibold">
@@ -170,7 +219,7 @@ const TestDetail = ({ test, fetchTests, setEditingTest }) => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-[#e6c8a8] bg-[#f8ede3]">
-                                {results.map(r => {
+                                {pagedResults.map(r => {
                                     const stId = r.studentId._id || r.studentId;
                                     const stName = r.studentId.name || 'Unknown Student';
                                     const percent = r.appeared ? ((r.marks / test.maxMarks) * 100).toFixed(1) : 0;
@@ -224,7 +273,20 @@ const TestDetail = ({ test, fetchTests, setEditingTest }) => {
                             </tbody>
                         </table>
                     </div>
-                ) : (
+                    {totalDetailPages > 1 && (
+                        <div className="flex items-center justify-between mt-3 px-1">
+                            <span className="text-xs text-[#7b5c4b]">{filtered.length} students · page {safeDetailPage} of {totalDetailPages}</span>
+                            <div className="flex items-center gap-1">
+                                <button onClick={() => setDetailPage(p => Math.max(1, p - 1))} disabled={safeDetailPage === 1}
+                                    className="px-2 py-1 text-xs rounded-lg border border-[#e6c8a8] bg-[#f8ede3] text-[#5a4a3c] hover:bg-[#e0c4a8] disabled:opacity-40 disabled:cursor-not-allowed transition">Prev</button>
+                                <button onClick={() => setDetailPage(p => Math.min(totalDetailPages, p + 1))} disabled={safeDetailPage === totalDetailPages}
+                                    className="px-2 py-1 text-xs rounded-lg border border-[#e6c8a8] bg-[#f8ede3] text-[#5a4a3c] hover:bg-[#e0c4a8] disabled:opacity-40 disabled:cursor-not-allowed transition">Next</button>
+                            </div>
+                        </div>
+                    )}
+                    </>
+                    );
+                })() : (
                     <div className="bg-[#f0d9c0] p-8 rounded-xl text-center text-[#7b5c4b] border border-[#e6c8a8] border-dashed">
                         <p className="font-medium">No students are currently allocated to this test.</p>
                         <p className="text-xs text-[#7b5c4b] mt-1">Tests created moving forward will automatically sync with batch enrollments.</p>

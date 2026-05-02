@@ -118,6 +118,7 @@ const TopStudents = () => {
                         <Dropdown
                             value={selectedBatch}
                             onChange={e => setSelectedBatch(e.target.value)}
+                            align="right"
                             options={[
                                 { label: "All Batches", value: "all" },
                                 ...batches.map(b => ({

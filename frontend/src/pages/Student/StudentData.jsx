@@ -267,7 +267,7 @@ const StudentData = () => {
                           value={searchName}
                           onChange={(e) => setSearchName(e.target.value)}
                           placeholder="Name or phone number"
-                          className="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-1.5 sm:py-2 border border-[#e6c8a8] bg-[#f0d9c0] rounded-lg text-sm sm:text-base text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] transition"
+                          className="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-1.5 sm:py-2 border border-[#e6c8a8] bg-white rounded-full text-sm text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] transition"
                       />
                     </div>
                   </div>

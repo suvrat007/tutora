@@ -26,6 +26,8 @@ const LoadingPage = ({ onDone }) => {
     const students = useSelector((state) => state.students);
 
     useEffect(() => {
+        const controller = new AbortController();
+
         const fetchData = async () => {
             const hasData =
                 batches?.length > 0 &&
@@ -40,12 +42,13 @@ const LoadingPage = ({ onDone }) => {
 
             try {
                 const operations = [
-                    { fetch: fetchBatches, shouldRun: !batches?.length },
-                    { fetch: fetchGroupedStudents, shouldRun: !students?.groupedStudents?.length },
-                    { fetch: fetchClassLogs, shouldRun: !classLogs?.length },
+                    { fetch: () => fetchBatches(controller.signal), shouldRun: !batches?.length },
+                    { fetch: () => fetchGroupedStudents(controller.signal), shouldRun: !students?.groupedStudents?.length },
+                    { fetch: () => fetchClassLogs(controller.signal), shouldRun: !classLogs?.length },
                 ];
 
                 for (let i = 0; i < operations.length; i++) {
+                    if (controller.signal.aborted) break;
                     if (operations[i].shouldRun) {
                         setCurrentStep(i);
                         await operations[i].fetch();
@@ -53,15 +56,20 @@ const LoadingPage = ({ onDone }) => {
                     }
                 }
 
-                setCurrentStep(4);
-                setTimeout(() => onDone(), 500);
+                if (!controller.signal.aborted) {
+                    setCurrentStep(4);
+                    setTimeout(() => onDone(), 500);
+                }
             } catch (err) {
-                console.error("Error while loading data:", err);
-                setTimeout(() => onDone(), 500);
+                if (!controller.signal.aborted) {
+                    console.error("Error while loading data:", err);
+                    setTimeout(() => onDone(), 500);
+                }
             }
         };
 
         fetchData();
+        return () => controller.abort();
     }, []);
 
     const progress = Math.min((currentStep / steps.length) * 100, 100);

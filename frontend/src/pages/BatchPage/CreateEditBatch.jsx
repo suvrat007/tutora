@@ -25,6 +25,7 @@ const CreateEditBatch = ({ onClose, onBatchCreated, onBatchUpdated, setRerender,
     const [batchData, setBatchData] = useState({
         name: "",
         forStandard: "",
+        teacherInCharge: "",
         subject: [
             {
                 name: "",
@@ -39,6 +40,7 @@ const CreateEditBatch = ({ onClose, onBatchCreated, onBatchUpdated, setRerender,
             setBatchData({
                 name: batchToEdit.name,
                 forStandard: batchToEdit.forStandard,
+                teacherInCharge: batchToEdit.teacherInCharge || "",
                 subject: batchToEdit.subject.length
                     ? batchToEdit.subject.map(sub => ({
                         ...sub,
@@ -174,6 +176,17 @@ const CreateEditBatch = ({ onClose, onBatchCreated, onBatchUpdated, setRerender,
                                 name="forStandard"
                                 value={batchData.forStandard}
                                 onChange={handleChange}
+                                className="w-full border border-[#e6c8a8] bg-[#f8ede3] rounded-lg px-3 py-2 text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] transition"
+                            />
+                        </div>
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-[#5a4a3c] mb-1">Teacher In Charge</label>
+                            <input
+                                type="text"
+                                name="teacherInCharge"
+                                value={batchData.teacherInCharge}
+                                onChange={handleChange}
+                                placeholder="e.g. Mr. Sharma"
                                 className="w-full border border-[#e6c8a8] bg-[#f8ede3] rounded-lg px-3 py-2 text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] transition"
                             />
                         </div>

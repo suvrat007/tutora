@@ -4,12 +4,15 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { useForm } from './hooks/useForm';
 import { API, TEST_STATUS } from '../../utilities/constants';
+import { mergeTests, setTests } from '../../utilities/redux/testSlice';
+import { useDispatch } from 'react-redux';
 import { toDatetimeLocalString } from '../../utilities/dateUtils';
 import toast from 'react-hot-toast';
 import Dropdown from '@/components/ui/Dropdown';
 
 const TestScheduleForm = ({ batches, editingTest, setEditingTest, fetchTests, showTitle = true }) => {
     const [formError, setFormError] = useState(null);
+    const dispatch = useDispatch();
 
     const initialState = editingTest
         ? {
@@ -46,24 +49,41 @@ const TestScheduleForm = ({ batches, editingTest, setEditingTest, fetchTests, sh
         }
         try {
             if (editingTest) {
-                await axiosInstance.put(API.UPDATE_TEST(editingTest._id), {
-                    testName: data.testName,
-                    batchId: data.batchId,
-                    subjectId: data.subjectId || null,
-                    maxMarks: Number(data.maxMarks),
-                    passMarks: Number(data.passMarks) || 0,
-                    testDate: new Date(data.testDate),
-                    status: data.status,
-                    cancellationReason: data.cancellationReason
-                });
+                if (editingTest.groupId) {
+                    // Update all tests in the group
+                    const res = await axiosInstance.put(API.UPDATE_GROUP_TEST(editingTest.groupId), {
+                        testName: data.testName,
+                        maxMarks: Number(data.maxMarks),
+                        passMarks: Number(data.passMarks) || 0,
+                        testDate: new Date(data.testDate),
+                        status: data.status,
+                        cancellationReason: data.cancellationReason,
+                    });
+                    dispatch(mergeTests(res.data.tests));
+                } else {
+                    await axiosInstance.put(API.UPDATE_TEST(editingTest._id), {
+                        testName: data.testName,
+                        batchId: data.batchId,
+                        subjectId: data.subjectId || null,
+                        maxMarks: Number(data.maxMarks),
+                        passMarks: Number(data.passMarks) || 0,
+                        testDate: new Date(data.testDate),
+                        status: data.status,
+                        cancellationReason: data.cancellationReason,
+                    });
+                    fetchTests(data.batchId);
+                }
                 setEditingTest(null);
                 toast.success('Test updated');
                 reset();
-                fetchTests(data.batchId);
             } else {
                 const batchIds = data.batchId === 'all'
                     ? batches.map(b => b._id)
                     : [data.batchId || null];
+
+                const groupId = data.batchId === 'all'
+                    ? `grp_${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`
+                    : undefined;
 
                 await Promise.all(batchIds.map(bid =>
                     axiosInstance.post(API.CREATE_TEST, {
@@ -75,7 +95,8 @@ const TestScheduleForm = ({ batches, editingTest, setEditingTest, fetchTests, sh
                         testDate: new Date(data.testDate),
                         status: data.status,
                         cancellationReason: data.cancellationReason,
-                        studentResults: []
+                        studentResults: [],
+                        groupId,
                     })
                 ));
 

@@ -19,9 +19,11 @@ const Home = () => {
     const fetchFeeSummary = useFetchFeeSummary();
 
     useEffect(() => {
-        fetchStudents();
-        fetchAttendance();
-        fetchFeeSummary();
+        const controller = new AbortController();
+        fetchStudents(controller.signal);
+        fetchAttendance(controller.signal);
+        fetchFeeSummary(controller.signal);
+        return () => controller.abort();
     }, []);
 
     return (

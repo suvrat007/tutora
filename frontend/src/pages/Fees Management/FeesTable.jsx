@@ -301,7 +301,7 @@ const FeesTable = ({ monthFilter, setMonthFilter, onSaveComplete }) => {
                             <label className="block text-xs font-semibold text-[#7b5c4b] uppercase mb-1">Target Month</label>
                             <button
                                 onClick={() => setIsMonthDropdownOpen(!isMonthDropdownOpen)}
-                                className="w-full p-2.5 rounded-lg border border-[#e6c8a8] text-sm text-[#5a4a3c] bg-white shadow-sm hover:border-[#e0c4a8] outline-none transition-shadow text-left flex justify-between items-center"
+                                className="w-full p-2.5 rounded-full border border-[#e6c8a8] text-sm text-[#5a4a3c] bg-white shadow-sm hover:border-[#e0c4a8] outline-none transition-shadow text-left flex justify-between items-center"
                             >
                                 <span>{monthFilter}</span>
                                 <ChevronDown className="w-4 h-4 text-[#a08a78]" />

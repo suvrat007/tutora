@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { useState, useEffect } from 'react';
 import axiosInstance from "@/utilities/axiosInstance.jsx";
 
@@ -9,7 +10,7 @@ const useAttendanceSummary = (batchName, subjectName, batches, refreshTrigger) =
     useEffect(() => {
         if (!batches.length) return;
 
-        let isMounted = true;
+        const controller = new AbortController();
 
         const fetchSummary = async () => {
             setLoading(true);
@@ -23,7 +24,7 @@ const useAttendanceSummary = (batchName, subjectName, batches, refreshTrigger) =
                     selectedBatch = batches.find((b) => b.name === batchName);
                     selectedSubject = selectedBatch?.subject.find((s) => s.name === subjectName);
                     if (!selectedBatch || !selectedSubject) {
-                        if (isMounted) setError('Invalid batch or subject selection');
+                        setError('Invalid batch or subject selection');
                         return;
                     }
                     url += `?batchId=${selectedBatch._id}&subjectId=${selectedSubject._id}`;
@@ -32,37 +33,31 @@ const useAttendanceSummary = (batchName, subjectName, batches, refreshTrigger) =
                     if (selectedBatch) url += `?batchId=${selectedBatch._id}`;
                 }
 
-                const response = await axiosInstance.get(url, { withCredentials: true });
+                const response = await axiosInstance.get(url, { withCredentials: true, signal: controller.signal });
 
-                if (isMounted) {
-                    let data = (response.data.data || []);
-
-                    // If filtering by specific batch+subject, narrow subjects shown
-                    if (selectedBatch && selectedSubject) {
-                        data = data.map(student => ({
-                            ...student,
-                            subjects: student.subjects.filter(
-                                (subj) =>
-                                    subj.batchId?.toString() === selectedBatch._id.toString() &&
-                                    subj.subjectId?.toString() === selectedSubject._id.toString()
-                            )
-                        }));
-                    }
-
-                    setSummary(data.filter(st => st.subjects?.length > 0));
+                let data = response.data.data || [];
+                if (selectedBatch && selectedSubject) {
+                    data = data.map(student => ({
+                        ...student,
+                        subjects: student.subjects.filter(
+                            (subj) =>
+                                subj.batchId?.toString() === selectedBatch._id.toString() &&
+                                subj.subjectId?.toString() === selectedSubject._id.toString()
+                        )
+                    }));
                 }
+                setSummary(data.filter(st => st.subjects?.length > 0));
             } catch (err) {
-                if (isMounted) {
-                    setError('Failed to fetch attendance summary');
-                    console.error("Error fetching attendance summary:", err);
-                }
+                if (axios.isCancel(err)) return;
+                setError('Failed to fetch attendance summary');
+                console.error("Error fetching attendance summary:", err);
             } finally {
-                if (isMounted) setLoading(false);
+                if (!controller.signal.aborted) setLoading(false);
             }
         };
 
         fetchSummary();
-        return () => { isMounted = false; };
+        return () => controller.abort();
     }, [batchName, subjectName, batches, refreshTrigger]);
 
     return { summary, loading, error };

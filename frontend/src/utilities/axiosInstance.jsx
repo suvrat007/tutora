@@ -12,6 +12,7 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.response.use(
     (response) => response,
     (error) => {
+        if (axios.isCancel(error)) return Promise.reject(error);
         if (error.code === 'ECONNABORTED') {
             error.message = 'Request timed out. Please check your connection and try again.';
         } else if (error.response?.status === 401) {

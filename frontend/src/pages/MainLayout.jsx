@@ -10,7 +10,11 @@ const MainLayout = () => {
     const navigation = useNavigation();
     const isNavigating = navigation.state === "loading";
     const [dataLoaded, setDataLoaded] = useState(false);
-    const [showTour, setShowTour] = useState(() => !localStorage.getItem(STORAGE_KEY));
+    const [showTour, setShowTour] = useState(() => {
+        const isNewSignup = sessionStorage.getItem('tutora_new_signup') === '1';
+        if (isNewSignup) sessionStorage.removeItem('tutora_new_signup');
+        return isNewSignup || !localStorage.getItem(STORAGE_KEY);
+    });
 
     if (!dataLoaded) {
         return (

@@ -98,6 +98,7 @@ const OnboardingForm = ({ adminCreds }) => {
             }
 
             await fetchUser();
+            sessionStorage.setItem('tutora_new_signup', '1');
             navigate("/main");
         } catch (err) {
             console.error("Onboarding error:", err);

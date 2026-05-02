@@ -10,6 +10,7 @@ const BatchSchema = new Schema({
     name: {type: String, required: true},
     normalized_name: { type: String, required: true },
     forStandard: {type: String, required: true},
+    teacherInCharge: { type: String, default: "" },
     subject: [
         {
             name: {type: String, required: true},

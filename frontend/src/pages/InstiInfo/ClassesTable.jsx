@@ -221,7 +221,7 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
                         value={dateFrom}
                         max={dateTo || undefined}
                         onChange={(e) => changeDateFrom(e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg border border-[#e6c8a8] text-sm text-[#5a4a3c] bg-[#f0d9c0] focus:ring-[#e0c4a8] focus:outline-none"
+                        className="w-full px-3 py-2 rounded-full border border-[#e6c8a8] text-sm text-[#5a4a3c] bg-white focus:ring-[#e0c4a8] focus:outline-none"
                     />
                 </div>
                 <div className="flex-1 min-w-[120px]">
@@ -231,14 +231,14 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
                         value={dateTo}
                         min={dateFrom || undefined}
                         onChange={(e) => changeDateTo(e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg border border-[#e6c8a8] text-sm text-[#5a4a3c] bg-[#f0d9c0] focus:ring-[#e0c4a8] focus:outline-none"
+                        className="w-full px-3 py-2 rounded-full border border-[#e6c8a8] text-sm text-[#5a4a3c] bg-white focus:ring-[#e0c4a8] focus:outline-none"
                     />
                 </div>
             </div>
 
             {/* Table — only this scrolls */}
-            <div className="flex-1 overflow-y-auto min-h-0">
-                <table className="min-w-[600px] w-full divide-y divide-[#e6c8a8] border-collapse">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden min-h-0">
+                <table className="w-full divide-y divide-[#e6c8a8] border-collapse">
                     <thead className="bg-[#f0d9c0] sticky top-0 z-10">
                     <tr>
                         {['S.No.', 'Batch', 'Subject', 'Date', 'Status', 'Note', 'Attendance', ''].map((label, i) => (
@@ -305,14 +305,14 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
                                             {getStatusIcon(cls.status)} {cls.status}
                                         </span>
                                     </td>
-                                    <td className="px-4 sm:px-6 py-4 max-w-xs">
-                                        <div className="flex items-center gap-2">
-                                            <p className={`${isExpanded ? '' : 'truncate'} text-sm`} title={cls.note}>
+                                    <td className="px-4 sm:px-6 py-4">
+                                        <div className="flex items-start gap-2 w-44 xl:w-56">
+                                            <p className={`text-sm flex-1 min-w-0 ${isExpanded ? 'whitespace-normal break-words' : 'truncate'}`} title={cls.note}>
                                                 {isExpanded ? cls.note || '—' : text}
                                             </p>
                                             {needsReadMore && (
-                                                <button onClick={() => toggleNote(cls._id)} className="text-xs text-[#5a4a3c] hover:text-[#e0c4a8] font-medium whitespace-nowrap">
-                                                    {isExpanded ? 'Read Less' : 'Read More'}
+                                                <button onClick={() => toggleNote(cls._id)} className="text-xs text-[#5a4a3c] hover:text-[#e0c4a8] font-medium whitespace-nowrap shrink-0">
+                                                    {isExpanded ? 'Less' : 'More'}
                                                 </button>
                                             )}
                                         </div>
@@ -343,7 +343,7 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
                                         </div>
                                     </td>
                                     <td className="px-4 sm:px-6 py-4">
-                                        {cls.status === 'No data recorded' && !isToday(cls.date) && (
+                                        {(cls.status === 'No data recorded' || (cls.status === 'Cancelled' && cls.note === 'No Data')) && !isToday(cls.date) && (
                                             <motion.button
                                                 whileHover={{ scale: 1.05 }}
                                                 whileTap={{ scale: 0.95 }}
