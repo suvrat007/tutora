@@ -88,7 +88,7 @@ const TestManagementPage = () => {
                         </div>
 
                         {/* RIGHT: Test list + detail, scrolls together */}
-                        <div className="flex-1 min-w-0 px-4 sm:px-6 pt-3 pb-6 overflow-y-auto flex flex-col gap-4">
+                        <div className="flex-1 min-w-0 px-4 sm:px-6 pt-3 pb-3 overflow-y-auto no-scrollbar flex flex-col gap-3">
                             <TestList
                                 batches={batches}
                                 tests={tests}

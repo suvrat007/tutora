@@ -129,7 +129,7 @@ const TestList = ({ batches, tests, setEditingTest, setSelectedTest, fetchTests 
     return (
         <>
             <div>
-                <div className="sticky top-0 z-20 bg-[#f8ede3] pb-3 border-b border-[#e6c8a8] mb-4">
+                <div className="sticky top-0 z-[100] bg-[#f8ede3] pb-2 border-b border-[#e6c8a8] mb-3">
                 <div className="flex items-center justify-between mb-3">
                     <h2 className="text-xl font-bold text-[#5a4a3c]">Scheduled Tests</h2>
                     {totalPages > 1 && (
@@ -207,7 +207,7 @@ const TestList = ({ batches, tests, setEditingTest, setSelectedTest, fetchTests 
                         <p className="font-medium">{tests.length === 0 ? 'No tests found.' : 'No tests match the selected filters.'}</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                         <AnimatePresence>
                             {pagedTests.map((test, i) => (
                                 <motion.div
@@ -215,7 +215,7 @@ const TestList = ({ batches, tests, setEditingTest, setSelectedTest, fetchTests 
                                     initial={{ opacity: 0, y: 16 }}
                                     animate={{ opacity: 1, y: 0, transition: { delay: i * 0.05 } }}
                                     exit={{ opacity: 0, y: -16 }}
-                                    className={`p-4 border border-[#e6c8a8] rounded-2xl bg-[#f8ede3] shadow-sm transition-all ${isFutureScheduled(test) ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-md hover:bg-[#f0d9c0] cursor-pointer'}`}
+                                    className={`p-3 border border-[#e6c8a8] rounded-2xl bg-[#f8ede3] shadow-sm transition-all ${isFutureScheduled(test) ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-md hover:bg-[#f0d9c0] cursor-pointer'}`}
                                     onClick={() => {
                                         if (isFutureScheduled(test)) {
                                             toast("Results can only be entered after the test date.", {
@@ -227,7 +227,7 @@ const TestList = ({ batches, tests, setEditingTest, setSelectedTest, fetchTests 
                                         }
                                     }}
                                 >
-                                    <div className="flex justify-between items-start mb-2">
+                                    <div className="flex justify-between items-start mb-1.5">
                                         <h3 className="font-bold text-[#5a4a3c] text-sm leading-snug pr-2">{test.testName}</h3>
                                         <div className="flex flex-col items-end gap-1 shrink-0">
                                             <span className={`text-xs px-2 py-0.5 rounded-full font-semibold capitalize ${
@@ -256,18 +256,18 @@ const TestList = ({ batches, tests, setEditingTest, setSelectedTest, fetchTests 
                                     {!test._isGroup && <p className="text-xs text-[#7b5c4b] mb-0.5">{getSubjectName(test.batchId, test.subjectId)}</p>}
                                     <p className="text-xs text-[#7b5c4b] mb-0.5">{formatDateTime(test.testDate)}</p>
                                     <p className="text-xs text-[#7b5c4b]">Max: <span className="font-semibold text-[#5a4a3c]">{test.maxMarks}</span>{test.passMarks > 0 && <span> &middot; Pass: <span className="font-semibold text-[#5a4a3c]">{test.passMarks}</span></span>}</p>
-                                    <div className="mt-3 flex gap-2" onClick={e => e.stopPropagation()}>
+                                    <div className="mt-2 flex gap-2" onClick={e => e.stopPropagation()}>
                                         {isFutureScheduled(test) ? (
                                             <button
                                                 onClick={() => setEditingTest(test)}
-                                                className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[#5a4a3c] bg-[#e0c4a8] rounded-lg hover:bg-[#d8bca0] transition-colors"
+                                                className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-[#5a4a3c] bg-[#e0c4a8] rounded-lg hover:bg-[#d8bca0] transition-colors"
                                             >
                                                 <FiEdit2 className="w-3 h-3" /> Edit
                                             </button>
                                         ) : (
                                         <button
                                             onClick={() => setSelectedTest(test)}
-                                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[#5a4a3c] bg-[#e0c4a8] rounded-lg hover:bg-[#d8bca0] transition-colors"
+                                            className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-[#5a4a3c] bg-[#e0c4a8] rounded-lg hover:bg-[#d8bca0] transition-colors"
                                         >
                                             <FiEdit2 className="w-3 h-3" /> Results
                                         </button>
@@ -278,7 +278,7 @@ const TestList = ({ batches, tests, setEditingTest, setSelectedTest, fetchTests 
                                                     ? { groupId: test.groupId }
                                                     : { testId: test._id, batchId: test.batchId }
                                             )}
-                                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+                                            className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
                                         >
                                             <FiTrash2 className="w-3 h-3" /> Delete
                                         </button>
