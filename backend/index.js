@@ -55,7 +55,9 @@ app.use('/api/v1/institute', InstituteRouter);
 app.use('/api/v1/test', TestRouter);
 app.use('/api/v1/teacher', TeacherRouter);
 app.use('/api/v1/register', RegistrationRouter);
-
+app.get('/', (req, res) => {
+    res.send('Welcome to the Tutor-A API');
+});
 app.use((err, req, res, next) => {
     console.error(err.stack);
     const status = err.status || err.statusCode || 500;
