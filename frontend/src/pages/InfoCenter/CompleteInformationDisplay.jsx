@@ -173,39 +173,32 @@ const CompleteInformationDisplay = () => {
                   {testDistribution.total} student{testDistribution.total !== 1 ? 's' : ''} with data
                 </span>
               </div>
-              {testDistribution.total === 0 ? (
-                <div className="flex flex-col items-center justify-center py-8 text-sm text-[#6b4c3b] gap-2">
-                  <span className="text-3xl">📋</span>
-                  <p>No test results recorded yet</p>
+              <div className="flex items-center gap-6">
+                <div className="flex flex-col items-center gap-1 shrink-0">
+                  <CircleStat value={avgTestScore} label="Overall" />
+                  <p className="text-xs text-[#6b4c3b] text-center">across all tests</p>
                 </div>
-              ) : (
-                <div className="flex items-center gap-6">
-                  <div className="flex flex-col items-center gap-1 shrink-0">
-                    <CircleStat value={avgTestScore} label="Overall" />
-                    <p className="text-xs text-[#6b4c3b] text-center">across all tests</p>
-                  </div>
-                  <div className="flex-1 flex flex-col gap-2">
-                    {[
-                      { label: 'Below 50%', count: testDistribution.below50, bg: 'bg-red-50', bar: 'bg-red-400', text: 'text-red-700' },
-                      { label: '50% – 75%', count: testDistribution.mid,     bg: 'bg-yellow-50', bar: 'bg-yellow-400', text: 'text-yellow-700' },
-                      { label: 'Above 75%', count: testDistribution.above75, bg: 'bg-green-50', bar: 'bg-green-400', text: 'text-green-700' },
-                    ].map(({ label, count, bg, bar, text }) => (
-                      <div key={label} className={`${bg} px-3 py-2 rounded-xl`}>
-                        <div className="flex justify-between items-center mb-1">
-                          <span className={`text-xs font-semibold ${text}`}>{label}</span>
-                          <span className={`text-sm font-bold ${text}`}>{count}</span>
-                        </div>
-                        <div className="h-1.5 bg-white/60 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full ${bar} rounded-full transition-all duration-700`}
-                            style={{ width: testDistribution.total > 0 ? `${(count / testDistribution.total) * 100}%` : '0%' }}
-                          />
-                        </div>
+                <div className="flex-1 flex flex-col gap-2">
+                  {[
+                    { label: 'Below 50%', count: testDistribution.below50, bg: 'bg-red-50', bar: 'bg-red-400', text: 'text-red-700' },
+                    { label: '50% – 75%', count: testDistribution.mid,     bg: 'bg-yellow-50', bar: 'bg-yellow-400', text: 'text-yellow-700' },
+                    { label: 'Above 75%', count: testDistribution.above75, bg: 'bg-green-50', bar: 'bg-green-400', text: 'text-green-700' },
+                  ].map(({ label, count, bg, bar, text }) => (
+                    <div key={label} className={`${bg} px-3 py-2 rounded-xl`}>
+                      <div className="flex justify-between items-center mb-1">
+                        <span className={`text-xs font-semibold ${text}`}>{label}</span>
+                        <span className={`text-sm font-bold ${text}`}>{count}</span>
                       </div>
-                    ))}
-                  </div>
+                      <div className="h-1.5 bg-white/60 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full ${bar} rounded-full transition-all duration-700`}
+                          style={{ width: testDistribution.total > 0 ? `${(count / testDistribution.total) * 100}%` : '0%' }}
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              )}
+              </div>
             </Card>
           </WrapperCard>
 
