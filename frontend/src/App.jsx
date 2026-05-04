@@ -10,18 +10,28 @@ import { ThemeProvider } from "./components/ui/ThemeProvider.jsx";
 import MainLayout from "./pages/MainLayout.jsx";
 import { Analytics } from "@vercel/analytics/react";
 
-const Home = lazy(() => import('./pages/Dashboard/Home.jsx'));
-const AttendencePage = lazy(() => import('./pages/Attendence/components/AttendencePage.jsx'));
-const StudentData = lazy(() => import('./pages/Student/StudentData.jsx'));
-const BatchPage = lazy(() => import('./pages/BatchPage/BatchPage.jsx'));
-const Landing = lazy(() => import('./pages/LandingPage/Landing'));
-const CompleteInformationDisplay = lazy(() => import('./pages/InfoCenter/CompleteInformationDisplay'));
-const Login = lazy(() => import('@/pages/Auth/Login.jsx'));
-const InstituteInfo = lazy(() => import('@/pages/InstiInfo/InstituteInfo.jsx'));
-const Fees = lazy(() => import('@/pages/Fees Management/Fees.jsx'));
-const TestManagementPage = lazy(() => import('@/pages/TestManagement/TestManagementPage.jsx'));
-const TeacherPage = lazy(() => import('@/pages/TeacherManagement/TeacherPage.jsx'));
-const StudentOnboardingPage = lazy(() => import('@/pages/StudentRegistration/StudentOnboardingPage.jsx'));
+// On chunk-load failure (stale cache after a new deploy), force a full reload
+// so the browser fetches fresh HTML and the correct hashed chunk filenames.
+const lazyWithReload = (importFn) =>
+    lazy(() =>
+        importFn().catch(() => {
+            window.location.reload();
+            return new Promise(() => {});
+        })
+    );
+
+const Home = lazyWithReload(() => import('./pages/Dashboard/Home.jsx'));
+const AttendencePage = lazyWithReload(() => import('./pages/Attendence/components/AttendencePage.jsx'));
+const StudentData = lazyWithReload(() => import('./pages/Student/StudentData.jsx'));
+const BatchPage = lazyWithReload(() => import('./pages/BatchPage/BatchPage.jsx'));
+const Landing = lazyWithReload(() => import('./pages/LandingPage/Landing'));
+const CompleteInformationDisplay = lazyWithReload(() => import('./pages/InfoCenter/CompleteInformationDisplay'));
+const Login = lazyWithReload(() => import('@/pages/Auth/Login.jsx'));
+const InstituteInfo = lazyWithReload(() => import('@/pages/InstiInfo/InstituteInfo.jsx'));
+const Fees = lazyWithReload(() => import('@/pages/Fees Management/Fees.jsx'));
+const TestManagementPage = lazyWithReload(() => import('@/pages/TestManagement/TestManagementPage.jsx'));
+const TeacherPage = lazyWithReload(() => import('@/pages/TeacherManagement/TeacherPage.jsx'));
+const StudentOnboardingPage = lazyWithReload(() => import('@/pages/StudentRegistration/StudentOnboardingPage.jsx'));
 
 const PageLoader = () => (
     <div className="fixed inset-0 bg-[#f8ede3] flex flex-col items-center justify-center z-50">
