@@ -43,6 +43,7 @@ export const API = {
   CREATE_TEST: 'test/createTest',
   GET_ALL_TESTS: 'test/getAllTests',
   UPDATE_TEST: (id) => `test/updateTest/${id}`,
+  UPDATE_GROUP_TEST: (groupId) => `test/updateGroupTest/${groupId}`,
   DELETE_TEST: (id) => `test/${id}`,
 
   // Teachers
@@ -54,6 +55,13 @@ export const API = {
   // Institute
   GET_INSTITUTE: 'institute/get',
   UPDATE_INSTITUTE: 'institute/update',
+
+  // Student self-registration
+  REGISTER_INFO: (adminId) => `register/${adminId}/info`,
+  REGISTER_SUBMIT: (adminId) => `register/${adminId}`,
+  PENDING_STUDENTS: 'register/pending',
+  APPROVE_PENDING: (id) => `register/pending/${id}/approve`,
+  DENY_PENDING: (id) => `register/pending/${id}`,
 };
 
 export const TEST_STATUS = {

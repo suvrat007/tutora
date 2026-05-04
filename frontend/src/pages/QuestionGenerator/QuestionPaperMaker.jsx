@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import GeminiFile from './GeminiFile';
+import Dropdown from '@/components/ui/Dropdown';
 
 const QuestionPaperMaker = () => {
     // State variables for form inputs
@@ -154,17 +155,15 @@ const QuestionPaperMaker = () => {
                         </div>
                         <div>
                             <label htmlFor="difficulty" className="block text-[#C3B4A9] mb-1">Difficulty</label>
-                            <select
-                                id="difficulty"
-                                className="w-full rounded-md p-2 bg-[#554433] border border-[#6A5B4F] text-[#EFEFEF] focus:outline-none focus:ring-2 focus:ring-[#D4A373]"
+                            <Dropdown
                                 value={difficulty}
                                 onChange={(e) => setDifficulty(e.target.value)}
-                                required
-                            >
-                                <option value="easy">Easy</option>
-                                <option value="medium">Medium</option>
-                                <option value="hard">Hard</option>
-                            </select>
+                                options={[
+                                    { label: "Easy", value: "easy" },
+                                    { label: "Medium", value: "medium" },
+                                    { label: "Hard", value: "hard" }
+                                ]}
+                            />
                         </div>
                         <div>
                             <label htmlFor="marks" className="block text-[#C3B4A9] mb-1">Total Marks</label>

@@ -1,49 +1,72 @@
-import { useState } from "react";
-import LoadingPage from "../LoadingPage.jsx";
+import { useState, useEffect } from "react";
 import TodaysClasses from "./comps/FuturePhases/TodaysClasses.jsx";
-import Callendar from "./comps/P1/Callendar.jsx";
 import ClassStatusUpdates from "./comps/P1/ClassStatusUpdates.jsx";
 import Reminders from "./comps/P1/Reminders.jsx";
-import WrapperCard from "@/utilities/WrapperCard.jsx";
+import DashboardCalendar from "./comps/Widgets/DashboardCalendar.jsx";
+import StatsStrip from "./comps/Widgets/StatsStrip.jsx";
+import FeeCollection from "./comps/Widgets/FeeCollection.jsx";
+import TopStudents from "./comps/Widgets/TopStudents.jsx";
+import BatchFeeChart from "./comps/Widgets/BatchFeeChart.jsx";
+import ClassFrequencyTrend from "./comps/Widgets/ClassFrequencyTrend.jsx";
+import useFetchAttendanceSummary from "@/hooks/useFetchAttendanceSummary.js";
+import useFetchStudents from "@/hooks/useFetchStudents.js";
+import useFetchFeeSummary from "@/hooks/useFetchFeeSummary.js";
 
 const Home = () => {
-    const [loaded, setLoaded] = useState(false);
+    const [reminderRefreshKey, setReminderRefreshKey] = useState(0);
+    const fetchAttendance = useFetchAttendanceSummary();
+    const fetchStudents = useFetchStudents();
+    const fetchFeeSummary = useFetchFeeSummary();
 
-    if (!loaded) return <LoadingPage onDone={() => setLoaded(true)} />;
+    useEffect(() => {
+        const controller = new AbortController();
+        fetchStudents(controller.signal);
+        fetchAttendance(controller.signal);
+        fetchFeeSummary(controller.signal);
+        return () => controller.abort();
+    }, []);
 
     return (
-        <div className=" py-3 px-5 overflow-y-auto flex flex-col gap-6">
-            {/* Top Row */}
-            <div className="flex flex-col sm:flex-row gap-6 h-auto sm:h-[37vh]">
-                <div className="w-full sm:w-[80%]">
-                    <WrapperCard className="h-full">
-                        <div className="h-[30em] sm:h-full">
-                            <TodaysClasses />
-                        </div>
-                    </WrapperCard>
+        <div className="h-full py-3 px-3 sm:px-5 overflow-y-auto flex flex-col gap-4 sm:gap-6 pb-8">
+            {/* Today's classes + Pending class updates + Reminders */}
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 sm:h-[400px]">
+                <div className="w-full sm:w-1/3 sm:h-full">
+                    <TodaysClasses />
                 </div>
-                <div className="w-full sm:flex-1">
-                    <div className="bg-[#f8ede3] p-4 rounded-3xl shadow-[0_8px_24px_rgba(0,0,0,0.15)] h-full">
-                        <Callendar />
-                    </div>
+                <div className="w-full sm:w-1/3 sm:h-full">
+                    <ClassStatusUpdates />
+                </div>
+                <div className="w-full sm:w-1/3 sm:h-full">
+                    <Reminders refreshKey={reminderRefreshKey} />
                 </div>
             </div>
 
-            {/* Bottom Row */}
-            <div className="flex flex-col sm:flex-row gap-6 h-[45rem]">
-                <div className="w-full sm:w-1/2">
-                    <WrapperCard className="h-full">
-                        <div className="h-[30em] sm:h-full">
-                            <ClassStatusUpdates />
-                        </div>
-                    </WrapperCard>
+            {/* Stats strip */}
+            <StatsStrip />
+
+            {/* Fee collection + Batch fee breakdown */}
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 sm:h-[380px]">
+                <div className="w-full sm:w-[55%] sm:h-full">
+                    <FeeCollection />
                 </div>
-                <div className="w-full sm:w-1/2 mb-25 sm:mb-0">
-                    <WrapperCard className="h-full">
-                        <div className="h-[20em]  sm:h-full">
-                            <Reminders />
-                        </div>
-                    </WrapperCard>
+                <div className="w-full sm:flex-1 sm:h-full">
+                    <BatchFeeChart />
+                </div>
+            </div>
+
+            {/* Reminders Calendar - full row */}
+            <DashboardCalendar
+                refreshKey={reminderRefreshKey}
+                onReminderAdded={() => setReminderRefreshKey(k => k + 1)}
+            />
+
+            {/* Top students + Class frequency trend */}
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 sm:h-[380px]">
+                <div className="w-full sm:w-[45%] sm:h-full">
+                    <TopStudents />
+                </div>
+                <div className="w-full sm:flex-1 sm:h-full">
+                    <ClassFrequencyTrend />
                 </div>
             </div>
         </div>

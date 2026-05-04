@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axiosInstance from "@/utilities/axiosInstance";
 import { useNavigate } from "react-router-dom";
-import useFetchUser from "@/pages/useFetchUser.js";
+import useFetchUser from "@/hooks/useFetchUser.js";
 import { X } from "lucide-react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";

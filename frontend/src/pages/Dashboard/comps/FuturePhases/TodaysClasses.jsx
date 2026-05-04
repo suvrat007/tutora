@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import axiosInstance from "@/utilities/axiosInstance";
-import { CalendarDays, NotebookText } from "lucide-react";
+import { CalendarDays, NotebookText, Coffee } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import { getLocalDateYYYYMMDD } from '@/lib/utils.js';
 import { motion } from "framer-motion";
@@ -107,10 +107,10 @@ const TodaysClasses = () => {
     };
 
     return (
-        <div className="bg-[#f8ede3] rounded-3xl shadow-xl shadow-[0_8px_24px_rgba(0,0,0,0.15)] p-6 h-full flex flex-col overflow-hidden border border-[#e6c8a8]">
+        <div className="bg-[#f8ede3] rounded-3xl shadow-xl shadow-[0_8px_24px_rgba(0,0,0,0.15)] p-6 sm:h-full flex flex-col overflow-hidden border border-[#e6c8a8]">
             <div className="sticky top-0 z-10 bg-[#f8ede3] pb-3">
-                <h1 className="text-xl font-semibold text-[#5a4a3c] border-b border-[#e6c8a8] pb-2 flex items-center gap-2">
-                    <CalendarDays className="w-6 h-6 text-[#e0c4a8]" />
+                <h1 className="text-lg font-semibold text-[#5a4a3c] border-b border-[#e6c8a8] pb-2.5 flex items-center gap-2">
+                    <CalendarDays className="w-5 h-5 text-[#c47d3e]" />
                     Today's Classes
                 </h1>
             </div>
@@ -149,7 +149,9 @@ const TodaysClasses = () => {
                     <div className="flex flex-col items-center justify-center text-[#7b5c4b] animate-pulse ">
                         <NotebookText className="w-12 h-12 mb-3 text-[#e0c4a8]" />
                         <p className="text-lg font-medium">Yay! No classes scheduled for today.</p>
-                        <p className="text-sm text-[#7b5c4b] mt-2">Take a break or plan ahead 📘</p>
+                        <p className="text-sm text-[#7b5c4b] mt-2 flex items-center justify-center gap-2">
+                            Take a break or plan ahead <Coffee className="w-4 h-4 text-[#e0c4a8]" />
+                        </p>
                     </div>
                 )}
             </div>

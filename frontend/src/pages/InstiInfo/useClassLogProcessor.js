@@ -34,11 +34,25 @@ const generateExpectedDates = (startDate, endDate, days, time) => {
 };
 
 const processClassLogs = (classLogs, batches) => {
+    // Deduplicate classLogs by batch_id and subject_id to ensure no duplicate entries
+    const uniqueLogsMap = new Map();
+    classLogs.forEach(log => {
+        if (!log.batch_id || !log.subject_id) return;
+        const key = `${log.batch_id._id || log.batch_id}_${log.subject_id._id || log.subject_id}`;
+        if (!uniqueLogsMap.has(key)) {
+            uniqueLogsMap.set(key, log);
+        } else {
+            const existingLog = uniqueLogsMap.get(key);
+            uniqueLogsMap.set(key, { ...existingLog, classes: [...existingLog.classes, ...(log.classes || [])] });
+        }
+    });
+    const uniqueLogs = Array.from(uniqueLogsMap.values());
+
     // Use the end of the current day as end date to include all of today (LOCAL)
     const endDate = new Date();
     endDate.setHours(23, 59, 59, 999);
 
-    const processedLogs = classLogs.map(log => {
+    const processedLogs = uniqueLogs.map(log => {
         // Find corresponding batch
         const batch = batches.find(b => b._id.toString() === log.batch_id._id.toString());
         if (!batch) {
@@ -96,6 +110,7 @@ const processClassLogs = (classLogs, batches) => {
                 if (!scheduleDays.includes(dayOfWeek)) {
                     return {
                         ...existingClass,
+                        date: clsDateStr, // normalize to YYYY-MM-DD
                         status: 'Invalid schedule day',
                         error: 'Class date does not match schedule'
                     };
@@ -103,6 +118,7 @@ const processClassLogs = (classLogs, batches) => {
 
                 return {
                     ...existingClass,
+                    date: toLocalISOSeconds(new Date(existingClass.date)), // normalize to local full ISO string
                     status: existingClass.updated
                         ? (existingClass.hasHeld ? 'Conducted' : 'Cancelled')
                         : 'No data recorded'

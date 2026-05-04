@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axiosInstance from "@/utilities/axiosInstance";
 import { useNavigate } from "react-router-dom";
-import useFetchUser from "@/pages/useFetchUser.js";
+import useFetchUser from "@/hooks/useFetchUser.js";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -98,6 +98,7 @@ const OnboardingForm = ({ adminCreds }) => {
             }
 
             await fetchUser();
+            sessionStorage.setItem('tutora_new_signup', '1');
             navigate("/main");
         } catch (err) {
             console.error("Onboarding error:", err);

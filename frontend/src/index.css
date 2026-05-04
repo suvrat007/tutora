@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+html, body, #root {
+    background-color: #f8ede3;
+    min-height: 100%;
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+
+
 .add-student-inputbar {
     border: 1px solid #d1d5db;
     border-radius: 0.75rem;

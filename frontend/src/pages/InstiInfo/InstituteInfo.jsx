@@ -1,19 +1,16 @@
 import { useSelector } from 'react-redux';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
     Building2, Phone, Mail, GraduationCap, Calendar, Users, PencilIcon
 } from 'lucide-react';
 
 import processClassLogs from './useClassLogProcessor';
-import useFetchClassLogs from '@/pages/useFetchClassLogs.js';
-import useFetchBatches from '@/pages/useFetchBatches.js';
-import useFetchStudents from '@/pages/useFetchStudents.js';
+import useFetchClassLogs from '@/hooks/useFetchClassLogs.js';
 
 import ClassesTable from './ClassesTable';
-import WrapperCard from '@/utilities/WrapperCard.jsx';
+import WrapperCard from '@/components/ui/WrapperCard.jsx';
 import EditInfoModal from '@/pages/InstiInfo/EditInfoModal.jsx';
-import LoadingPage from '@/pages/LoadingPage.jsx';
 
 const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
@@ -25,21 +22,13 @@ const InstituteInfo = () => {
     const batches = useSelector((state) => state.batches);
     const userData = useSelector((state) => state.user);
     const instiData = userData?.institute_info || { contact_info: {} };
-    // const fetchBatches = useFetchBatches();
-    // const fetchStudents = useFetchStudents();   
-    // const fetchAttendanceSummary = useFetchAttendanceSummary();
     const fetchClassLogs = useFetchClassLogs();
-
-
-    // useEffect(() => {
-    //     fetchBatches();
-    //     fetchStudents();
-    //     fetchAttendanceSummary();
-    //     fetchClassLogs();
-    // }, []);
 
     const [showEditModal, setShowEditModal] = useState(false);
 
+    useEffect(() => {
+        fetchClassLogs().catch(console.error);
+    }, []);
 
     const newClassLogs = useMemo(() => processClassLogs(classLogs, batches), [classLogs, batches]);
 
@@ -47,14 +36,8 @@ const InstituteInfo = () => {
         await fetchClassLogs();
     };
 
-    const [loaded, setLoaded] = useState(false);
-
-    if (!loaded) return <LoadingPage onDone={() => setLoaded(true)} />;
-
-    // console.log("Institute Data:", newClassLogs);
-
     return (
-        <div className="h-screen p-6 overflow-y-auto">
+        <div className="h-full p-6 overflow-y-auto">
             {showEditModal && (
                 <EditInfoModal
                     onClose={() => setShowEditModal(false)}
@@ -197,13 +180,6 @@ const InstituteInfo = () => {
                 >
                     <WrapperCard>
                         <div className="bg-[#f8ede3] rounded-2xl h-[600px] flex flex-col border border-[#e6c8a8] shadow-[0_8px_24px_rgba(0,0,0,0.15)] overflow-hidden">
-                            <div className="flex-shrink-0 px-6 py-4 bg-[#f0d9c0] border-b border-[#e6c8a8]">
-                                <h2 className="text-xl font-semibold text-[#5a4a3c] flex items-center gap-2">
-                                    <Calendar className="w-5 h-5 text-[#e6c8a8]"/>
-                                    Class Management
-                                </h2>
-                                <p className="text-sm text-[#7b5c4b]">Overview of all scheduled classes</p>
-                            </div>
                             <div className="flex-1 min-h-0">
                                 <ClassesTable newClassLogs={newClassLogs} onUpdate={onUpdate}/>
                             </div>

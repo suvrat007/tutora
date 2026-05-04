@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
-import useFetchBatches from "@/pages/useFetchBatches.js";
-import useFetchStudents from "@/pages/useFetchStudents.js";
-import useFetchClassLogs from "@/pages/useFetchClassLogs.js";
+import useFetchBatches from "@/hooks/useFetchBatches.js";
+import useFetchStudents from "@/hooks/useFetchStudents.js";
+import useFetchClassLogs from "@/hooks/useFetchClassLogs.js";
 import { FaUserGraduate, FaUserCheck, FaUniversity } from "react-icons/fa";
-import useFetchTests from "@/pages/useFetchTests.js";
+import useFetchTests from "@/hooks/useFetchTests.js";
 
 const steps = [
     { name: "Batches", icon: FaUserGraduate },
@@ -26,6 +26,8 @@ const LoadingPage = ({ onDone }) => {
     const students = useSelector((state) => state.students);
 
     useEffect(() => {
+        const controller = new AbortController();
+
         const fetchData = async () => {
             const hasData =
                 batches?.length > 0 &&
@@ -40,12 +42,13 @@ const LoadingPage = ({ onDone }) => {
 
             try {
                 const operations = [
-                    { fetch: fetchBatches, shouldRun: !batches?.length },
-                    { fetch: fetchGroupedStudents, shouldRun: !students?.groupedStudents?.length },
-                    { fetch: fetchClassLogs, shouldRun: !classLogs?.length },
+                    { fetch: () => fetchBatches(controller.signal), shouldRun: !batches?.length },
+                    { fetch: () => fetchGroupedStudents(controller.signal), shouldRun: !students?.groupedStudents?.length },
+                    { fetch: () => fetchClassLogs(controller.signal), shouldRun: !classLogs?.length },
                 ];
 
                 for (let i = 0; i < operations.length; i++) {
+                    if (controller.signal.aborted) break;
                     if (operations[i].shouldRun) {
                         setCurrentStep(i);
                         await operations[i].fetch();
@@ -53,14 +56,20 @@ const LoadingPage = ({ onDone }) => {
                     }
                 }
 
-                setCurrentStep(4);
-                setTimeout(() => onDone(), 500);
+                if (!controller.signal.aborted) {
+                    setCurrentStep(4);
+                    setTimeout(() => onDone(), 500);
+                }
             } catch (err) {
-                console.error("Error while loading data:", err);
+                if (!controller.signal.aborted) {
+                    console.error("Error while loading data:", err);
+                    setTimeout(() => onDone(), 500);
+                }
             }
         };
 
         fetchData();
+        return () => controller.abort();
     }, []);
 
     const progress = Math.min((currentStep / steps.length) * 100, 100);

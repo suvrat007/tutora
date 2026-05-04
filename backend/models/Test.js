@@ -36,6 +36,10 @@ const testSchema = new mongoose.Schema({
     cancellationReason: {
         type: String
     },
+    groupId: {
+        type: String,
+        index: true
+    },
     studentResults: [{
         studentId: {
             type: mongoose.Schema.Types.ObjectId,

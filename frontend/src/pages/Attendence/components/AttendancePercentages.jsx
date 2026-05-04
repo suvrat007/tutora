@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useSelector } from "react-redux";
 import useAttendanceSummary from "@/pages/Attendence/hooks/useAttendanceSummary.js";
 import { motion, AnimatePresence } from "framer-motion";
@@ -5,9 +6,30 @@ import { FiCalendar } from "react-icons/fi";
 import { Loader2, Download } from "lucide-react";
 import { exportToCSV } from "@/utilities/csvExport.js";
 
-const AttendancePercentages = ({ batchName, subjectName, refreshTrigger }) => {
+const AttendancePercentages = ({ batchName, subjectName, refreshTrigger, presentIds, savedPresentStudents, isFilterActive }) => {
     const batches = useSelector(state => state.batches);
     const { summary, loading, error } = useAttendanceSummary(batchName, subjectName, batches, refreshTrigger);
+
+    // Apply optimistic delta immediately on every toggle — no backend round-trip needed
+    const optimisticSummary = useMemo(() => {
+        if (!isFilterActive || !summary.length || !presentIds) return summary;
+        const savedIds = new Set((savedPresentStudents || []).map((s) => s._id.toString()));
+        return summary.map((student) => ({
+            ...student,
+            subjects: student.subjects.map((subj) => {
+                const id = student.studentId.toString();
+                const wasSaved = savedIds.has(id);
+                const isNow = presentIds.has(id);
+                let delta = 0;
+                if (isNow && !wasSaved) delta = 1;
+                else if (!isNow && wasSaved) delta = -1;
+                if (delta === 0) return subj;
+                const newAttended = Math.max(0, subj.attended + delta);
+                const pct = subj.total > 0 ? Math.round((newAttended / subj.total) * 100) : 0;
+                return { ...subj, attended: newAttended, percentage: pct };
+            }),
+        }));
+    }, [summary, presentIds, savedPresentStudents, isFilterActive]);
 
     const circleVariants = {
         initial: (pct) => ({ strokeDashoffset: ((100 - pct) / 100) * 113 }),
@@ -22,10 +44,10 @@ const AttendancePercentages = ({ batchName, subjectName, refreshTrigger }) => {
             {/* Header */}
             <div className="flex items-center justify-between gap-2">
                 <h2 className="font-bold text-base text-[#5a4a3c]">Attendance Summary</h2>
-                {summary.length > 0 && (
+                {optimisticSummary.length > 0 && (
                     <button
                         onClick={() => {
-                            const rows = summary.flatMap(student =>
+                            const rows = optimisticSummary.flatMap(student =>
                                 student.subjects.map(subj => ({
                                     Student: student.studentName,
                                     Batch: batchName,
@@ -53,7 +75,7 @@ const AttendancePercentages = ({ batchName, subjectName, refreshTrigger }) => {
                     </div>
                 ) : error ? (
                     <p className="text-red-500 text-xs text-center mt-4">{error}</p>
-                ) : summary.length === 0 ? (
+                ) : optimisticSummary.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-[#7b5c4b] gap-2 py-6">
                         <FiCalendar className="w-8 h-8 text-[#e0c4a8]" />
                         <p className="text-xs text-center">
@@ -65,7 +87,7 @@ const AttendancePercentages = ({ batchName, subjectName, refreshTrigger }) => {
                 ) : (
                     <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 pt-1">
                         <AnimatePresence>
-                            {summary.map((student, index) =>
+                            {optimisticSummary.map((student, index) =>
                                 student.subjects.map((subj) => {
                                     const pct = subj.percentage;
                                     return (

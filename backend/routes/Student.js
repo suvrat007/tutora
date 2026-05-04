@@ -525,10 +525,19 @@ router.get("/fees/dashboard-summary", userAuth, async (req, res) => {
         const adminId = req.adminId;
         const targetMonthYear = req.query.month || `${new Date().toLocaleString("default", { month: "long" })} ${new Date().getFullYear()}`;
 
-        const [monthName, yearStr] = targetMonthYear.split(" ");
-        const targetDate = new Date(`${monthName} 1, ${yearStr} UTC`);
-        const targetMonthNum = targetDate.getUTCMonth();
-        const targetYearNum = targetDate.getUTCFullYear();
+        const isWholeYear = targetMonthYear.startsWith("Whole Year");
+        const yearStr = isWholeYear ? targetMonthYear.split(" ")[2] : targetMonthYear.split(" ")[1];
+        const targetYearNum = parseInt(yearStr);
+        let targetMonthNum = -1;
+
+        if (!isWholeYear) {
+            const monthName = targetMonthYear.split(" ")[0];
+            const targetDate = new Date(`${monthName} 1, ${yearStr} UTC`);
+            targetMonthNum = targetDate.getUTCMonth();
+            if (isNaN(targetMonthNum)) targetMonthNum = new Date().getUTCMonth();
+        }
+
+        const getSafeDate = { $convert: { input: "$$fs.date", to: "date", onError: new Date("2000-01-01"), onNull: new Date("2000-01-01") } };
 
         const summary = await Student.aggregate([
             { $match: { adminId: new mongoose.Types.ObjectId(adminId) } },
@@ -538,41 +547,111 @@ router.get("/fees/dashboard-summary", userAuth, async (req, res) => {
                         {
                             $project: {
                                 amount: { $ifNull: ["$fee_status.amount", 0] },
-                                isPaidThisMonth: {
-                                    $anyElementTrue: [
-                                        {
-                                            $map: {
-                                                input: { $ifNull: ["$fee_status.feeStatus", []] },
-                                                as: "fs",
-                                                in: {
-                                                    $and: [
-                                                        { $eq: [{ $month: { $toDate: "$$fs.date" } }, targetMonthNum + 1] },
-                                                        { $eq: [{ $year: { $toDate: "$$fs.date" } }, targetYearNum] },
-                                                        { $eq: ["$$fs.paid", true] }
-                                                    ]
-                                                }
+                                yearlyPaidCount: {
+                                    $size: {
+                                        $filter: {
+                                            input: { $ifNull: ["$fee_status.feeStatus", []] },
+                                            as: "fs",
+                                            cond: { 
+                                                $and: [
+                                                    isWholeYear 
+                                                        ? { $eq: [{ $year: getSafeDate }, targetYearNum] }
+                                                        : { $and: [
+                                                              { $eq: [{ $month: getSafeDate }, targetMonthNum + 1] },
+                                                              { $eq: [{ $year: getSafeDate }, targetYearNum] }
+                                                          ]}, 
+                                                    { $eq: ["$$fs.paid", true] }
+                                                ] 
                                             }
                                         }
-                                    ]
+                                    }
+                                },
+                                yearlyTotalCount: {
+                                    $size: {
+                                        $filter: {
+                                            input: { $ifNull: ["$fee_status.feeStatus", []] },
+                                            as: "fs",
+                                            cond: isWholeYear 
+                                                    ? { $eq: [{ $year: getSafeDate }, targetYearNum] }
+                                                    : { $and: [
+                                                          { $eq: [{ $month: getSafeDate }, targetMonthNum + 1] },
+                                                          { $eq: [{ $year: getSafeDate }, targetYearNum] }
+                                                      ]}
+                                        }
+                                    }
                                 }
                             }
                         },
                         {
                             $group: {
                                 _id: null,
-                                totalInstituteFees: { $sum: "$amount" },
+                                totalInstituteFees: {
+                                    $sum: isWholeYear 
+                                        ? { $multiply: ["$amount", "$yearlyTotalCount"] } 
+                                        : "$amount"
+                                },
                                 studentsCount: { $sum: 1 },
                                 totalPaidAmount: {
-                                    $sum: { $cond: ["$isPaidThisMonth", "$amount", 0] }
+                                    $sum: isWholeYear
+                                        ? { $multiply: ["$amount", "$yearlyPaidCount"] }
+                                        : { $cond: [{ $gt: ["$yearlyPaidCount", 0] }, "$amount", 0] }
                                 }
                             }
                         }
                     ],
                     batchWise: [
                         {
+                            $project: {
+                                batchId: 1,
+                                amount: { $ifNull: ["$fee_status.amount", 0] },
+                                yearlyPaidCount: {
+                                    $size: {
+                                        $filter: {
+                                            input: { $ifNull: ["$fee_status.feeStatus", []] },
+                                            as: "fs",
+                                            cond: { 
+                                                $and: [
+                                                    isWholeYear 
+                                                        ? { $eq: [{ $year: getSafeDate }, targetYearNum] }
+                                                        : { $and: [
+                                                              { $eq: [{ $month: getSafeDate }, targetMonthNum + 1] },
+                                                              { $eq: [{ $year: getSafeDate }, targetYearNum] }
+                                                          ]}, 
+                                                    { $eq: ["$$fs.paid", true] }
+                                                ] 
+                                            }
+                                        }
+                                    }
+                                },
+                                yearlyTotalCount: {
+                                    $size: {
+                                        $filter: {
+                                            input: { $ifNull: ["$fee_status.feeStatus", []] },
+                                            as: "fs",
+                                            cond: isWholeYear 
+                                                    ? { $eq: [{ $year: getSafeDate }, targetYearNum] }
+                                                    : { $and: [
+                                                          { $eq: [{ $month: getSafeDate }, targetMonthNum + 1] },
+                                                          { $eq: [{ $year: getSafeDate }, targetYearNum] }
+                                                      ]}
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
                             $group: {
                                 _id: "$batchId",
-                                batchTotalFees: { $sum: { $ifNull: ["$fee_status.amount", 0] } },
+                                batchTotalFees: {
+                                    $sum: isWholeYear 
+                                        ? { $multiply: ["$amount", "$yearlyTotalCount"] } 
+                                        : "$amount"
+                                },
+                                batchPaidAmount: {
+                                    $sum: isWholeYear
+                                        ? { $multiply: ["$amount", "$yearlyPaidCount"] }
+                                        : { $cond: [{ $gt: ["$yearlyPaidCount", 0] }, "$amount", 0] }
+                                },
                                 batchStudentsCount: { $sum: 1 }
                             }
                         },
@@ -592,6 +671,7 @@ router.get("/fees/dashboard-summary", userAuth, async (req, res) => {
                                 batchName: { $ifNull: ["$batchInfo.name", "No Batch"] },
                                 forStandard: { $ifNull: ["$batchInfo.forStandard", ""] },
                                 totalFees: "$batchTotalFees",
+                                paidAmount: "$batchPaidAmount",
                                 studentsCount: "$batchStudentsCount"
                             }
                         }
@@ -624,19 +704,25 @@ router.get("/fees/list", userAuth, async (req, res) => {
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
 
-        const [monthName, yearStr] = targetMonthYear.split(" ");
-        const targetDate = new Date(`${monthName} 1, ${yearStr} UTC`);
-        const targetMonthNum = targetDate.getUTCMonth();
-        const targetYearNum = targetDate.getUTCFullYear();
+        const isWholeYear = targetMonthYear.startsWith("Whole Year");
+        const yearStr = isWholeYear ? targetMonthYear.split(" ")[2] : targetMonthYear.split(" ")[1];
+        const targetYearNum = parseInt(yearStr);
+        let targetMonthNum = -1;
+
+        if (!isWholeYear) {
+            const monthName = targetMonthYear.split(" ")[0];
+            const targetDate = new Date(`${monthName} 1, ${yearStr} UTC`);
+            targetMonthNum = targetDate.getUTCMonth();
+            if (isNaN(targetMonthNum)) targetMonthNum = new Date().getUTCMonth();
+        }
+
+        const getSafeDate = { $convert: { input: "$$fs.date", to: "date", onError: new Date("2000-01-01"), onNull: new Date("2000-01-01") } };
 
         const matchStage = { adminId: new mongoose.Types.ObjectId(adminId) };
 
         if (batchFilter) {
             matchStage.batchId = new mongoose.Types.ObjectId(batchFilter);
         }
-
-        // (Subject filtering might be complex natively unless we populate subjects fully, 
-        //  we filter locally or structurally handle it if essential. For now we match inside the aggregate if needed)
 
         const pipeline = [
             { $match: matchStage },
@@ -659,7 +745,15 @@ router.get("/fees/list", userAuth, async (req, res) => {
                     batchName: { $ifNull: ["$batchInfo.name", "No Batch"] },
                     batchSubjects: { $ifNull: ["$batchInfo.subject", []] },
                     amount: { $ifNull: ["$fee_status.amount", 0] },
-                    feeStatus: { $ifNull: ["$fee_status.feeStatus", []] },
+                    
+                    yearlyFeeStatuses: {
+                        $filter: {
+                            input: { $ifNull: ["$fee_status.feeStatus", []] },
+                            as: "fs",
+                            cond: { $eq: [{ $year: getSafeDate }, targetYearNum] }
+                        }
+                    },
+
                     isPaidThisMonth: {
                         $anyElementTrue: [
                             {
@@ -668,8 +762,12 @@ router.get("/fees/list", userAuth, async (req, res) => {
                                     as: "fs",
                                     in: {
                                         $and: [
-                                            { $eq: [{ $month: { $toDate: "$$fs.date" } }, targetMonthNum + 1] },
-                                            { $eq: [{ $year: { $toDate: "$$fs.date" } }, targetYearNum] },
+                                            isWholeYear 
+                                                ? { $eq: [{ $year: getSafeDate }, targetYearNum] }
+                                                : { $and: [
+                                                      { $eq: [{ $month: getSafeDate }, targetMonthNum + 1] },
+                                                      { $eq: [{ $year: getSafeDate }, targetYearNum] }
+                                                  ]},
                                             { $eq: ["$$fs.paid", true] }
                                         ]
                                     }
@@ -688,8 +786,12 @@ router.get("/fees/list", userAuth, async (req, res) => {
                                                 as: "fs",
                                                 cond: {
                                                     $and: [
-                                                        { $eq: [{ $month: { $toDate: "$$fs.date" } }, targetMonthNum + 1] },
-                                                        { $eq: [{ $year: { $toDate: "$$fs.date" } }, targetYearNum] },
+                                                        isWholeYear 
+                                                            ? { $eq: [{ $year: getSafeDate }, targetYearNum] }
+                                                            : { $and: [
+                                                                  { $eq: [{ $month: getSafeDate }, targetMonthNum + 1] },
+                                                                  { $eq: [{ $year: getSafeDate }, targetYearNum] }
+                                                              ]},
                                                         { $eq: ["$$fs.paid", true] }
                                                     ]
                                                 }
@@ -736,7 +838,6 @@ router.get("/fees/list", userAuth, async (req, res) => {
              };
         });
 
-        // Subject filter (if handled locally post-processing since array includes check is tricky in Mongo without explicit unwind)
         if (subjectFilter) {
             data = data.filter(st => st.subjects.includes(subjectFilter));
         }

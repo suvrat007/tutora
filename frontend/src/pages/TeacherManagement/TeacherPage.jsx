@@ -6,9 +6,10 @@ import { FaChalkboardTeacher } from "react-icons/fa";
 import { BookOpen } from "lucide-react";
 import axiosInstance from "@/utilities/axiosInstance.jsx";
 import { setTeachers, addTeacher, updateTeacher, removeTeacher } from "@/utilities/redux/teacherSlice.js";
-import WrapperCard from "@/utilities/WrapperCard.jsx";
+import WrapperCard from "@/components/ui/WrapperCard.jsx";
 import ConfirmationModal from "@/components/ui/ConfirmationModal.jsx";
 import toast from "react-hot-toast";
+import Dropdown from "@/components/ui/Dropdown";
 
 const emptyForm = {
     name: "", qualification: "", emailId: "", phoneNumber: "",
@@ -345,34 +346,36 @@ const TeacherPage = () => {
 
                                         {/* Dropdowns row */}
                                         <div className="flex gap-2 mb-2">
-                                            <select
-                                                value={pickerBatch}
-                                                onChange={e => { setPickerBatch(e.target.value); setPickerSubject(""); }}
-                                                className="flex-1 border border-[#e6c8a8] bg-white rounded-lg px-2 py-2 text-xs text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8]"
-                                            >
-                                                <option value="">Select Batch</option>
-                                                {batches.map(b => (
-                                                    <option key={b._id} value={b._id}>{b.name}</option>
-                                                ))}
-                                            </select>
+                                            <div className="flex-1">
+                                                <Dropdown
+                                                    value={pickerBatch}
+                                                    onChange={e => { setPickerBatch(e.target.value); setPickerSubject(""); }}
+                                                    placeholder="Select Batch"
+                                                    options={[
+                                                        { label: "Select Batch", value: "" },
+                                                        ...batches.map(b => ({ label: b.name, value: b._id }))
+                                                    ]}
+                                                />
+                                            </div>
 
-                                            <select
-                                                value={pickerSubject}
-                                                onChange={e => setPickerSubject(e.target.value)}
-                                                disabled={!pickerBatch || pickerSubjects.length === 0}
-                                                className="flex-1 border border-[#e6c8a8] bg-white rounded-lg px-2 py-2 text-xs text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] disabled:opacity-50 disabled:cursor-not-allowed"
-                                            >
-                                                <option value="">
-                                                    {!pickerBatch
-                                                        ? "— select batch first —"
-                                                        : pickerSubjects.length === 0
-                                                            ? "No subjects in batch"
-                                                            : "Select Subject"}
-                                                </option>
-                                                {pickerSubjects.map(s => (
-                                                    <option key={s._id} value={s._id}>{s.name}</option>
-                                                ))}
-                                            </select>
+                                            <div className="flex-1">
+                                                <Dropdown
+                                                    value={pickerSubject}
+                                                    onChange={e => setPickerSubject(e.target.value)}
+                                                    disabled={!pickerBatch || pickerSubjects.length === 0}
+                                                    placeholder={
+                                                        !pickerBatch
+                                                            ? "— select batch first —"
+                                                            : pickerSubjects.length === 0
+                                                                ? "No subjects in batch"
+                                                                : "Select Subject"
+                                                    }
+                                                    options={[
+                                                        { label: !pickerBatch ? "— select batch first —" : pickerSubjects.length === 0 ? "No subjects in batch" : "Select Subject", value: "" },
+                                                        ...pickerSubjects.map(s => ({ label: s.name, value: s._id }))
+                                                    ]}
+                                                />
+                                            </div>
                                         </div>
 
                                         {/* Action buttons */}

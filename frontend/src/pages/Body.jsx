@@ -2,7 +2,7 @@ import {Outlet} from "react-router-dom";
 import {useEffect, useRef} from "react";
 import { useSelector } from "react-redux";
 import axiosInstance from "@/utilities/axiosInstance.jsx";
-import useFetchUser from "@/pages/useFetchUser.js";
+import useFetchUser from "@/hooks/useFetchUser.js";
 
 const Body = () => {
     const fetchUser=useFetchUser()

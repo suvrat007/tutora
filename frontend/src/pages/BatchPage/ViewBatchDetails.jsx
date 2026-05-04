@@ -1,12 +1,13 @@
 import { useState,useEffect } from "react";
 import { useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
-import useFetchStudents from "@/pages/useFetchStudents.js";
-import { BookOpen, Users, FileText, IndianRupee } from "lucide-react";
+import useFetchStudents from "@/hooks/useFetchStudents.js";
+import { BookOpen, Users, FileText, IndianRupee, UserCog, Clock, Calendar } from "lucide-react";
 import { AiOutlineClose, AiOutlineEdit, AiOutlinePlus } from "react-icons/ai";
 import CreateEditBatch from "@/pages/BatchPage/CreateEditBatch.jsx";
 import AddStudentModal from "@/pages/BatchPage/AddStudentModal.jsx";
-import useFetchBatches from "@/pages/useFetchBatches.js";
+import useFetchBatches from "@/hooks/useFetchBatches.js";
+import useFetchTeachers from "@/hooks/useFetchTeachers.js";
 
 const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
@@ -36,8 +37,10 @@ const ViewBatchDetails = ({ viewDetails, setViewDetails,handleViewDetails }) => 
     const [rerender, setRerender] = useState(false);
     const fetchStudents = useFetchStudents();
     const fetchBatches = useFetchBatches();
+    const fetchTeachers = useFetchTeachers();
     const batch = viewDetails.batch;
     const groupedStudents = useSelector((state) => state.students.groupedStudents);
+    const teachers = useSelector((state) => state.teachers.teachers);
 
     useEffect(() => {
         const foundGroup = groupedStudents.find((group) => group.batchId === batch._id);
@@ -45,6 +48,22 @@ const ViewBatchDetails = ({ viewDetails, setViewDetails,handleViewDetails }) => 
             setStudents(foundGroup.students || []);
         }
     }, [groupedStudents, batch._id]);
+
+    useEffect(() => {
+        if (teachers.length === 0) {
+            fetchTeachers();
+        }
+    }, [teachers.length]);
+
+    const getTeacherForSubject = (subjId) => {
+        const teacher = teachers.find(t => 
+            t.subjects && t.subjects.some(s => 
+                (s.batch_id === batch._id || s.batch_id?._id === batch._id) && 
+                (s.subject_id === subjId || s.subject_id?._id === subjId)
+            )
+        );
+        return teacher ? teacher.name : "Not assigned";
+    };
 
     const handleCloseDetails = () => {
         setViewDetails({ display: false, batch: null, studentsForBatch: null });
@@ -130,6 +149,7 @@ const ViewBatchDetails = ({ viewDetails, setViewDetails,handleViewDetails }) => 
                             <BookOpen className="text-[#e0c4a8] w-5 h-5 flex-shrink-0" />
                             <span><b>For Class:</b> {batch.forStandard}</span>
                         </p>
+
                         <p className="flex items-center gap-2">
                             <Users className="text-[#e0c4a8] w-5 h-5 flex-shrink-0" />
                             <span><b>Total Students:</b> {students.length}</span>
@@ -165,9 +185,19 @@ const ViewBatchDetails = ({ viewDetails, setViewDetails,handleViewDetails }) => 
                                     className="border-b border-[#e6c8a8] pb-3 last:border-b-0"
                                 >
                                     <div className="font-medium text-[#5a4a3c]">{index + 1}. {subj.name.toUpperCase()}</div>
-                                    <div className="ml-4 text-xs">
-                                        🕒 {subj.classSchedule?.time || "N/A"}<br />
-                                        📅 {subj.classSchedule?.days?.join(", ") || "No days set"}
+                                    <div className="ml-4 text-xs space-y-1.5 mt-2">
+                                        <p className="flex items-center gap-2 text-[#7b5c4b]">
+                                            <UserCog className="text-[#e0c4a8] w-4 h-4 flex-shrink-0" />
+                                            <span>{getTeacherForSubject(subj._id)}</span>
+                                        </p>
+                                        <p className="flex items-center gap-2 text-[#7b5c4b]">
+                                            <Clock className="text-[#e0c4a8] w-4 h-4 flex-shrink-0" />
+                                            <span>{subj.classSchedule?.time || "N/A"}</span>
+                                        </p>
+                                        <p className="flex items-center gap-2 text-[#7b5c4b]">
+                                            <Calendar className="text-[#e0c4a8] w-4 h-4 flex-shrink-0" />
+                                            <span>{subj.classSchedule?.days?.join(", ") || "No days set"}</span>
+                                        </p>
                                     </div>
                                 </motion.div>
                             ))

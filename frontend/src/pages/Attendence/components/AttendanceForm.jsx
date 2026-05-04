@@ -1,5 +1,6 @@
 import { motion} from "framer-motion";
 import {Loader2} from "lucide-react";
+import Dropdown from "@/components/ui/Dropdown";
 
 export const AttendanceForm = ({
                                    batchName,
@@ -26,7 +27,7 @@ export const AttendanceForm = ({
             className="bg-[#f8ede3] p-4 rounded-3xl shadow-[0_8px_24px_rgba(0,0,0,0.15)] flex-1 w-full h-full overflow-y-auto"
         >
             <div className="flex flex-col gap-4 h-full">
-                <select
+                <Dropdown
                     value={batchName}
                     onChange={(e) => {
                         setBatchName(e.target.value);
@@ -34,32 +35,24 @@ export const AttendanceForm = ({
                         setDate("");
                         resetStudentData();
                     }}
-                    className="border border-[#e6c8a8] p-2 rounded-md text-sm text-[#5a4a3c] bg-[#f8ede3] focus:ring-[#e0c4a8] focus:border-[#e0c4a8]"
-                >
-                    <option value="">Select Batch</option>
-                    {batches.map((b, i) => (
-                        <option key={i} value={b.name}>
-                            {b.name}
-                        </option>
-                    ))}
-                </select>
-                <select
+                    options={[
+                        { label: "Select Batch", value: "" },
+                        ...batches.map(b => ({ label: b.name, value: b.name }))
+                    ]}
+                />
+                <Dropdown
                     value={subjectName}
                     onChange={(e) => {
                         setSubjectName(e.target.value);
                         setDate("");
                         resetStudentData();
                     }}
-                    className="border border-[#e6c8a8] p-2 rounded-md text-sm text-[#5a4a3c] bg-[#f8ede3] focus:ring-[#e0c4a8] focus:border-[#e0c4a8]"
                     disabled={!batchName}
-                >
-                    <option value="">Select Subject</option>
-                    {selectedBatch?.subject.map((s, i) => (
-                        <option key={i} value={s.name}>
-                            {s.name}
-                        </option>
-                    ))}
-                </select>
+                    options={[
+                        { label: "Select Subject", value: "" },
+                        ...(selectedBatch?.subject || []).map(s => ({ label: s.name, value: s.name }))
+                    ]}
+                />
                 <input
                     type="date"
                     value={date}

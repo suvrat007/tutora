@@ -1,145 +1,150 @@
-import { ArrowRight, Sparkles, Play, BookOpen, GraduationCap, Pencil, Lightbulb, ClipboardList, Users, Calendar, Bell, FlaskConical, Ruler } from "lucide-react";
+import { ArrowRight, Sparkles, Play, Users, Clock, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-
-const FLOATERS = [
-    { Icon: GraduationCap, x: 5,   y: 10, size: 64, fy: 12, r: 6,   delay: 0,    dur: 6.0 },
-    { Icon: BookOpen,      x: 88,  y: 8,  size: 52, fy: 10, r: -8,  delay: 0.8,  dur: 5.4 },
-    { Icon: Pencil,        x: 78,  y: 58, size: 44, fy: 14, r: 10,  delay: 1.4,  dur: 5.8 },
-    { Icon: Lightbulb,     x: 12,  y: 60, size: 48, fy: 12, r: -7,  delay: 0.5,  dur: 4.9 },
-    { Icon: ClipboardList, x: 4,   y: 35, size: 40, fy: 10, r: 8,   delay: 2.0,  dur: 6.2 },
-    { Icon: Users,         x: 90,  y: 35, size: 50, fy: 14, r: -9,  delay: 1.0,  dur: 5.1 },
-    { Icon: Calendar,      x: 22,  y: 82, size: 44, fy: 12, r: 7,   delay: 2.4,  dur: 5.6 },
-    { Icon: FlaskConical,  x: 68,  y: 80, size: 40, fy: 16, r: -10, delay: 1.6,  dur: 4.7 },
-    { Icon: Ruler,         x: 46,  y: 5,  size: 42, fy: 10, r: 5,   delay: 0.7,  dur: 5.3 },
-    { Icon: Bell,          x: 56,  y: 88, size: 38, fy: 14, r: -6,  delay: 1.9,  dur: 4.5 },
-];
-
-const Floater = ({ Icon, x, y, size, fy, r, delay, dur }) => (
-    <motion.div
-        initial={{ opacity: 0 }}
-        animate={{
-            opacity: [0, 0.1, 0.13, 0.1, 0],
-            y:       [0, -fy, 0, fy * 0.35, 0],
-            rotate:  [0, r,  0, -r * 0.4, 0],
-        }}
-        transition={{
-            duration: dur,
-            delay,
-            repeat: Infinity,
-            ease: "easeInOut",
-            times: [0, 0.3, 0.5, 0.75, 1],
-        }}
-        className="absolute pointer-events-none select-none"
-        style={{ left: `${x}%`, top: `${y}%`, color: "#8b5e3c" }}
-    >
-        <Icon style={{ width: size, height: size }} strokeWidth={1} />
-    </motion.div>
-);
 
 const Hero = ({ user, setIsModalOpen }) => {
     const navigate = useNavigate();
 
     return (
         <section
-            className="relative min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 overflow-hidden"
-            style={{ background: "linear-gradient(135deg, #f5b87a 0%, #f8cfa0 18%, #faebd8 42%, #fdf6ee 58%, #f8e4b8 78%, #f5cc80 100%)" }}
+            className="relative pt-24 pb-4 px-4 sm:px-6 overflow-hidden"
+            style={{ background: "linear-gradient(175deg, #fdf8f3 0%, #fdf4ec 60%, #faf6f0 100%)" }}
         >
-            {/* Dot grid overlay */}
-            <div className="pointer-events-none absolute inset-0 -z-10">
-                <svg className="absolute inset-0 w-full h-full opacity-[0.06]" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <pattern id="dots" x="0" y="0" width="28" height="28" patternUnits="userSpaceOnUse">
-                            <circle cx="1.5" cy="1.5" r="1.5" fill="#4a3a2c" />
-                        </pattern>
-                    </defs>
-                    <rect width="100%" height="100%" fill="url(#dots)" />
-                </svg>
-            </div>
+            {/* Background glows */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-gradient-to-b from-[#f0d9c0]/50 to-transparent blur-3xl pointer-events-none" />
+            <div className="absolute top-20 right-0 w-[400px] h-[400px] bg-[#fde8cc]/25 rounded-full blur-3xl pointer-events-none" />
 
-            {/* Floating icons */}
-            <div className="pointer-events-none absolute inset-0 overflow-hidden">
-                {FLOATERS.map((f, i) => <Floater key={i} {...f} />)}
-            </div>
+            {/* Dot grid */}
+            <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                    backgroundImage: "radial-gradient(#ddb892 1px, transparent 1px)",
+                    backgroundSize: "36px 36px",
+                    opacity: 0.22,
+                }}
+            />
 
-            {/* Content */}
-            <div className="relative z-10 max-w-4xl w-full text-center space-y-8">
+            <div className="relative z-10 max-w-5xl mx-auto flex flex-col items-center text-center">
+                {/* Badge */}
                 <motion.div
-                    initial={{ opacity: 0, y: -12 }}
+                    initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#ddb892]/60 bg-white/70 backdrop-blur-sm text-xs font-semibold text-[#7b5c4b] tracking-wide shadow-sm"
+                    transition={{ duration: 0.45 }}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-[#ddb892]/50 shadow-sm text-xs font-bold text-[#8b5e3c] tracking-widest uppercase mb-8"
                 >
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                    Free for solo educators
+                    <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute h-full w-full rounded-full bg-[#8b5e3c] opacity-50" />
+                        <span className="relative inline-flex h-2 w-2 rounded-full bg-[#8b5e3c]" />
+                    </span>
+                    For Independent Educators
                 </motion.div>
 
+                {/* Headline */}
                 <motion.h1
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 24 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.65, delay: 0.05 }}
-                    className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold text-[#2c1a0e] leading-[1.05] tracking-tight"
+                    transition={{ duration: 0.6, delay: 0.1 }}
+                    className="text-5xl sm:text-6xl md:text-7xl font-extrabold text-[#1a0f07] leading-[1.08] tracking-tight mb-6 max-w-3xl"
+                    style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                 >
-                    Teaching tools
+                    Teaching without
                     <br />
-                    <span className="bg-gradient-to-r from-[#8b5e3c] via-[#c47d3e] to-[#8b5e3c] bg-clip-text text-transparent">
-                        that get out of the way
+                    <span className="bg-gradient-to-r from-[#a0683f] via-[#d08f56] to-[#8b5e3c] bg-clip-text text-transparent">
+                        the paperwork
                     </span>
                 </motion.h1>
 
+                {/* Subheadline */}
                 <motion.p
-                    initial={{ opacity: 0, y: 12 }}
+                    initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.55, delay: 0.15 }}
-                    className="text-lg sm:text-xl text-[#7b5c4b] max-w-2xl mx-auto leading-relaxed"
+                    transition={{ duration: 0.6, delay: 0.2 }}
+                    className="text-lg sm:text-xl text-[#6b5c4a] max-w-xl leading-relaxed mb-10"
                 >
-                    Tutora handles attendance, fees, reminders, and class logs —
-                    so you can focus on teaching.
+                    Tutora handles attendance, fees, and class scheduling — so you can focus entirely on your students.
                 </motion.p>
 
+                {/* CTA buttons */}
                 <motion.div
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.22 }}
-                    className="flex flex-col sm:flex-row justify-center gap-3"
+                    transition={{ duration: 0.6, delay: 0.3 }}
+                    className="flex flex-col sm:flex-row items-center gap-3 mb-12"
                 >
                     <motion.button
-                        whileHover={{ scale: 1.04, boxShadow: "0 10px 30px rgba(44,26,14,0.20)" }}
-                        whileTap={{ scale: 0.96 }}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.97 }}
                         onClick={() => navigate(user ? "/main" : "/login")}
-                        className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-[#2c1a0e] text-white font-semibold text-base shadow-lg transition-colors hover:bg-[#3e2510] cursor-pointer"
+                        className="group inline-flex items-center gap-2.5 px-8 py-4 rounded-2xl bg-[#1a0f07] text-white font-semibold text-base shadow-xl shadow-[#1a0f07]/15 hover:bg-[#2c1a0e] transition-colors cursor-pointer"
                     >
-                        <Sparkles className="w-4 h-4" />
-                        {user ? "Go to Dashboard" : "Get Started Free"}
-                        <ArrowRight className="w-4 h-4" />
+                        <Sparkles className="w-4 h-4 text-[#f0d5b0]" />
+                        {user ? "Go to Dashboard" : "Start for Free"}
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </motion.button>
-
-                    <motion.button
-                        whileHover={{ scale: 1.04 }}
-                        whileTap={{ scale: 0.96 }}
+                    <button
                         onClick={() => setIsModalOpen(true)}
-                        className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl border-2 border-[#ddb892] bg-white/60 backdrop-blur-sm text-[#4a3a2c] font-semibold text-base hover:bg-[#fdf0e3] transition-colors cursor-pointer shadow-sm"
+                        className="inline-flex items-center gap-2.5 px-8 py-4 rounded-2xl border-2 border-[#ecdec9] bg-white/70 backdrop-blur-sm text-[#3d2b1a] font-semibold text-base hover:bg-white hover:border-[#d4b896] transition-all duration-200 cursor-pointer"
                     >
                         <Play className="w-4 h-4" />
                         Watch Demo
-                    </motion.button>
+                    </button>
+                </motion.div>
+
+                {/* Stat pills */}
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5, delay: 0.45 }}
+                    className="flex flex-wrap justify-center gap-2.5 mb-16"
+                >
+                    {[
+                        { icon: Clock, text: "2h+ saved weekly" },
+                        { icon: Star, text: "100% free forever" },
+                        { icon: Users, text: "Any subject, any batch" },
+                    ].map(({ icon: Icon, text }, i) => (
+                        <div
+                            key={i}
+                            className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-white border border-[#ecdec9] shadow-sm text-sm text-[#5c4a38] font-medium"
+                        >
+                            <Icon className="w-3.5 h-3.5 text-[#8b5e3c]" />
+                            {text}
+                        </div>
+                    ))}
+                </motion.div>
+
+                {/* Dashboard mockup */}
+                <motion.div
+                    initial={{ opacity: 0, y: 60 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.9, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    className="w-full max-w-5xl"
+                >
+                    <div className="relative">
+                        <div className="absolute -inset-6 bg-gradient-to-b from-[#f0d5b0]/30 to-transparent rounded-3xl blur-3xl pointer-events-none" />
+                        <div className="relative rounded-t-2xl overflow-hidden border border-[#ecdec9] bg-white shadow-[0_20px_60px_rgba(26,15,7,0.10)]">
+                            {/* Browser chrome */}
+                            <div className="h-10 bg-[#f8f2ec] border-b border-[#ecdec9] flex items-center px-4 gap-1.5">
+                                <div className="w-3 h-3 rounded-full bg-[#ff6b6b]/80" />
+                                <div className="w-3 h-3 rounded-full bg-[#ffd93d]/80" />
+                                <div className="w-3 h-3 rounded-full bg-[#6bcb77]/80" />
+                                <div className="flex-1 flex justify-center">
+                                    <div className="h-5 w-44 bg-[#ecdec9]/70 rounded-full" />
+                                </div>
+                            </div>
+                            <img
+                                src="/dashboard-mockup.png"
+                                alt="Tutora Dashboard Preview"
+                                className="w-full h-auto object-cover"
+                                loading="eager"
+                                style={{
+                                    maskImage: "linear-gradient(to bottom, black 78%, transparent 100%)",
+                                    WebkitMaskImage: "linear-gradient(to bottom, black 78%, transparent 100%)",
+                                }}
+                            />
+                        </div>
+                    </div>
                 </motion.div>
             </div>
-
-            {/* Scroll cue */}
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1 }}
-                className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5"
-            >
-                <span className="text-xs text-[#b0998a] tracking-widest uppercase">scroll</span>
-                <motion.div
-                    animate={{ y: [0, 6, 0] }}
-                    transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-                    className="w-px h-8 bg-gradient-to-b from-[#b0998a] to-transparent"
-                />
-            </motion.div>
         </section>
     );
 };

@@ -5,22 +5,27 @@ const jwt = require('jsonwebtoken');
 const Admin = require('../models/Admin');
 const {signupValidation,logInValidation} = require('../utils/validations');
 const Institute = require("../models/Institutes");
-const {OAuth2Client} = require("google-auth-library");
 const userAuth = require("../middleware/userAuth");
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+const isProd = process.env.NODE_ENV === 'production';
+const cookieOptions = {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
+    path: '/',
+    maxAge: 3600000 * 24 * 7,
+};
 
 router.post('/google-auth',async (req, res) => {
     try {
-        const { credential } = req.body; // Google ID token from frontend
+        const { access_token } = req.body;
 
-        // Verify the Google token
-        const ticket = await client.verifyIdToken({
-            idToken: credential,
-            audience: process.env.GOOGLE_CLIENT_ID,
+        const googleRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { Authorization: `Bearer ${access_token}` },
         });
+        if (!googleRes.ok) return res.status(401).json({ message: 'Invalid Google token' });
 
-        const payload = ticket.getPayload();
-        const { email, given_name, picture } = payload;
+        const { email, given_name, picture } = await googleRes.json();
 
         // Check if user exists or create new one
         let user = await Admin.findOne({ emailId: email });
@@ -41,13 +46,7 @@ router.post('/google-auth',async (req, res) => {
         // Refresh strategy: reissue on /api/auth/login or /api/auth/google-auth; no silent refresh yet.
         const token = jwt.sign({ _id: user._id, instituteId: user.institute_info || null }, process.env.JWT_KEY, { expiresIn: '7d' });
 
-        res.cookie("token", token, {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'none',
-            path: '/',
-            maxAge: 3600000 * 24 * 7,
-        })
+        res.cookie("token", token, cookieOptions)
 
         const userObj = user.toObject();
         delete userObj.password;
@@ -99,13 +98,7 @@ router.post("/signup", async (req, res) => {
 
         const token = jwt.sign({ _id: newUser._id, instituteId: newInstitute._id }, process.env.JWT_KEY, { expiresIn: '7d' });
 
-        res.cookie("token", token, {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'none',
-            path: '/',
-            maxAge: 3600000 * 24 * 7,
-        })
+        res.cookie("token", token, cookieOptions)
 
         const userObject = newUser.toObject();
         delete userObject.password;
@@ -133,13 +126,7 @@ router.post("/login", async (req, res) => {
         }
 
         const token = jwt.sign({ _id: user._id, instituteId: user.institute_info || null }, process.env.JWT_KEY, { expiresIn: '7d' });
-        res.cookie("token", token, {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'none',
-            path: '/',
-            maxAge: 3600000 * 24 * 7,
-        })
+        res.cookie("token", token, cookieOptions)
 
         const userObj = user.toObject();
         delete userObj.password;
@@ -189,6 +176,9 @@ router.post('/complete-onboarding', userAuth, async (req, res) => {
         const updatedAdmin = await Admin.findById(admin._id).populate('institute_info');
         const userObj = updatedAdmin.toObject();
         delete userObj.password;
+
+        const token = jwt.sign({ _id: admin._id, instituteId: newInstitute._id }, process.env.JWT_KEY, { expiresIn: '7d' });
+        res.cookie("token", token, cookieOptions);
 
         res.status(201).json({ message: 'Onboarding complete', user: userObj });
     } catch (err) {

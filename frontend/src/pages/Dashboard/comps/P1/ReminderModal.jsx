@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import axiosInstance from "@/utilities/axiosInstance.jsx";
 import { notify } from '@/components/ui/Toast.jsx';
 import { API } from '@/utilities/constants';
+import Dropdown from '@/components/ui/Dropdown';
 
 const inputClass = "w-full px-3 py-2 border border-[#e6c8a8] rounded-lg bg-white text-sm text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8]";
 const labelClass = "block text-sm font-medium text-[#5a4a3c] mb-1";
@@ -79,34 +80,34 @@ const ReminderModal = ({ setShowModal, value }) => {
                 <h3 className="text-lg font-bold text-[#5a4a3c] mb-4">Set Reminder</h3>
 
                 <label className={labelClass}>Batch (optional)</label>
-                <select
-                    value={batchName}
-                    onChange={(e) => {
-                        const selected = batches.find(batch => batch.name === e.target.value);
-                        setBatchName(selected?.name || "");
-                        setSelectedBatch(selected || null);
-                        setSubjectName("");
-                    }}
-                    className={`${inputClass} mb-3`}
-                >
-                    <option value="">No Batch</option>
-                    {batches.map((batch, idx) => (
-                        <option key={idx} value={batch.name}>{batch.name}</option>
-                    ))}
-                </select>
+                <div className="mb-3">
+                    <Dropdown
+                        value={batchName}
+                        onChange={(e) => {
+                            const selected = batches.find(batch => batch.name === e.target.value);
+                            setBatchName(selected?.name || "");
+                            setSelectedBatch(selected || null);
+                            setSubjectName("");
+                        }}
+                        options={[
+                            { label: "No Batch", value: "" },
+                            ...batches.map(batch => ({ label: batch.name, value: batch.name }))
+                        ]}
+                    />
+                </div>
 
                 <label className={labelClass}>Subject (optional)</label>
-                <select
-                    value={subjectName}
-                    onChange={(e) => setSubjectName(e.target.value)}
-                    disabled={!selectedBatch}
-                    className={`${inputClass} mb-3 disabled:opacity-50`}
-                >
-                    <option value="">No Subject</option>
-                    {selectedBatch?.subject?.map((subj, idx) => (
-                        <option key={idx} value={subj.name}>{subj.name}</option>
-                    ))}
-                </select>
+                <div className="mb-3">
+                    <Dropdown
+                        value={subjectName}
+                        onChange={(e) => setSubjectName(e.target.value)}
+                        disabled={!selectedBatch}
+                        options={[
+                            { label: "No Subject", value: "" },
+                            ...(selectedBatch?.subject || []).map(subj => ({ label: subj.name, value: subj.name }))
+                        ]}
+                    />
+                </div>
 
                 <label className={labelClass}>Date</label>
                 <input

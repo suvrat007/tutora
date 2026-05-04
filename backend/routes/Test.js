@@ -10,7 +10,7 @@ const Batch = require('../models/Batch');
 // Create a new test (schedule or log)
 router.post('/createTest', userAuth, async (req, res) => {
     try {
-        const { testName, batchId, subjectId, maxMarks, passMarks, testDate, status, studentResults = [] } = req.body;
+        const { testName, batchId, subjectId, maxMarks, passMarks, testDate, status, studentResults = [], groupId } = req.body;
         
         let initialStudentResults = studentResults;
         if (initialStudentResults.length === 0 && batchId) {
@@ -32,6 +32,7 @@ router.post('/createTest', userAuth, async (req, res) => {
             passMarks: passMarks || 0,
             testDate,
             status,
+            groupId: groupId || undefined,
             studentResults: initialStudentResults
         });
         await newTest.save();
@@ -41,20 +42,36 @@ router.post('/createTest', userAuth, async (req, res) => {
             const subject = (batch && newTest.subjectId) ? batch.subject.id(newTest.subjectId) : null;
 
             let reminderMessage = `Test: ${newTest.testName}`;
-            if (batch && subject) {
+            if (groupId) {
+                reminderMessage += ` (All Batches)`;
+            } else if (batch && subject) {
                 reminderMessage += ` for ${subject.name} in ${batch.name}`;
             } else if (batch) {
                 reminderMessage += ` in ${batch.name}`;
             }
 
-            const newReminder = new Reminder({
-                adminId: req.adminId,
-                reminderDate: newTest.testDate,
-                reminder: reminderMessage,
-                batchName: batch ? batch.name : undefined,
-                subjectName: subject ? subject.name : undefined
-            });
-            await newReminder.save();
+            if (groupId) {
+                // For all-batch tests: upsert so only one reminder is created regardless of concurrent requests
+                await Reminder.findOneAndUpdate(
+                    { adminId: req.adminId, groupId },
+                    { $setOnInsert: {
+                        adminId: req.adminId,
+                        reminderDate: newTest.testDate,
+                        reminder: reminderMessage,
+                        groupId,
+                    }},
+                    { upsert: true }
+                );
+            } else {
+                const newReminder = new Reminder({
+                    adminId: req.adminId,
+                    reminderDate: newTest.testDate,
+                    reminder: reminderMessage,
+                    batchName: batch ? batch.name : undefined,
+                    subjectName: subject ? subject.name : undefined,
+                });
+                await newReminder.save();
+            }
         }
 
         res.status(201).json(newTest);
@@ -128,6 +145,25 @@ router.put('/updateTest/:testId', userAuth, async (req, res) => {
 
         const updatedTest = await Test.findByIdAndUpdate(req.params.testId, updateData, { new: true });
         res.json(updatedTest);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+});
+
+// Update all tests in a group (common fields only, not studentResults)
+router.put('/updateGroupTest/:groupId', userAuth, async (req, res) => {
+    try {
+        const { testName, maxMarks, passMarks, testDate, status, cancellationReason } = req.body;
+        if (status === 'cancelled' && !cancellationReason) {
+            return res.status(400).json({ message: 'Cancellation reason is required' });
+        }
+        await Test.updateMany(
+            { groupId: req.params.groupId, adminId: req.adminId },
+            { testName, maxMarks, passMarks, testDate, status, cancellationReason }
+        );
+        const updated = await Test.find({ groupId: req.params.groupId, adminId: req.adminId })
+            .populate('studentResults.studentId', 'name grade');
+        res.json({ tests: updated });
     } catch (error) {
         res.status(400).json({ message: error.message });
     }

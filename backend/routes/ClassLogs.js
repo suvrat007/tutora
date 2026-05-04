@@ -39,88 +39,71 @@ router.post("/add-class-updates", userAuth, async (req, res) => {
             update.subject_id = new mongoose.Types.ObjectId(update.subject_id);
         }
 
-        const session = await mongoose.startSession();
-        session.startTransaction();
-
         const results = [];
-        try {
-            for (const { batch_id, subject_id, date, hasHeld, note, updated } of updates) {
-                // Use consistent date formatting
-                const formattedDate = formatDateToYYYYMMDD(date);
 
-                if (!formattedDate) {
-                    throw new Error(`Invalid date format: ${date}`);
-                }
+        for (const { batch_id, subject_id, date, hasHeld, note, updated } of updates) {
+            const formattedDate = formatDateToYYYYMMDD(date);
 
-                let classLog = await ClassLog.findOne(
-                    { adminId, batch_id, subject_id },
-                    null,
-                    { session }
+            if (!formattedDate) {
+                return res.status(400).json({ message: `Invalid date format: ${date}` });
+            }
+
+            let classLog = await ClassLog.findOne({ adminId, batch_id, subject_id });
+
+            if (classLog) {
+                const existingClass = classLog.classes.find(
+                    (cls) => formatDateToYYYYMMDD(cls.date) === formattedDate
                 );
 
-                if (classLog) {
-                    const existingClass = classLog.classes.find(
-                        (cls) => formatDateToYYYYMMDD(cls.date) === formattedDate
-                    );
-
-                    if (existingClass) {
-                        // Update existing class
+                if (existingClass) {
+                    // If the record was already explicitly recorded by the user (updated=true)
+                    // and this request carries no `updated` flag, it's the app-startup
+                    // "ensure-exists" call from Body.jsx — skip to avoid overwriting real data.
+                    if (!(existingClass.updated && updated === undefined)) {
                         existingClass.hasHeld = hasHeld !== undefined ? hasHeld : existingClass.hasHeld;
                         existingClass.note = note || existingClass.note;
                         existingClass.updated = updated !== undefined ? updated : existingClass.updated;
-                        await classLog.save({ session });
-                    } else {
-                        // Add new class
-                        classLog.classes.push({
-                            date: new Date(formattedDate),
+                        await classLog.save();
+                    }
+                } else {
+                    classLog.classes.push({
+                        date: formattedDate,
+                        hasHeld: hasHeld || false,
+                        note: note || "No Data",
+                        attendance: [],
+                        updated: updated !== undefined ? updated : false,
+                    });
+                    await classLog.save();
+                }
+            } else {
+                classLog = new ClassLog({
+                    adminId,
+                    batch_id,
+                    subject_id,
+                    classes: [
+                        {
+                            date: formattedDate,
                             hasHeld: hasHeld || false,
                             note: note || "No Data",
                             attendance: [],
                             updated: updated !== undefined ? updated : false,
-                        });
-                        await classLog.save({ session });
-                    }
-
-                    results.push(classLog);
-                } else {
-                    classLog = new ClassLog({
-                        adminId,
-                        batch_id,
-                        subject_id,
-                        classes: [
-                            {
-                                date: new Date(formattedDate),
-                                hasHeld: hasHeld || false,
-                                note: note || "No Data",
-                                attendance: [],
-                                updated: updated !== undefined ? updated : false,
-                            },
-                        ],
-                    });
-
-                    await classLog.save({ session });
-                    results.push(classLog);
-                }
+                        },
+                    ],
+                });
+                await classLog.save();
             }
 
-            const populatedResults = await ClassLog.find(
-                { _id: { $in: results.map((r) => r._id) } },
-                null,
-                { session }
-            ).populate("batch_id");
-
-            await session.commitTransaction();
-
-            return res.status(201).json({
-                message: "Class logs updated successfully",
-                batches: populatedResults,
-            });
-        } catch (error) {
-            await session.abortTransaction();
-            throw error;
-        } finally {
-            session.endSession();
+            results.push(classLog);
         }
+
+        const populatedResults = await ClassLog.find(
+            { _id: { $in: results.map((r) => r._id) } }
+        ).populate("batch_id");
+
+        return res.status(201).json({
+            message: "Class logs updated successfully",
+            batches: populatedResults,
+        });
     } catch (error) {
         console.error("Error adding class logs:", error.message, error.stack);
         return res.status(500).json({ message: "Internal server error", error: error.message });
@@ -157,7 +140,7 @@ router.patch("/mark-attendance", userAuth, async (req, res) =>  {
 
         if (!classEntry) {
             classLog.classes.push({
-                date: new Date(formattedDate),
+                date: formattedDate,
                 hasHeld: true,
                 note: "No Data",
                 attendance: [],

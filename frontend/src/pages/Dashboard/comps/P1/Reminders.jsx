@@ -1,14 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import axiosInstance from "@/utilities/axiosInstance";
 import { AnimatePresence, motion } from "framer-motion";
 import { notify } from '@/components/ui/Toast.jsx';
 
-const Reminders = () => {
+const DEBOUNCE_MS = 1500;
+
+const Reminders = ({ refreshKey = 0 }) => {
     const [reminders, setReminders] = useState([]);
     const [markedDoneIds, setMarkedDoneIds] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [isSaving, setIsSaving] = useState(false);
+    const deleteTimers = useRef({});
 
     useEffect(() => {
         const fetchReminders = async () => {
@@ -48,32 +50,39 @@ const Reminders = () => {
             }
         };
         fetchReminders();
+    }, [refreshKey]);
+
+    // Cancel all pending timers on unmount
+    useEffect(() => {
+        return () => {
+            Object.values(deleteTimers.current).forEach(clearTimeout);
+        };
     }, []);
 
     const toggleReminderDone = (id) => {
-        setMarkedDoneIds((prev) =>
-            prev.includes(id) ? prev.filter((remId) => remId !== id) : [...prev, id]
-        );
-    };
-
-    const handleSaveChanges = async () => {
-        if (markedDoneIds.length === 0) return;
-        setIsSaving(true);
-        try {
-            for (let id of markedDoneIds) {
-                await axiosInstance.delete(`reminder/delete-reminder/${id}`, {
-                    withCredentials: true,
-                });
-            }
-            setReminders((prev) =>
-                prev.filter((rem) => !markedDoneIds.includes(rem._id))
-            );
-            setMarkedDoneIds([]);
-        } catch (err) {
-            console.error("Failed to delete reminders", err);
-            notify("Some deletions failed.", "error");
-        } finally {
-            setIsSaving(false);
+        const isDone = markedDoneIds.includes(id);
+        if (isDone) {
+            // Cancel scheduled deletion
+            clearTimeout(deleteTimers.current[id]);
+            delete deleteTimers.current[id];
+            setMarkedDoneIds((prev) => prev.filter((remId) => remId !== id));
+        } else {
+            // Mark done and schedule auto-deletion after debounce
+            setMarkedDoneIds((prev) => [...prev, id]);
+            deleteTimers.current[id] = setTimeout(async () => {
+                try {
+                    await axiosInstance.delete(`reminder/delete-reminder/${id}`, {
+                        withCredentials: true,
+                    });
+                    setReminders((prev) => prev.filter((rem) => rem._id !== id));
+                    setMarkedDoneIds((prev) => prev.filter((remId) => remId !== id));
+                } catch (err) {
+                    console.error("Failed to delete reminder", err);
+                    notify("Failed to dismiss reminder.", "error");
+                    setMarkedDoneIds((prev) => prev.filter((remId) => remId !== id));
+                }
+                delete deleteTimers.current[id];
+            }, DEBOUNCE_MS);
         }
     };
 
@@ -89,26 +98,11 @@ const Reminders = () => {
     };
 
     return (
-        <div className="px-6 py-3 border-b border-[#e6c8a8] flex flex-col h-full bg-[#f8ede3] rounded-3xl shadow-[0_8px_24px_rgba(0,0,0,0.15)]">
-            <div className="flex justify-between items-center">
-                <h1 className="text-lg font-semibold text-[#5a4a3c]">
-                     Reminders for Today
-                </h1>
-                <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    whileHover={{ scale: 1.03, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
-                    onClick={handleSaveChanges}
-                    disabled={isSaving || loading}
-                    className={`px-4 py-2 text-sm rounded-md font-medium shadow-md transition-all duration-300 ${
-                        isSaving || loading
-                            ? "bg-[#f0d9c0] text-[#7b5c4b] cursor-not-allowed"
-                            : "bg-[#e0c4a8] text-[#5a4a3c] hover:bg-[#d8bca0]"
-                    }`}
-                >
-                    {isSaving ? "Deleting..." : "Save Changes"}
-                </motion.button>
+        <div className="px-6 py-4 border border-[#e6c8a8] flex flex-col sm:h-full bg-[#f8ede3] rounded-3xl shadow-xl">
+            <div className="border-b border-[#e6c8a8] pb-2.5 mb-4">
+                <h1 className="text-lg font-semibold text-[#5a4a3c]">Reminders for Today</h1>
             </div>
-            <div className="flex-1 overflow-y-auto py-4 space-y-4">
+            <div className="flex-1 overflow-y-auto space-y-4">
                 {loading ? (
                     <p className="text-sm text-[#7b5c4b]">Loading reminders...</p>
                 ) : error ? (
@@ -117,7 +111,7 @@ const Reminders = () => {
                     </div>
                 ) : reminders.length === 0 ? (
                     <div className="text-center text-[#7b5c4b] py-6">
-                        <p className="text-sm">You have no reminders for today 🎉</p>
+                        <p className="text-sm">You have no reminders for today</p>
                     </div>
                 ) : (
                     <AnimatePresence>

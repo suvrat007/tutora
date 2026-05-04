@@ -15,7 +15,7 @@ import {
 import { HiOutlineClipboardList, HiOutlineDocumentText } from "react-icons/hi";
 import { MdExpandLess, MdExpandMore } from "react-icons/md";
 import { FiLogOut } from "react-icons/fi";
-import useLogoutAdmin from "@/useLogoutAdmin.js";
+import useLogoutAdmin from "@/hooks/useLogoutAdmin.js";
 
 // ── Animated hamburger: bottom line shrinks to half when sidebar is closed ───
 

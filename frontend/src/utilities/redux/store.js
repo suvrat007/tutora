@@ -6,6 +6,8 @@ import classLogsSlice from "@/utilities/redux/classLogsSlice.js";
 import feeSlice from '@/utilities/redux/feeSlice.js';
 import testSlice from './testSlice';
 import teacherSlice from './teacherSlice';
+import attendanceSlice from './attendanceSlice';
+import feeSummarySlice from './feeSummarySlice';
 
 const store =  configureStore({
     reducer: {
@@ -13,9 +15,11 @@ const store =  configureStore({
         batches : batchSlice,
         students : studentSlice,
         classlogs : classLogsSlice,
-        fees:feeSlice,
+        fees: feeSlice,
         tests: testSlice,
         teachers: teacherSlice,
+        attendance: attendanceSlice,
+        feeSummary: feeSummarySlice,
     },
 });
 

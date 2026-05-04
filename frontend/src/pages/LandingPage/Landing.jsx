@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     Calendar, Users, DollarSign, FileText, Clock,
     Shield, Heart, Zap, CheckCircle, ArrowRight,
     Sparkles, Mail, ChevronDown, BookOpen, Bell,
-    BarChart2, UserCheck, Download, StickyNote
+    BarChart2, UserCheck, Download, StickyNote,
+    Menu, X, Star,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -11,110 +12,162 @@ import { motion, AnimatePresence } from "framer-motion";
 import Hero from "@/pages/LandingPage/Hero.jsx";
 import VideoModal from "@/pages/LandingPage/VideoModal.jsx";
 
-/* ── animation helpers ─────────────────────────────────────── */
+/* ── helpers ─────────────────────────────────────────────── */
 const fadeUp = (delay = 0) => ({
     hidden: { opacity: 0, y: 32 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: "easeOut", delay } }
+    visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: "easeOut", delay } },
 });
+const VP = { once: false, margin: "-80px" };
 
-// viewport options reused everywhere — once:false makes animations replay on re-enter
-const VP = { once: false, margin: "-90px" };
-
-/* ── reusable section label ─────────────────────────────────── */
+/* ── section label ───────────────────────────────────────── */
 const Label = ({ children }) => (
     <span className="inline-block px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase border border-[#ddb892]/60 bg-[#fdf5ec] text-[#8b5e3c] mb-4">
         {children}
     </span>
 );
 
-/* ── all features (existing app) ──────────────────────────────
-   Grouped into: manage students, track attendance, handle fees,
-   class management, reminders, reporting                       */
+/* ── data ────────────────────────────────────────────────── */
 const allFeatures = [
     {
         icon: Users,
         title: "Student Management",
         description: "Add students, assign them to batches and subjects, store contact info, school name, grade, and admission date in one place.",
         span: "md:col-span-2",
-        accent: "#f5e4d0",
+        accent: "#fef3e8",
+        iconColor: "#c0764b",
     },
     {
         icon: BookOpen,
         title: "Batch & Subject Setup",
         description: "Create unlimited batches, define subjects per batch, and assign students to specific subjects.",
         span: "md:col-span-1",
-        accent: "#fdf0e6",
+        accent: "#fdf8f0",
+        iconColor: "#8b5e3c",
     },
     {
         icon: UserCheck,
         title: "Attendance Marking",
         description: "Mark daily attendance per class. See who showed up, who didn't, and which classes actually held.",
         span: "md:col-span-1",
-        accent: "#fdf0e6",
+        accent: "#fdf8f0",
+        iconColor: "#8b5e3c",
     },
     {
         icon: BarChart2,
         title: "Attendance Analytics",
         description: "Per-student attendance percentages across all batches and subjects. Filter by date range to spot trends.",
         span: "md:col-span-2",
-        accent: "#f5e4d0",
+        accent: "#fef3e8",
+        iconColor: "#c0764b",
     },
     {
         icon: DollarSign,
         title: "Fee Tracking",
         description: "Set per-student monthly fee amounts, mark payments, track who's paid and who hasn't — with the exact date fees were cleared.",
         span: "md:col-span-2",
-        accent: "#f5e4d0",
+        accent: "#fef3e8",
+        iconColor: "#c0764b",
     },
     {
         icon: Download,
         title: "Fee CSV Export",
         description: "Export the current month's fee status to a spreadsheet in one click — name, batch, amount, status, and paid date included.",
         span: "md:col-span-1",
-        accent: "#fdf0e6",
+        accent: "#fdf8f0",
+        iconColor: "#8b5e3c",
     },
     {
         icon: Calendar,
         title: "Class Scheduling",
         description: "Schedule classes with date and time, track whether they held, were cancelled, or are pending. Edit status retroactively.",
         span: "md:col-span-1",
-        accent: "#fdf0e6",
+        accent: "#fdf8f0",
+        iconColor: "#8b5e3c",
     },
     {
         icon: StickyNote,
         title: "Session Notes",
         description: "Log what was covered in each class session. Review class history, notes, and attendance for any past date.",
         span: "md:col-span-2",
-        accent: "#f5e4d0",
+        accent: "#fef3e8",
+        iconColor: "#c0764b",
     },
     {
         icon: Bell,
         title: "Reminders",
         description: "Set custom reminders for tests, homework deadlines, fee collection, or anything else. They show up on your dashboard.",
         span: "md:col-span-1",
-        accent: "#fdf0e6",
+        accent: "#fdf8f0",
+        iconColor: "#8b5e3c",
     },
     {
         icon: FileText,
         title: "Test Management",
         description: "Schedule tests, log results per student, set max and pass marks, and track test history across all batches.",
         span: "md:col-span-1",
-        accent: "#fdf0e6",
+        accent: "#fdf8f0",
+        iconColor: "#8b5e3c",
     },
     {
         icon: Clock,
         title: "Institute Overview",
         description: "One page to see all your batches, class logs, and student data. Filter class history by batch, subject, grade, status, or date.",
         span: "md:col-span-1",
-        accent: "#fdf0e6",
+        accent: "#fdf8f0",
+        iconColor: "#8b5e3c",
+    },
+];
+
+const steps = [
+    {
+        number: "01",
+        icon: BookOpen,
+        title: "Set up batches & students",
+        description: "Create your batches, define subjects, and enroll students in minutes. Each student gets their own profile with contact info.",
+    },
+    {
+        number: "02",
+        icon: UserCheck,
+        title: "Track attendance & fees daily",
+        description: "Mark who attended class and log monthly fee payments directly from your phone or computer. Takes 30 seconds.",
+    },
+    {
+        number: "03",
+        icon: BarChart2,
+        title: "Review insights & export",
+        description: "See attendance percentages and pending fees at a glance. Export monthly fee reports with one click.",
     },
 ];
 
 const benefits = [
-    { icon: Clock,   stat: "2h+",  label: "Saved per week vs manual registers" },
-    { icon: Zap,     stat: "0",    label: "Learning curve — works like your phone" },
-    { icon: Shield,  stat: "100%", label: "Data stays yours — never shared" },
-    { icon: Heart,   stat: "1",    label: "Tool built only for solo educators" },
+    { icon: Clock, stat: "2h+", label: "Saved per week vs manual registers" },
+    { icon: Zap, stat: "0", label: "Learning curve — works like your phone" },
+    { icon: Shield, stat: "100%", label: "Data stays yours — never shared" },
+    { icon: Heart, stat: "Free", label: "Always free for solo educators" },
+];
+
+const testimonials = [
+    {
+        quote: "Finally a tool that doesn't feel like enterprise software. Set up 3 batches in one evening — now fee tracking is actually something I look forward to.",
+        name: "Priya Sharma",
+        role: "Math Tutor",
+        location: "Delhi",
+        initials: "PS",
+    },
+    {
+        quote: "I used to maintain everything in notebooks and WhatsApp messages. Tutora replaced all of that. I always know the exact attendance for every student now.",
+        name: "Vikram Mehta",
+        role: "Science Coaching",
+        location: "Pune",
+        initials: "VM",
+    },
+    {
+        quote: "The CSV export for fees is a lifesaver. I send it to parents at month end in two clicks. No more manually writing out lists or maintaining Excel sheets.",
+        name: "Anjali Singh",
+        role: "English Tutor",
+        location: "Bangalore",
+        initials: "AS",
+    },
 ];
 
 const faqs = [
@@ -125,28 +178,198 @@ const faqs = [
     { question: "Can I suggest a feature?", answer: "Absolutely. Drop a mail to suvratmittal007@gmail.com and I'll look into it." },
 ];
 
+/* ── Navbar ──────────────────────────────────────────────── */
+const Navbar = ({ user, navigate }) => {
+    const [scrolled, setScrolled] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false);
+
+    useEffect(() => {
+        const onScroll = () => setScrolled(window.scrollY > 24);
+        window.addEventListener("scroll", onScroll, { passive: true });
+        return () => window.removeEventListener("scroll", onScroll);
+    }, []);
+
+    const navLinks = [
+        ["Features", "#features"],
+        ["How it works", "#how-it-works"],
+        ["FAQ", "#faq"],
+    ];
+
+    return (
+        <nav
+            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+                scrolled
+                    ? "bg-white/95 backdrop-blur-md shadow-sm border-b border-[#ecdec9]"
+                    : "bg-transparent"
+            }`}
+        >
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+                {/* Logo */}
+                <a href="/" className="flex items-center gap-2.5 shrink-0">
+                    <div className="w-8 h-8 rounded-lg bg-[#1a0f07] flex items-center justify-center">
+                        <BookOpen className="w-4 h-4 text-[#f0d5b0]" />
+                    </div>
+                    <span
+                        className="font-extrabold text-[#1a0f07] text-lg tracking-tight"
+                        style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                    >
+                        Tutora
+                    </span>
+                </a>
+
+                {/* Desktop links */}
+                <div className="hidden md:flex items-center gap-8">
+                    {navLinks.map(([label, href]) => (
+                        <a
+                            key={href}
+                            href={href}
+                            className="text-sm font-medium text-[#6b5c4a] hover:text-[#1a0f07] transition-colors"
+                        >
+                            {label}
+                        </a>
+                    ))}
+                </div>
+
+                {/* CTA + mobile menu */}
+                <div className="flex items-center gap-3">
+                    {user ? (
+                        <motion.button
+                            whileTap={{ scale: 0.97 }}
+                            onClick={() => navigate("/main")}
+                            className="px-5 py-2 rounded-xl bg-[#1a0f07] text-white text-sm font-semibold hover:bg-[#2c1a0e] transition-colors cursor-pointer"
+                        >
+                            Dashboard
+                        </motion.button>
+                    ) : (
+                        <>
+                            <button
+                                onClick={() => navigate("/login")}
+                                className="hidden sm:block text-sm font-medium text-[#6b5c4a] hover:text-[#1a0f07] transition-colors cursor-pointer"
+                            >
+                                Sign In
+                            </button>
+                            <motion.button
+                                whileTap={{ scale: 0.97 }}
+                                onClick={() => navigate("/login")}
+                                className="px-5 py-2 rounded-xl bg-[#1a0f07] text-white text-sm font-semibold hover:bg-[#2c1a0e] transition-colors cursor-pointer"
+                            >
+                                Start Free
+                            </motion.button>
+                        </>
+                    )}
+                    <button
+                        className="md:hidden p-2 rounded-lg text-[#6b5c4a] hover:bg-[#f5ede3] transition-colors cursor-pointer"
+                        onClick={() => setMenuOpen((v) => !v)}
+                        aria-label="Toggle menu"
+                    >
+                        {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                    </button>
+                </div>
+            </div>
+
+            {/* Mobile dropdown */}
+            <AnimatePresence>
+                {menuOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.22, ease: "easeInOut" }}
+                        className="md:hidden bg-white border-b border-[#ecdec9] overflow-hidden"
+                    >
+                        <div className="px-4 py-4 flex flex-col gap-4">
+                            {navLinks.map(([label, href]) => (
+                                <a
+                                    key={href}
+                                    href={href}
+                                    className="text-sm font-medium text-[#6b5c4a] hover:text-[#1a0f07]"
+                                    onClick={() => setMenuOpen(false)}
+                                >
+                                    {label}
+                                </a>
+                            ))}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </nav>
+    );
+};
+
 /* ─────────────────────────────────────────────────────────── */
 
 const Landing = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [openFaq, setOpenFaq] = useState(null);
-    const [currentWord, setCurrentWord] = useState(0);
-    const rotatingWords = ["ssistant", "nchor", "utomator", "dmin", "lly"];
     const navigate = useNavigate();
     const user = useSelector((state) => state.user);
 
-    useState(() => {
-        const id = setInterval(() => setCurrentWord(p => (p + 1) % rotatingWords.length), 2000);
-        return () => clearInterval(id);
-    });
-
     return (
-        <div className="bg-[#faf6f1] min-h-screen font-['Inter',sans-serif] antialiased" style={{ background: "linear-gradient(160deg, #fdf8f3 0%, #faf4ed 40%, #fdf6ee 70%, #faf6f1 100%)" }}>
-            <Hero currentWord={currentWord} rotatingWords={rotatingWords} user={user} setIsModalOpen={setIsModalOpen} />
+        <div
+            className="min-h-screen antialiased"
+            style={{
+                fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
+                background: "linear-gradient(160deg, #fdf8f3 0%, #faf4ed 40%, #fdf6ee 70%, #faf6f1 100%)",
+            }}
+        >
+            <Navbar user={user} navigate={navigate} />
+            <Hero user={user} setIsModalOpen={setIsModalOpen} />
             <VideoModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} handleNavigate={navigate} />
 
-            {/* ── FEATURES BENTO ─────────────────────────────── */}
-            <section className="py-20 md:py-32 px-4 sm:px-6 bg-[#faf6f1]">
+            {/* ── HOW IT WORKS ─────────────────────────────── */}
+            <section id="how-it-works" className="py-20 md:py-28 px-4 sm:px-6 bg-white">
+                <div className="max-w-6xl mx-auto">
+                    <motion.div
+                        variants={fadeUp()}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={VP}
+                        className="text-center mb-16"
+                    >
+                        <Label>Simple by design</Label>
+                        <h2
+                            className="text-4xl sm:text-5xl font-extrabold text-[#1a0f07] tracking-tight"
+                            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                        >
+                            Set up in under 5 minutes
+                        </h2>
+                        <p className="mt-3 text-[#6b5c4a] text-lg max-w-lg mx-auto">
+                            No training required. Three steps and you're running.
+                        </p>
+                    </motion.div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
+                        {/* Connector line (desktop only) */}
+                        <div className="hidden md:block absolute top-12 left-[calc(16.66%+1rem)] right-[calc(16.66%+1rem)] h-px bg-gradient-to-r from-[#ecdec9] via-[#ddb892] to-[#ecdec9] z-0" />
+
+                        {steps.map(({ number, icon: Icon, title, description }, i) => (
+                            <motion.div
+                                key={i}
+                                initial={{ opacity: 0, y: 28 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={VP}
+                                transition={{ duration: 0.5, ease: "easeOut", delay: i * 0.1 }}
+                                className="relative z-10 flex flex-col items-center text-center p-8 rounded-2xl bg-[#fdf8f3] border border-[#ecdec9]"
+                            >
+                                <div className="w-14 h-14 rounded-2xl bg-[#1a0f07] flex items-center justify-center mb-5 shadow-lg shadow-[#1a0f07]/15">
+                                    <Icon className="w-7 h-7 text-[#f0d5b0]" />
+                                </div>
+                                <span className="text-xs font-bold tracking-widest text-[#c0a080] mb-2">{number}</span>
+                                <h3
+                                    className="font-bold text-[#1a0f07] text-lg mb-2"
+                                    style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                                >
+                                    {title}
+                                </h3>
+                                <p className="text-sm text-[#7b6a58] leading-relaxed">{description}</p>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* ── FEATURES ─────────────────────────────────── */}
+            <section id="features" className="py-20 md:py-28 px-4 sm:px-6" style={{ background: "#faf6f1" }}>
                 <div className="max-w-6xl mx-auto">
                     <motion.div
                         variants={fadeUp()}
@@ -156,7 +379,10 @@ const Landing = () => {
                         className="mb-14"
                     >
                         <Label>Everything included</Label>
-                        <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-[#2c1a0e] leading-tight tracking-tight max-w-2xl">
+                        <h2
+                            className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-[#1a0f07] leading-tight tracking-tight max-w-2xl"
+                            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                        >
                             Every tool a tutor actually needs
                         </h2>
                         <p className="mt-4 text-[#7b5c4b] text-lg max-w-xl">
@@ -165,24 +391,29 @@ const Landing = () => {
                     </motion.div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {allFeatures.map(({ icon: Icon, title, description, span, accent }, i) => (
+                        {allFeatures.map(({ icon: Icon, title, description, span, accent, iconColor }, i) => (
                             <motion.div
                                 key={i}
-                                initial={{ opacity: 0, x: i % 2 === 0 ? -70 : 70, y: 16 }}
-                                whileInView={{ opacity: 1, x: 0, y: 0 }}
+                                initial={{ opacity: 0, y: 24 }}
+                                whileInView={{ opacity: 1, y: 0 }}
                                 viewport={VP}
-                                transition={{ duration: 0.55, ease: "easeOut" }}
+                                transition={{ duration: 0.5, ease: "easeOut", delay: (i % 3) * 0.07 }}
                                 whileHover={{ y: -3, transition: { duration: 0.18 } }}
-                                className={`${span} rounded-2xl border border-[#e8d5c0]/70 bg-white/70 backdrop-blur-sm p-6 flex flex-col gap-4 shadow-sm hover:shadow-md transition-shadow`}
+                                className={`${span} rounded-2xl border border-[#e8d5c0]/70 bg-white p-6 flex flex-col gap-4 shadow-sm hover:shadow-md transition-shadow`}
                             >
                                 <div
-                                    className="w-11 h-11 rounded-xl flex items-center justify-center shadow-sm"
+                                    className="w-11 h-11 rounded-xl flex items-center justify-center"
                                     style={{ background: accent }}
                                 >
-                                    <Icon className="w-5 h-5 text-[#6b4226]" />
+                                    <Icon className="w-5 h-5" style={{ color: iconColor }} />
                                 </div>
                                 <div>
-                                    <h3 className="text-[#2c1a0e] font-bold text-lg mb-1">{title}</h3>
+                                    <h3
+                                        className="text-[#1a0f07] font-bold text-lg mb-1"
+                                        style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                                    >
+                                        {title}
+                                    </h3>
                                     <p className="text-[#9b8778] text-sm leading-relaxed">{description}</p>
                                 </div>
                             </motion.div>
@@ -191,10 +422,9 @@ const Landing = () => {
                 </div>
             </section>
 
-            {/* ── DARK BENEFITS STRIP ─────────────────────────── */}
-            <section className="py-20 md:py-28 px-4 sm:px-6 bg-[#2c1a0e] relative overflow-hidden">
-                {/* bg texture */}
-                <div className="pointer-events-none absolute inset-0 opacity-[0.04]">
+            {/* ── BENEFITS STRIP ───────────────────────────── */}
+            <section className="py-20 md:py-28 px-4 sm:px-6 bg-[#16100a] relative overflow-hidden">
+                <div className="pointer-events-none absolute inset-0 opacity-[0.035]">
                     <svg width="100%" height="100%">
                         <defs>
                             <pattern id="grid" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
@@ -204,6 +434,9 @@ const Landing = () => {
                         <rect width="100%" height="100%" fill="url(#grid)" />
                     </svg>
                 </div>
+                {/* Ambient glow */}
+                <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-[#8b5e3c]/20 rounded-full blur-3xl" />
+
                 <div className="max-w-6xl mx-auto relative">
                     <motion.div
                         variants={fadeUp()}
@@ -212,28 +445,36 @@ const Landing = () => {
                         viewport={VP}
                         className="text-center mb-16"
                     >
-                        <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#fdf5ec] tracking-tight">
+                        <h2
+                            className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#fdf5ec] tracking-tight"
+                            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                        >
                             The simple way to run your tuition
                         </h2>
-                        <p className="mt-3 text-[#c4a882] text-base max-w-xl mx-auto">
+                        <p className="mt-3 text-[#c4a882] text-base max-w-lg mx-auto">
                             Built for how a solo tutor actually works — not how a school software company thinks you do.
                         </p>
                     </motion.div>
 
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                         {benefits.map(({ icon: Icon, stat, label }, i) => (
                             <motion.div
                                 key={i}
-                                initial={{ opacity: 0, y: 36 }}
+                                initial={{ opacity: 0, y: 32 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={VP}
-                                transition={{ duration: 0.5, ease: "easeOut", delay: i * 0.08 }}
-                                className="flex flex-col items-center text-center gap-3 p-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm"
+                                transition={{ duration: 0.5, ease: "easeOut", delay: i * 0.09 }}
+                                className="flex flex-col items-center text-center gap-3 p-6 rounded-2xl border border-white/8 bg-white/5 backdrop-blur-sm"
                             >
-                                <div className="w-12 h-12 rounded-xl bg-[#e7c6a5]/15 flex items-center justify-center">
+                                <div className="w-12 h-12 rounded-xl bg-[#f0d5b0]/12 flex items-center justify-center">
                                     <Icon className="w-6 h-6 text-[#e7c6a5]" />
                                 </div>
-                                <p className="text-4xl font-extrabold text-[#fdf5ec] tracking-tight">{stat}</p>
+                                <p
+                                    className="text-4xl font-extrabold text-[#fdf5ec] tracking-tight"
+                                    style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                                >
+                                    {stat}
+                                </p>
                                 <p className="text-sm text-[#c4a882] leading-snug">{label}</p>
                             </motion.div>
                         ))}
@@ -241,8 +482,67 @@ const Landing = () => {
                 </div>
             </section>
 
-            {/* ── FAQ ─────────────────────────────────────────── */}
-            <section className="py-20 md:py-28 px-4 sm:px-6 bg-[#faf6f1]">
+            {/* ── TESTIMONIALS ─────────────────────────────── */}
+            <section className="py-20 md:py-28 px-4 sm:px-6 bg-white">
+                <div className="max-w-6xl mx-auto">
+                    <motion.div
+                        variants={fadeUp()}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={VP}
+                        className="text-center mb-14"
+                    >
+                        <Label>Educators love it</Label>
+                        <h2
+                            className="text-4xl sm:text-5xl font-extrabold text-[#1a0f07] tracking-tight"
+                            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                        >
+                            From tutors across India
+                        </h2>
+                    </motion.div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {testimonials.map(({ quote, name, role, location, initials }, i) => (
+                            <motion.div
+                                key={i}
+                                initial={{ opacity: 0, y: 28 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={VP}
+                                transition={{ duration: 0.5, ease: "easeOut", delay: i * 0.1 }}
+                                className="flex flex-col gap-5 p-7 rounded-2xl border border-[#ecdec9] bg-[#fdf8f3] hover:border-[#ddb892] hover:shadow-sm transition-all duration-200"
+                            >
+                                {/* Stars */}
+                                <div className="flex gap-1">
+                                    {Array.from({ length: 5 }).map((_, j) => (
+                                        <Star key={j} className="w-4 h-4 fill-[#f0a030] text-[#f0a030]" />
+                                    ))}
+                                </div>
+
+                                {/* Quote */}
+                                <p className="text-[#3d2b1a] text-sm leading-relaxed flex-1">
+                                    "{quote}"
+                                </p>
+
+                                {/* Author */}
+                                <div className="flex items-center gap-3 pt-2 border-t border-[#ecdec9]">
+                                    <div className="w-10 h-10 rounded-full bg-[#1a0f07] flex items-center justify-center shrink-0">
+                                        <span className="text-xs font-bold text-[#f0d5b0]">{initials}</span>
+                                    </div>
+                                    <div>
+                                        <p className="font-semibold text-[#1a0f07] text-sm">{name}</p>
+                                        <p className="text-xs text-[#9b8778]">
+                                            {role} · {location}
+                                        </p>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* ── FAQ ──────────────────────────────────────── */}
+            <section id="faq" className="py-20 md:py-28 px-4 sm:px-6" style={{ background: "#faf6f1" }}>
                 <div className="max-w-3xl mx-auto">
                     <motion.div
                         variants={fadeUp()}
@@ -252,30 +552,39 @@ const Landing = () => {
                         className="mb-12"
                     >
                         <Label>FAQ</Label>
-                        <h2 className="text-4xl sm:text-5xl font-extrabold text-[#2c1a0e] tracking-tight">Quick answers</h2>
+                        <h2
+                            className="text-4xl sm:text-5xl font-extrabold text-[#1a0f07] tracking-tight"
+                            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                        >
+                            Quick answers
+                        </h2>
                     </motion.div>
 
                     <div className="space-y-2">
                         {faqs.map((faq, i) => (
                             <motion.div
                                 key={i}
-                                initial={{ opacity: 0, y: 24 }}
+                                initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={VP}
                                 transition={{ duration: 0.45, ease: "easeOut", delay: i * 0.06 }}
-                                className="rounded-xl border border-[#e8d5c0]/70 bg-white/70 backdrop-blur-sm overflow-hidden"
+                                className="rounded-xl border border-[#e8d5c0]/70 bg-white overflow-hidden"
                             >
                                 <button
                                     onClick={() => setOpenFaq(openFaq === i ? null : i)}
                                     className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left cursor-pointer group"
+                                    aria-expanded={openFaq === i}
                                 >
                                     <div className="flex items-center gap-3">
                                         <CheckCircle className="w-4 h-4 text-[#8b5e3c] shrink-0" />
-                                        <span className="text-sm sm:text-base font-semibold text-[#2c1a0e] group-hover:text-[#6b4226] transition-colors">
+                                        <span className="text-sm sm:text-base font-semibold text-[#1a0f07] group-hover:text-[#6b4226] transition-colors">
                                             {faq.question}
                                         </span>
                                     </div>
-                                    <motion.div animate={{ rotate: openFaq === i ? 180 : 0 }} transition={{ duration: 0.22 }}>
+                                    <motion.div
+                                        animate={{ rotate: openFaq === i ? 180 : 0 }}
+                                        transition={{ duration: 0.22 }}
+                                    >
                                         <ChevronDown className="w-5 h-5 text-[#9b8778] shrink-0" />
                                     </motion.div>
                                 </button>
@@ -285,7 +594,7 @@ const Landing = () => {
                                             initial={{ height: 0, opacity: 0 }}
                                             animate={{ height: "auto", opacity: 1 }}
                                             exit={{ height: 0, opacity: 0 }}
-                                            transition={{ duration: 0.28, ease: "easeInOut" }}
+                                            transition={{ duration: 0.26, ease: "easeInOut" }}
                                             className="overflow-hidden"
                                         >
                                             <p className="px-5 pb-5 text-sm text-[#7b5c4b] leading-relaxed border-t border-[#e8d5c0]/50 pt-3">
@@ -300,9 +609,9 @@ const Landing = () => {
                 </div>
             </section>
 
-            {/* ── CTA ─────────────────────────────────────────── */}
+            {/* ── FINAL CTA ─────────────────────────────────── */}
             {!user && (
-                <section className="py-20 md:py-28 px-4 sm:px-6 bg-[#faf6f1]">
+                <section className="py-20 md:py-28 px-4 sm:px-6 bg-white">
                     <motion.div
                         variants={fadeUp()}
                         initial="hidden"
@@ -310,41 +619,63 @@ const Landing = () => {
                         viewport={VP}
                         className="max-w-2xl mx-auto text-center"
                     >
-                        <div className="relative rounded-3xl overflow-hidden border border-[#e8d5c0] bg-white/70 backdrop-blur-sm shadow-xl p-10 sm:p-14">
-                            <div className="pointer-events-none absolute -top-16 -right-16 w-64 h-64 bg-[#e7c6a5]/30 rounded-full blur-3xl" />
-                            <div className="pointer-events-none absolute -bottom-16 -left-16 w-64 h-64 bg-[#f5d9bc]/20 rounded-full blur-3xl" />
-                            <p className="relative text-xs font-bold tracking-widest uppercase text-[#8b5e3c] mb-4">Get started</p>
-                            <h2 className="relative text-4xl sm:text-5xl font-extrabold text-[#2c1a0e] mb-4 tracking-tight leading-tight">
-                                Give Tutora a try
-                            </h2>
-                            <p className="relative text-[#7b5c4b] mb-8 text-base leading-relaxed">
-                                Free to use. No credit card. Setup takes under a minute.
-                            </p>
-                            <motion.button
-                                whileHover={{ scale: 1.04, boxShadow: "0 12px 32px rgba(44,26,14,0.22)" }}
-                                whileTap={{ scale: 0.96 }}
-                                onClick={() => navigate("/login")}
-                                className="relative inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-[#2c1a0e] text-white font-semibold text-base shadow-lg hover:bg-[#3e2510] transition-colors cursor-pointer"
-                            >
-                                <Sparkles className="w-4 h-4" />
-                                Start Free
-                                <ArrowRight className="w-4 h-4" />
-                            </motion.button>
+                        <div className="relative rounded-3xl overflow-hidden border border-[#e8d5c0] bg-[#1a0f07] shadow-2xl p-10 sm:p-14">
+                            {/* Ambient glows */}
+                            <div className="pointer-events-none absolute -top-20 -right-20 w-64 h-64 bg-[#8b5e3c]/30 rounded-full blur-3xl" />
+                            <div className="pointer-events-none absolute -bottom-20 -left-20 w-64 h-64 bg-[#c0764b]/20 rounded-full blur-3xl" />
+
+                            <div className="relative">
+                                <p className="text-xs font-bold tracking-widest uppercase text-[#c4a882] mb-4">
+                                    Free forever
+                                </p>
+                                <h2
+                                    className="text-4xl sm:text-5xl font-extrabold text-[#fdf5ec] mb-4 tracking-tight leading-tight"
+                                    style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                                >
+                                    Give Tutora a try
+                                </h2>
+                                <p className="text-[#c4a882] mb-8 text-base leading-relaxed">
+                                    Free to use. No credit card. Setup takes under a minute.
+                                </p>
+                                <motion.button
+                                    whileHover={{ scale: 1.03 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    onClick={() => navigate("/login")}
+                                    className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-[#f0d5b0] text-[#1a0f07] font-bold text-base hover:bg-white transition-colors cursor-pointer shadow-lg"
+                                >
+                                    <Sparkles className="w-4 h-4" />
+                                    Start Free
+                                    <ArrowRight className="w-4 h-4" />
+                                </motion.button>
+                            </div>
                         </div>
                     </motion.div>
                 </section>
             )}
 
-            {/* ── FOOTER ──────────────────────────────────────── */}
-            <footer className="border-t border-[#e8d5c0] bg-[#f5ede3] py-14 px-4">
+            {/* ── FOOTER ──────────────────────────────────── */}
+            <footer className="border-t border-[#e8d5c0] bg-[#f8f2eb] py-14 px-4">
                 <div className="max-w-xl mx-auto flex flex-col items-center gap-7">
+                    {/* Logo */}
+                    <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-[#1a0f07] flex items-center justify-center">
+                            <BookOpen className="w-4 h-4 text-[#f0d5b0]" />
+                        </div>
+                        <span
+                            className="font-extrabold text-[#1a0f07] text-lg tracking-tight"
+                            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                        >
+                            Tutora
+                        </span>
+                    </div>
+
                     <p className="text-xs font-bold tracking-widest uppercase text-[#9b8778]">Built by</p>
 
                     <motion.a
                         href="https://github.com/suvrat007"
                         target="_blank"
                         rel="noopener noreferrer"
-                        whileHover={{ scale: 1.03, boxShadow: "0 8px 28px rgba(0,0,0,0.09)" }}
+                        whileHover={{ scale: 1.03, boxShadow: "0 8px 28px rgba(0,0,0,0.08)" }}
                         whileTap={{ scale: 0.97 }}
                         className="flex items-center gap-4 bg-white border border-[#e8d5c0] rounded-2xl px-6 py-4 shadow-sm cursor-pointer"
                     >
@@ -352,9 +683,15 @@ const Landing = () => {
                             src="https://github.com/suvrat007.png?size=80"
                             alt="Suvrat's GitHub avatar"
                             className="w-12 h-12 rounded-full border-2 border-[#e8d5c0]"
+                            loading="lazy"
                         />
                         <div className="text-left">
-                            <p className="font-bold text-[#2c1a0e]">Suvrat Mittal</p>
+                            <p
+                                className="font-bold text-[#1a0f07]"
+                                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                            >
+                                Suvrat Mittal
+                            </p>
                             <p className="text-sm text-[#9b8778]">github.com/suvrat007</p>
                         </div>
                     </motion.a>
