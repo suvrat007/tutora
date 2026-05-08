@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axiosInstance from "../../utilities/axiosInstance.jsx";
 import { FiPlus, FiSearch } from "react-icons/fi";
 import { AiOutlineClose, AiOutlineEdit } from "react-icons/ai";
-import { Link2, Check } from "lucide-react";
+import { Link2, Check, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import WrapperCard from "@/components/ui/WrapperCard.jsx";
 import useFetchStudents from "@/hooks/useFetchStudents.js";
@@ -42,6 +42,8 @@ const StudentData = () => {
   const [studentToDelete, setStudentToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
+  const [isDeletingAll, setIsDeletingAll] = useState(false);
 
   const user = useSelector((state) => state.user);
 
@@ -59,6 +61,22 @@ const StudentData = () => {
 
   const handleStudentAdded = () => {};
   const handleStudentEdited = () => {};
+
+  const deleteAllInBatch = async () => {
+    if (!selectedBatch) return;
+    setIsDeletingAll(true);
+    try {
+      await axiosInstance.delete(`student/delete-all-by-batch/${selectedBatch}`, { withCredentials: true });
+      toast.success("All students in this batch deleted.");
+      await fetchStudents();
+      setSelectedBatch("");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to delete students.");
+    } finally {
+      setIsDeletingAll(false);
+      setShowDeleteAllModal(false);
+    }
+  };
 
   const deleteStudent = async (studentId) => {
     if (isDeleting) return; // Prevent multiple delete requests
@@ -157,14 +175,14 @@ const StudentData = () => {
                         variants={placeholderVariants}
                         animate="pulse"
                         onClick={() => setShowAddStd(true)}
-                        className="flex flex-col items-center justify-center h-[50vh] sm:h-[60vh] text-[#7b5c4b] cursor-pointer hover:bg-[#f0d9c0] transition-colors rounded-lg m-4"
+                        className="flex flex-col items-center justify-center flex-1 min-h-0 text-[#7b5c4b] cursor-pointer hover:bg-[#f0d9c0] transition-colors rounded-lg m-4"
                     >
                       <FiPlus className="text-4xl sm:text-5xl text-[#e0c4a8] mb-4" />
                       <p className="text-sm sm:text-base text-center">No students found. Adjust filters or </p>
                       <p className="text-sm sm:text-base text-center font-medium">Click here to add a new student</p>
                     </motion.div>
                 ) : (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 p-3 sm:p-4 overflow-y-auto h-[50vh] sm:h-[60vh]">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 p-3 sm:p-4 overflow-y-auto flex-1 min-h-0">
                       <motion.div
                           variants={cardVariants}
                           initial="hidden"
@@ -257,17 +275,17 @@ const StudentData = () => {
                 <div className="text-xl sm:text-2xl font-bold text-[#5a4a3c] bg-[#f0d9c0] p-4 sm:p-6 rounded-t-3xl border-b border-[#e6c8a8]">
                   <h2>Filter Students</h2>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 p-3 sm:p-4 overflow-y-auto">
-                  <div>
-                    <label className="block text-xs sm:text-sm font-medium text-[#5a4a3c] mb-1">Search by name or phone</label>
+                <div className="grid grid-cols-2 gap-3 p-3 sm:p-4 overflow-y-auto items-end">
+                  <div className="col-span-2 sm:col-span-1">
+                    <label className="block text-xs font-medium text-[#5a4a3c] mb-1">Search by name or phone</label>
                     <div className="relative">
-                      <FiSearch className="absolute top-2 sm:top-3 left-3 text-[#e0c4a8] w-4 h-4 sm:w-5 sm:h-5" />
+                      <FiSearch className="absolute top-1/2 -translate-y-1/2 left-3 text-[#e0c4a8] w-4 h-4" />
                       <input
                           type="text"
                           value={searchName}
                           onChange={(e) => setSearchName(e.target.value)}
                           placeholder="Name or phone number"
-                          className="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-1.5 sm:py-2 border border-[#e6c8a8] bg-white rounded-full text-sm text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] transition"
+                          className="w-full pl-9 pr-3 py-2.5 border border-[#e6c8a8] bg-white rounded-full text-sm text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] transition"
                       />
                     </div>
                   </div>
@@ -309,6 +327,20 @@ const StudentData = () => {
                   </div>
                 </div>
 
+                {/* Delete all students in selected batch */}
+                {selectedBatch && (
+                  <div className="px-3 sm:px-4 pb-3 sm:pb-4">
+                    <button
+                      onClick={() => setShowDeleteAllModal(true)}
+                      disabled={isDeletingAll}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-xl hover:bg-red-100 transition disabled:opacity-50"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Delete All Students in {batches.find(b => b._id === selectedBatch)?.name || 'Batch'}
+                    </button>
+                  </div>
+                )}
+
                 {/* Student Details Overlay */}
                 {seeStdDetails?.show && (
                     <div className="absolute inset-0 z-50 p-3 sm:p-4 bg-[#f8ede3] rounded-3xl overflow-y-auto shadow-xl">
@@ -334,13 +366,23 @@ const StudentData = () => {
             />
         )}
 
-        {/* Delete Confirmation Modal */}
+        {/* Delete single student */}
         {studentToDelete && (
             <ConfirmationModal
                 message="This will delete this student from the database. This action cannot be undone. Continue?"
                 onConfirm={() => deleteStudent(studentToDelete)}
                 onCancel={() => setStudentToDelete(null)}
                 isLoading={isDeleting}
+            />
+        )}
+
+        {/* Delete all students in batch */}
+        {showDeleteAllModal && (
+            <ConfirmationModal
+                message={`This will permanently delete ALL students in "${batches.find(b => b._id === selectedBatch)?.name}". This cannot be undone. Continue?`}
+                onConfirm={deleteAllInBatch}
+                onCancel={() => setShowDeleteAllModal(false)}
+                isLoading={isDeletingAll}
             />
         )}
       </>

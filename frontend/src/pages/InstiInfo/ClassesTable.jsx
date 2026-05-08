@@ -174,7 +174,7 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
             variants={fadeInUp}
             initial="hidden"
             animate="show"
-            className="h-full flex flex-col bg-[#f8ede3] overflow-hidden"
+            className="flex-1 min-h-0 flex flex-col bg-[#f8ede3] overflow-hidden"
         >
             {/* Header */}
             <div className="flex-shrink-0 px-6 py-4 bg-[#f0d9c0] border-b border-[#e6c8a8] flex items-center justify-between">
@@ -237,7 +237,7 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
             </div>
 
             {/* Table — only this scrolls */}
-            <div className="flex-1 overflow-y-auto overflow-x-hidden min-h-0">
+            <div className="flex-1 overflow-y-auto overflow-x-auto min-h-0 no-scrollbar">
                 <table className="w-full divide-y divide-[#e6c8a8] border-collapse">
                     <thead className="bg-[#f0d9c0] sticky top-0 z-10">
                     <tr>
@@ -343,7 +343,7 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
                                         </div>
                                     </td>
                                     <td className="px-4 sm:px-6 py-4">
-                                        {(cls.status === 'No data recorded' || (cls.status === 'Cancelled' && cls.note === 'No Data')) && !isToday(cls.date) && (
+                                        {!isToday(cls.date) && cls.status === 'No data recorded' && (
                                             <motion.button
                                                 whileHover={{ scale: 1.05 }}
                                                 whileTap={{ scale: 0.95 }}

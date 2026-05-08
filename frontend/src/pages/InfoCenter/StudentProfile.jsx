@@ -289,7 +289,7 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
             </div>
 
             <div className="overflow-y-auto">
-                <div className="sm:flex gap-6 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-4 gap-6 mb-4">
                     <WrapperCard className="flex-1 ">
                         <div
                             className="w-full p-6 flex flex-col bg-[#f8ede3] border-[#ddb892] rounded-2xl shadow-md">
@@ -504,8 +504,8 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
                                     )}
                                 </div>
                             </div>
-                            <div className="overflow-x-hidden">
-                                <table className="w-full text-sm text-left border-collapse">
+                            <div className="overflow-x-auto">
+                                <table className="min-w-[600px] w-full text-sm text-left border-collapse">
                                     <thead className="bg-[#d7b48f]/20 text-[#4a3a2c] font-semibold">
                                         <tr>
                                             <th className="p-3 border-b border-[#ddb892]">#</th>

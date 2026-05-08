@@ -29,7 +29,7 @@ const hasNoResults = (test) =>
 
 const PAGE_SIZE = 6;
 
-const TestList = ({ batches, tests, setEditingTest, setSelectedTest, fetchTests }) => {
+const TestList = ({ batches, tests, setEditingTest, setSelectedTest, fetchTests, loading }) => {
     const dispatch = useDispatch();
     const [testToDelete, setTestToDelete] = useState(null);
     const [deleting, setDeleting] = useState(false);
@@ -129,7 +129,7 @@ const TestList = ({ batches, tests, setEditingTest, setSelectedTest, fetchTests 
     return (
         <>
             <div>
-                <div className="sticky top-0 z-[100] bg-[#f8ede3] pb-2 border-b border-[#e6c8a8] mb-3">
+                <div className="sticky top-0 z-[100] bg-[#f8ede3] pt-3 pb-2 border-b border-[#e6c8a8] mb-3">
                 <div className="flex items-center justify-between mb-3">
                     <h2 className="text-xl font-bold text-[#5a4a3c]">Scheduled Tests</h2>
                     {totalPages > 1 && (
@@ -181,16 +181,20 @@ const TestList = ({ batches, tests, setEditingTest, setSelectedTest, fetchTests 
                             ]}
                         />
                     </div>
-                    <input
-                        type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
-                        max={dateTo || undefined}
-                        className="px-3 py-1.5 rounded-full border border-[#e6c8a8] bg-white text-sm text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8]"
-                    />
-                    <input
-                        type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
-                        min={dateFrom || undefined}
-                        className="px-3 py-1.5 rounded-full border border-[#e6c8a8] bg-white text-sm text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8]"
-                    />
+                    <div className="w-36">
+                        <input
+                            type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
+                            max={dateTo || undefined}
+                            className="w-full px-4 py-2.5 rounded-full border border-[#e6c8a8] bg-white text-sm text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] shadow-sm"
+                        />
+                    </div>
+                    <div className="w-36">
+                        <input
+                            type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
+                            min={dateFrom || undefined}
+                            className="w-full px-4 py-2.5 rounded-full border border-[#e6c8a8] bg-white text-sm text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] shadow-sm"
+                        />
+                    </div>
                     {hasFilters && (
                         <button
                             onClick={resetFilters}
@@ -202,19 +206,26 @@ const TestList = ({ batches, tests, setEditingTest, setSelectedTest, fetchTests 
                 </div>
                 </div>{/* end sticky */}
 
-                {filteredTests.length === 0 ? (
+                {loading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {Array.from({ length: 6 }).map((_, i) => (
+                            <div key={i} className="p-3 rounded-2xl bg-[#f0d9c0]/50 shadow-sm animate-pulse h-[140px] border border-[#e6c8a8]" />
+                        ))}
+                    </div>
+                ) : filteredTests.length === 0 ? (
                     <div className="bg-[#f0d9c0] p-8 rounded-xl text-center text-[#7b5c4b] border border-[#e6c8a8] border-dashed">
                         <p className="font-medium">{tests.length === 0 ? 'No tests found.' : 'No tests match the selected filters.'}</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                        <AnimatePresence>
+                        <AnimatePresence mode="popLayout">
                             {pagedTests.map((test, i) => (
                                 <motion.div
-                                    key={test._id}
+                                    key={test.groupId || test._id}
+                                    layout
                                     initial={{ opacity: 0, y: 16 }}
                                     animate={{ opacity: 1, y: 0, transition: { delay: i * 0.05 } }}
-                                    exit={{ opacity: 0, y: -16 }}
+                                    exit={{ opacity: 0, scale: 0.95 }}
                                     className={`p-3 border border-[#e6c8a8] rounded-2xl bg-[#f8ede3] shadow-sm transition-all ${isFutureScheduled(test) ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-md hover:bg-[#f0d9c0] cursor-pointer'}`}
                                     onClick={() => {
                                         if (isFutureScheduled(test)) {

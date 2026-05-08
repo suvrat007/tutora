@@ -107,7 +107,7 @@ const TodaysClasses = () => {
     };
 
     return (
-        <div className="bg-[#f8ede3] rounded-3xl shadow-xl shadow-[0_8px_24px_rgba(0,0,0,0.15)] p-6 sm:h-full flex flex-col overflow-hidden border border-[#e6c8a8]">
+        <div className="bg-[#f8ede3] rounded-3xl shadow-xl shadow-[0_8px_24px_rgba(0,0,0,0.15)] p-6 h-full flex flex-col overflow-hidden border border-[#e6c8a8]">
             <div className="sticky top-0 z-10 bg-[#f8ede3] pb-3">
                 <h1 className="text-lg font-semibold text-[#5a4a3c] border-b border-[#e6c8a8] pb-2.5 flex items-center gap-2">
                     <CalendarDays className="w-5 h-5 text-[#c47d3e]" />
@@ -137,10 +137,10 @@ const TodaysClasses = () => {
                                 <div className="mb-2 border-b border-[#e6c8a8] pb-2">
                                     <p className="text-lg font-semibold text-[#e0c4a8]">{c.batchName}</p>
                                 </div>
-                                <div className="grid grid-cols-3 gap-3 text-sm text-[#5a4a3c] font-medium">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-2 sm:gap-3 text-sm text-[#5a4a3c] font-medium">
                                     <p><span className="text-[#7b5c4b] font-semibold">Class:</span> {c.forStandard}</p>
                                     <p><span className="text-[#7b5c4b] font-semibold">Subject:</span> {c.subjectName}</p>
-                                    <p><span className="text-[#7b5c4b] font-semibold">Time:</span> {c.time}</p>
+                                    <p className="sm:col-span-2 2xl:col-span-1"><span className="text-[#7b5c4b] font-semibold">Time:</span> {c.time}</p>
                                 </div>
                             </motion.div>
                         ))}

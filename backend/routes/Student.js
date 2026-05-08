@@ -150,6 +150,18 @@ router.get("/get-students-grouped-by-batch", userAuth, async (req, res) => {
     }
 });
 
+router.delete("/delete-all-by-batch/:batchId", userAuth, async (req, res) => {
+    try {
+        const { batchId } = req.params;
+        const adminId = req.adminId;
+        const result = await Student.deleteMany({ adminId, batchId });
+        return res.status(200).json({ message: `Deleted ${result.deletedCount} students`, deletedCount: result.deletedCount });
+    } catch (error) {
+        console.error("Error bulk deleting students:", error.message);
+        return res.status(500).json({ message: "Failed to delete students", error: error.message });
+    }
+});
+
 router.delete("/delete-student/:id", userAuth, async (req, res) => {
     try {
         const { id } = req.params;

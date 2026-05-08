@@ -29,14 +29,14 @@ const Home = () => {
     return (
         <div className="h-full py-3 px-3 sm:px-5 overflow-y-auto flex flex-col gap-4 sm:gap-6 pb-8">
             {/* Today's classes + Pending class updates + Reminders */}
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 sm:h-[400px]">
-                <div className="w-full sm:w-1/3 sm:h-full">
+            <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-4 sm:gap-6">
+                <div className="w-full h-[350px] sm:h-[400px]">
                     <TodaysClasses />
                 </div>
-                <div className="w-full sm:w-1/3 sm:h-full">
+                <div className="w-full h-[350px] sm:h-[400px]">
                     <ClassStatusUpdates />
                 </div>
-                <div className="w-full sm:w-1/3 sm:h-full">
+                <div className="w-full lg:col-span-2 2xl:col-span-1 h-[350px] sm:h-[400px]">
                     <Reminders refreshKey={reminderRefreshKey} />
                 </div>
             </div>
@@ -45,11 +45,11 @@ const Home = () => {
             <StatsStrip />
 
             {/* Fee collection + Batch fee breakdown */}
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 sm:h-[380px]">
-                <div className="w-full sm:w-[55%] sm:h-full">
+            <div className="flex flex-col xl:flex-row gap-4 sm:gap-6 xl:h-[380px]">
+                <div className="w-full xl:w-[55%] h-[350px] xl:h-full">
                     <FeeCollection />
                 </div>
-                <div className="w-full sm:flex-1 sm:h-full">
+                <div className="w-full xl:flex-1 h-[350px] xl:h-full">
                     <BatchFeeChart />
                 </div>
             </div>
@@ -61,11 +61,11 @@ const Home = () => {
             />
 
             {/* Top students + Class frequency trend */}
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 sm:h-[380px]">
-                <div className="w-full sm:w-[45%] sm:h-full">
+            <div className="flex flex-col xl:flex-row gap-4 sm:gap-6 xl:h-[380px]">
+                <div className="w-full xl:w-[45%] h-[350px] xl:h-full">
                     <TopStudents />
                 </div>
-                <div className="w-full sm:flex-1 sm:h-full">
+                <div className="w-full xl:flex-1 h-[350px] xl:h-full">
                     <ClassFrequencyTrend />
                 </div>
             </div>

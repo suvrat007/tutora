@@ -21,6 +21,7 @@ const TestManagementPage = () => {
 
     const [editingTest, setEditingTest] = useState(null);
     const [selectedTest, setSelectedTest] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     const handleSelectTest = (test) => {
         if (!test._isGroup) { setSelectedTest(test); return; }
@@ -50,7 +51,19 @@ const TestManagementPage = () => {
     };
 
     useEffect(() => {
-        batches.forEach(batch => fetchTests(batch._id));
+        if (!batches || batches.length === 0) {
+            setLoading(false);
+            return;
+        }
+        
+        let isMounted = true;
+        setLoading(true);
+        
+        Promise.all(batches.map(batch => fetchTests(batch._id))).then(() => {
+            if (isMounted) setLoading(false);
+        });
+        
+        return () => { isMounted = false; };
     }, [batches]);
 
     useEffect(() => {
@@ -62,9 +75,9 @@ const TestManagementPage = () => {
     }, [selectedTest]);
 
     return (
-        <div className="p-4 h-full overflow-hidden flex flex-col">
+        <div className="p-4 h-full overflow-y-auto lg:overflow-hidden flex flex-col">
             <WrapperCard>
-                <div className="bg-[#f8ede3] rounded-3xl shadow-[0_8px_24px_rgba(0,0,0,0.15)] flex flex-col h-full overflow-hidden">
+                <div className="bg-[#f8ede3] rounded-3xl shadow-[0_8px_24px_rgba(0,0,0,0.15)] flex flex-col h-full lg:overflow-hidden">
                     {/* Header */}
                     <div className="p-4 sm:p-6 bg-[#f0d9c0] border-b border-[#e6c8a8] shrink-0">
                         <h1 className="text-2xl font-bold text-[#5a4a3c]">Test Management</h1>
@@ -73,7 +86,7 @@ const TestManagementPage = () => {
                     {/* Body */}
                     <div className="flex flex-col lg:flex-row flex-1 min-h-0 divide-y lg:divide-y-0 lg:divide-x divide-[#e6c8a8]">
                         {/* LEFT: Schedule new test form */}
-                        <div className="lg:w-[320px] shrink-0 p-4 sm:p-6 overflow-y-auto">
+                        <div className="lg:w-[320px] shrink-0 p-4 sm:p-6 lg:overflow-y-auto">
                             <h2 className="text-base font-bold text-[#5a4a3c] mb-4">Schedule a New Test</h2>
                             <div className="bg-white border border-[#e6c8a8] rounded-2xl p-4 shadow-sm">
                                 <TestScheduleForm
@@ -88,13 +101,14 @@ const TestManagementPage = () => {
                         </div>
 
                         {/* RIGHT: Test list + detail, scrolls together */}
-                        <div className="flex-1 min-w-0 px-4 sm:px-6 pt-3 pb-3 overflow-y-auto no-scrollbar flex flex-col gap-3">
+                        <div className="flex-1 min-w-0 px-4 sm:px-6 pt-0 pb-3 lg:overflow-y-auto flex flex-col gap-3 min-h-[500px] lg:min-h-0">
                             <TestList
                                 batches={batches}
                                 tests={tests}
                                 setEditingTest={setEditingTest}
                                 setSelectedTest={handleSelectTest}
                                 fetchTests={fetchTests}
+                                loading={loading}
                             />
                             {/* Test detail inline */}
                             <div ref={detailRef}>
