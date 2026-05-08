@@ -114,28 +114,33 @@ export const StudentList = ({
                                 variants={listVariants}
                                 initial="hidden"
                                 animate="visible"
-                                className={`border border-[#e6c8a8] p-3 rounded-xl mb-2 flex justify-between items-center transition-colors ${
-                                    readOnly ? 'opacity-70' : 'hover:bg-[#f0d9c0] cursor-default'
+                                whileTap={!readOnly && !loading ? { scale: 0.98 } : {}}
+                                onClick={() => !readOnly && !loading && togglePresent(s._id)}
+                                className={`border p-3 rounded-xl mb-2 flex justify-between items-center transition-colors ${
+                                    readOnly 
+                                        ? 'opacity-70 border-[#e6c8a8]' 
+                                        : `cursor-pointer hover:bg-[#f0d9c0] ${
+                                            presentIds.has(s._id) 
+                                                ? 'bg-[#f0d9c0]/60 border-[#cda886]' 
+                                                : 'border-[#e6c8a8]'
+                                        }`
                                 }`}
                             >
-                                <span className="text-sm text-[#5a4a3c]">{i + 1}. {s.name}</span>
+                                <span className="text-sm text-[#5a4a3c] font-medium select-none">{i + 1}. {s.name}</span>
                                 {readOnly ? (
                                     <div className="w-8 h-8 rounded-full flex items-center justify-center bg-[#f0d9c0] border border-[#d8bca0]">
                                         <FaLock className="w-3 h-3 text-[#b09a86]" />
                                     </div>
                                 ) : (
-                                    <motion.button
-                                        whileTap={{ scale: 0.85 }}
-                                        onClick={() => togglePresent(s._id)}
-                                        disabled={loading}
+                                    <div
                                         className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 border ${
                                             presentIds.has(s._id)
-                                                ? "bg-[#34C759] border-[#34C759] text-white"
-                                                : "bg-white border-[#d8bca0] text-transparent hover:border-[#8b5e3c]"
+                                                ? "bg-[#34C759] border-[#34C759] text-white shadow-sm"
+                                                : "bg-white border-[#d8bca0] text-transparent"
                                         }`}
                                     >
                                         <FaCheckCircle className="w-4 h-4" />
-                                    </motion.button>
+                                    </div>
                                 )}
                             </motion.div>
                         ))}

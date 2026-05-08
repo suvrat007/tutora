@@ -343,7 +343,7 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
                                         </div>
                                     </td>
                                     <td className="px-4 sm:px-6 py-4">
-                                        {!isToday(cls.date) && (
+                                        {!isToday(cls.date) && cls.status === 'No data recorded' && (
                                             <motion.button
                                                 whileHover={{ scale: 1.05 }}
                                                 whileTap={{ scale: 0.95 }}

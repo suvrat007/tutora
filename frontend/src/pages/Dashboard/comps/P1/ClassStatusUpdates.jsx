@@ -73,7 +73,7 @@ const ClassStatusUpdates = () => {
         };
 
         return (
-            <div className="p-6 rounded-3xl border border-[#e6c8a8] shadow-[0_8px_24px_rgba(0,0,0,0.15)] bg-[#f8ede3] flex flex-col sm:h-full">
+            <div className="p-6 rounded-3xl border border-[#e6c8a8] shadow-[0_8px_24px_rgba(0,0,0,0.15)] bg-[#f8ede3] flex flex-col h-full">
                 <h2 className="text-lg font-semibold text-[#5a4a3c] border-b border-[#e6c8a8] pb-2.5 mb-4 shrink-0">Pending Class Updates</h2>
                 <div className="flex-1 min-h-0 overflow-y-auto">
                     {loading ? (

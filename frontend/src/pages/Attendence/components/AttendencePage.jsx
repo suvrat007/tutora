@@ -156,12 +156,12 @@ export const AttendancePage = () => {
                                 onChange={(e) => setDate(e.target.value)}
                                 disabled={!batchName || !subjectName}
                                 max={new Date().toISOString().split("T")[0]}
-                                className="border border-[#e6c8a8] px-3 py-2 rounded-lg text-sm text-[#5a4a3c] bg-white focus:ring-2 focus:ring-[#e0c4a8] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="border border-[#e6c8a8] px-4 py-2.5 rounded-full text-sm text-[#5a4a3c] bg-white shadow-sm focus:ring-2 focus:ring-[#e0c4a8] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                             />
 
                             <button
                                 onClick={clearForm}
-                                className="px-4 py-2 bg-[#e0c4a8] text-[#5a4a3c] text-sm font-medium rounded-lg hover:bg-[#d8bca0] transition-colors"
+                                className="px-5 py-2.5 bg-[#e0c4a8] text-[#5a4a3c] text-sm font-medium rounded-full shadow-sm hover:bg-[#d8bca0] transition-colors"
                             >
                                 Clear
                             </button>
