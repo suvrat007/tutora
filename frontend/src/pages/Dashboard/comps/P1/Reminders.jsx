@@ -98,7 +98,7 @@ const Reminders = ({ refreshKey = 0 }) => {
     };
 
     return (
-        <div className="px-6 py-4 border border-[#e6c8a8] flex flex-col sm:h-full bg-[#f8ede3] rounded-3xl shadow-xl">
+        <div className="px-6 py-4 border border-[#e6c8a8] flex flex-col h-full bg-[#f8ede3] rounded-3xl shadow-xl">
             <div className="border-b border-[#e6c8a8] pb-2.5 mb-4">
                 <h1 className="text-lg font-semibold text-[#5a4a3c]">Reminders for Today</h1>
             </div>

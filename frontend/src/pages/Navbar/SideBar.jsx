@@ -59,10 +59,10 @@ const NavItem = ({ label, path, icon: Icon, isOpen, currentPath }) => (
     </Link>
 );
 
-const NavDropItem = ({ label, isExpanded, toggle, subItems, icon: Icon, isOpen }) => (
+const NavDropItem = ({ label, isExpanded, toggle, subItems, icon: Icon, isOpen, onOpenSidebar }) => (
     <div>
         <div
-            onClick={toggle}
+            onClick={() => { if (!isOpen && onOpenSidebar) { onOpenSidebar(); } else { toggle(); } }}
             className="cursor-pointer flex items-center justify-between gap-3 p-3 rounded-lg transition-all hover:bg-[#d1ac8a] text-[#4a3a2c]"
         >
             <div className="flex items-center gap-3">
@@ -147,36 +147,37 @@ const Sidebar = () => {
             <motion.div
                 animate={{ width: isOpen ? "15rem" : "4.5rem" }}
                 transition={{ duration: 0.25, ease: "easeInOut" }}
-                className="bg-[#e7c6a5] shadow-2xl rounded-3xl ml-4 my-4 px-4 py-6 flex-col justify-between hidden md:flex overflow-hidden flex-shrink-0"
+                className="bg-[#e7c6a5] shadow-2xl rounded-3xl ml-4 my-4 px-4 py-6 flex-col hidden md:flex overflow-hidden flex-shrink-0"
             >
-                <div className="flex flex-col gap-1 text-base font-medium">
-                    {/* Header */}
-                    <div className={`flex items-center gap-3 h-9 ${isOpen ? "px-1" : "justify-center"}`}>
-                        <button
-                            onClick={() => setIsOpen((p) => !p)}
-                            className="cursor-pointer flex-shrink-0 text-[#5a4a3c] hover:text-[#8b5e3c] transition-colors"
-                            aria-label="Toggle sidebar"
-                        >
-                            <AnimatedHamburger isOpen={isOpen} />
-                        </button>
-                        <AnimatePresence>
-                            {isOpen && (
-                                <motion.span
-                                    initial={{ opacity: 0, x: -6 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -6 }}
-                                    transition={{ duration: 0.15 }}
-                                    className="text-xl font-bold text-[#5a4a3c] whitespace-nowrap select-none cursor-pointer"
-                                    onClick={() => setIsOpen(false)}
-                                >
-                                    Tutora
-                                </motion.span>
-                            )}
-                        </AnimatePresence>
-                    </div>
+                {/* Header — never scrolls */}
+                <div className={`flex items-center gap-3 h-9 shrink-0 ${isOpen ? "px-1" : "justify-center"}`}>
+                    <button
+                        onClick={() => setIsOpen((p) => !p)}
+                        className="cursor-pointer flex-shrink-0 text-[#5a4a3c] hover:text-[#8b5e3c] transition-colors"
+                        aria-label="Toggle sidebar"
+                    >
+                        <AnimatedHamburger isOpen={isOpen} />
+                    </button>
+                    <AnimatePresence>
+                        {isOpen && (
+                            <motion.span
+                                initial={{ opacity: 0, x: -6 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -6 }}
+                                transition={{ duration: 0.15 }}
+                                className="text-xl font-bold text-[#5a4a3c] whitespace-nowrap select-none cursor-pointer"
+                                onClick={() => setIsOpen(false)}
+                            >
+                                Tutora
+                            </motion.span>
+                        )}
+                    </AnimatePresence>
+                </div>
 
-                    <div className="border-t border-[#d4a97f] my-2" />
+                <div className="border-t border-[#d4a97f] my-2 shrink-0" />
 
+                {/* Scrollable nav items */}
+                <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar flex flex-col gap-1 text-base font-medium">
                     <NavItem label="Home" path="/main" icon={FaHome} isOpen={isOpen} currentPath={location.pathname} />
                     <NavDropItem
                         label="Management"
@@ -184,6 +185,7 @@ const Sidebar = () => {
                         isExpanded={management}
                         toggle={() => setManagement((p) => !p)}
                         isOpen={isOpen}
+                        onOpenSidebar={() => setIsOpen(true)}
                         subItems={[
                             { label: "Attendance", path: "/main/attendance", icon: HiOutlineClipboardList },
                             { label: "Fee Management", path: "/main/fees", icon: FaMoneyCheckAlt },
@@ -198,6 +200,7 @@ const Sidebar = () => {
                         isExpanded={register}
                         toggle={() => setRegister((p) => !p)}
                         isOpen={isOpen}
+                        onOpenSidebar={() => setIsOpen(true)}
                         subItems={[
                             { label: "Students", path: "/main/student-data", icon: FaUserCheck },
                             { label: "Batches", path: "/main/batches", icon: FaUserGraduate },
@@ -206,7 +209,8 @@ const Sidebar = () => {
                     />
                 </div>
 
-                <div className="pt-4 border-t border-[#d4a97f]">
+                {/* Logout — always pinned at bottom */}
+                <div className="pt-4 border-t border-[#d4a97f] shrink-0">
                     <button
                         onClick={handleLogout}
                         className={`cursor-pointer flex w-full items-center gap-3 p-3 rounded-lg transition-all text-[#4a3a2c] hover:bg-[#d1ac8a] ${

@@ -161,11 +161,11 @@ const CompleteInformationDisplay = () => {
   }
 
   return (
-      <div className="flex flex-col md:flex-row gap-6 p-4 overflow-hidden w-full h-full">
+      <div className="flex flex-col xl:flex-row gap-4 p-4 overflow-y-auto xl:overflow-hidden w-full h-full">
         {/* Left Panel */}
-        <div className="flex flex-col gap-0.5 w-full md:w-[30%] shrink-0">
+        <div className="flex flex-col sm:flex-row xl:flex-col gap-3 xl:w-[30%] xl:shrink-0 xl:overflow-y-auto">
           {/* Avg Marks */}
-          <WrapperCard>
+          <div className="flex-1 xl:flex-none min-w-0">
             <Card className="w-full bg-[#f8ede3] text-[#4a3a2c] p-5 rounded-2xl flex flex-col gap-4 border border-[#ddb892]">
               <div className="flex items-center justify-between">
                 <h2 className="text-base font-semibold">Avg. Test Score</h2>
@@ -200,10 +200,10 @@ const CompleteInformationDisplay = () => {
                 </div>
               </div>
             </Card>
-          </WrapperCard>
+          </div>
 
           {/* Avg Attendance */}
-          <WrapperCard>
+          <div className="flex-1 xl:flex-none min-w-0">
             <Card className="w-full bg-[#f8ede3] text-[#4a3a2c] p-5 rounded-2xl flex flex-col gap-4 border border-[#ddb892]">
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <h2 className="text-base font-semibold">Avg. Attendance</h2>
@@ -243,11 +243,11 @@ const CompleteInformationDisplay = () => {
                 </div>
               )}
             </Card>
-          </WrapperCard>
+          </div>
         </div>
 
         {/* Right Panel */}
-        <div className="flex-1 min-w-0 h-full">
+        <div className="flex-1 min-w-0 min-h-[500px] xl:min-h-0 flex flex-col">
           <WrapperCard>
             <div className="bg-[#f8ede3] rounded-3xl overflow-hidden flex flex-col h-full border border-[#ddb892]">
 
@@ -309,13 +309,13 @@ const CompleteInformationDisplay = () => {
 
               {/* Scrollable table body only */}
               <div className="flex flex-col flex-1 min-h-0">
-              <div className="flex-1 overflow-y-auto overflow-x-hidden pr-3">
+              <div className="flex-1 overflow-y-auto overflow-x-auto">
                 {isLoadingBatches || loadingAttendance ? (
                   <div className="flex items-center justify-center h-full text-[#6b4c3b]">
                     <Loader2 className="animate-spin w-5 h-5 mr-2" /> Loading data...
                   </div>
                 ) : (
-                  <table className="min-w-full divide-y divide-[#e6c8a8]">
+                  <table className="min-w-[700px] w-full divide-y divide-[#e6c8a8]">
                     <thead className="bg-[#f0d9c0] sticky top-0 z-10 shadow-sm">
                       <tr>
                         <th className="px-4 py-3 text-left text-xs font-bold text-[#7b5c4b] uppercase tracking-wider">#</th>
