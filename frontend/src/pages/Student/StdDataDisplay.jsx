@@ -1,8 +1,12 @@
 import { useState } from "react";
 import { AiOutlineClose, AiOutlineEdit, AiOutlineCamera } from "react-icons/ai";
 import { motion } from "framer-motion";
+import { Loader2 } from "lucide-react";
 import AddStudent from "@/pages/Student/AddStudent.jsx";
 import FaceRegistrationModal from "@/pages/Student/FaceRegistrationModal.jsx";
+import InviteParentModal from "@/pages/Student/InviteParentModal.jsx";
+import axiosInstance from "@/utilities/axiosInstance.jsx";
+import toast from "react-hot-toast";
 
 const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
@@ -12,10 +16,26 @@ const fadeInUp = {
 const StdDataDisplay = ({ seeStdDetails, setSeeStdDetails, onStudentEdited }) => {
     const [edit, setEdit] = useState(false);
     const [showFaceModal, setShowFaceModal] = useState(false);
+    const [inviteModal, setInviteModal] = useState(null);
+    const [inviting, setInviting] = useState(null);
 
-    const handleStudentAdded = () => {
-        console.log("Student was added or edited!");
-        onStudentEdited();
+    const handleInviteParent = async (relation) => {
+        const studentId = seeStdDetails.stdDetails?._id;
+        if (!studentId) return;
+        setInviting(relation);
+        try {
+            const res = await axiosInstance.post("parent/invite", { studentId, relation });
+            setInviteModal({
+                relation,
+                email: res.data.parentEmail,
+                inviteToken: res.data.inviteToken,
+                studentName: res.data.studentName
+            });
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Failed to generate invite link");
+        } finally {
+            setInviting(null);
+        }
     };
 
     return (
@@ -117,6 +137,46 @@ const StdDataDisplay = ({ seeStdDetails, setSeeStdDetails, onStudentEdited }) =>
                     <span className="truncate">{seeStdDetails.stdDetails?.contact_info.emailIds.mom || "N/A"}</span>
                 </div>
             </div>
+
+            {/* Parent Portal Invite */}
+            {(seeStdDetails.stdDetails?.contact_info.emailIds.mom || seeStdDetails.stdDetails?.contact_info.emailIds.dad) && (
+                <div className="p-3 sm:p-4 border-t border-[#e6c8a8]">
+                    <h3 className="text-base sm:text-lg font-semibold text-[#5a4a3c] mb-2">Parent Portal Access</h3>
+                    <p className="text-xs text-[#9b8778] mb-3">Send an invite link for the parent to access this student's progress.</p>
+                    <div className="flex flex-wrap gap-2">
+                        {seeStdDetails.stdDetails?.contact_info.emailIds.mom && (
+                            <button
+                                onClick={() => handleInviteParent('mom')}
+                                disabled={inviting !== null}
+                                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[#e6c8a8] bg-white text-xs font-semibold text-[#5a4a3c] hover:bg-[#f5ede3] transition-colors cursor-pointer disabled:opacity-60"
+                            >
+                                {inviting === 'mom' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                                Invite Mom
+                            </button>
+                        )}
+                        {seeStdDetails.stdDetails?.contact_info.emailIds.dad && (
+                            <button
+                                onClick={() => handleInviteParent('dad')}
+                                disabled={inviting !== null}
+                                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[#e6c8a8] bg-white text-xs font-semibold text-[#5a4a3c] hover:bg-[#f5ede3] transition-colors cursor-pointer disabled:opacity-60"
+                            >
+                                {inviting === 'dad' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                                Invite Dad
+                            </button>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {inviteModal && (
+                <InviteParentModal
+                    studentName={inviteModal.studentName}
+                    relation={inviteModal.relation}
+                    email={inviteModal.email}
+                    inviteToken={inviteModal.inviteToken}
+                    onClose={() => setInviteModal(null)}
+                />
+            )}
         </motion.div>
     );
 };

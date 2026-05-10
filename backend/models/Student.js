@@ -37,7 +37,16 @@ const Student = new Schema({
         descriptor: { type: [Number], default: null },
         has_face: { type: Boolean, default: false },
         registered_at: { type: Date, default: null }
-    }
+    },
+    enrollmentHistory: [
+        {
+            batchId: { type: Schema.Types.ObjectId, ref: 'Batch' },
+            batchName: { type: String },
+            subjectIds: [{ type: Schema.Types.ObjectId }],
+            joinedAt: { type: Date },
+            leftAt: { type: Date }
+        }
+    ]
 });
 
 // Optimizes GET /api/v1/student queries filtered by adminId and optional batchId

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axiosInstance from "../../utilities/axiosInstance.jsx";
 import { FiPlus, FiSearch } from "react-icons/fi";
 import { AiOutlineClose, AiOutlineEdit } from "react-icons/ai";
-import { Link2, Check, Trash2 } from "lucide-react";
+import { Link2, Check, Trash2, ArrowLeftRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import WrapperCard from "@/components/ui/WrapperCard.jsx";
 import useFetchStudents from "@/hooks/useFetchStudents.js";
@@ -12,6 +12,7 @@ import StdDataDisplay from "@/pages/Student/StdDataDisplay.jsx";
 import AddStudent from "@/pages/Student/AddStudent.jsx";
 import PendingApprovals from "@/pages/Student/PendingApprovals.jsx";
 import ConfirmationModal from "@/components/ui/ConfirmationModal.jsx";
+import TransferBatchModal from "@/pages/Student/TransferBatchModal.jsx";
 import toast from "react-hot-toast";
 import Dropdown from "@/components/ui/Dropdown";
 
@@ -44,6 +45,7 @@ const StudentData = () => {
   const [linkCopied, setLinkCopied] = useState(false);
   const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
   const [isDeletingAll, setIsDeletingAll] = useState(false);
+  const [transferStudent, setTransferStudent] = useState(null);
 
   const user = useSelector((state) => state.user);
 
@@ -205,19 +207,34 @@ const StudentData = () => {
                                 onClick={() => setSeeStdDetails({ stdDetails: student, show: true })}
                                 className="relative w-full max-w-[12rem] h-48 sm:h-56 cursor-pointer bg-[#f8ede3] border border-[#e6c8a8] shadow-md rounded-xl p-3 sm:p-4 hover:shadow-lg hover:scale-105 transition-all duration-300 flex flex-col items-center justify-between mx-auto overflow-hidden"
                             >
-                              <motion.button
-                                  whileHover={{ scale: 1.1, color: "#FF3B30" }}
-                                  whileTap={{ scale: 0.9 }}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setStudentToDelete(student._id);
-                                  }}
-                                  disabled={isDeleting}
-                                  className="absolute top-2 right-2 text-[#e0c4a8] hover:text-[#FF3B30] transition disabled:opacity-50 z-10"
-                                  aria-label="Delete Student"
-                              >
-                                <AiOutlineClose className="w-4 h-4 sm:w-5 sm:h-5" />
-                              </motion.button>
+                              <div className="absolute top-2 right-2 flex gap-1 z-10">
+                                <motion.button
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setTransferStudent(student);
+                                    }}
+                                    className="text-[#e0c4a8] hover:text-[#c47d3e] transition"
+                                    aria-label="Transfer Student"
+                                    title="Transfer to another batch"
+                                >
+                                  <ArrowLeftRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                                </motion.button>
+                                <motion.button
+                                    whileHover={{ scale: 1.1, color: "#FF3B30" }}
+                                    whileTap={{ scale: 0.9 }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setStudentToDelete(student._id);
+                                    }}
+                                    disabled={isDeleting}
+                                    className="text-[#e0c4a8] hover:text-[#FF3B30] transition disabled:opacity-50"
+                                    aria-label="Delete Student"
+                                >
+                                  <AiOutlineClose className="w-4 h-4 sm:w-5 sm:h-5" />
+                                </motion.button>
+                              </div>
 
                               <div className="flex flex-col items-center text-center space-y-2 mt-6 min-w-0 w-full">
                                 <motion.img
@@ -373,6 +390,16 @@ const StudentData = () => {
                 onConfirm={() => deleteStudent(studentToDelete)}
                 onCancel={() => setStudentToDelete(null)}
                 isLoading={isDeleting}
+            />
+        )}
+
+        {/* Transfer batch */}
+        {transferStudent && (
+            <TransferBatchModal
+                student={transferStudent}
+                batches={batches}
+                onClose={() => setTransferStudent(null)}
+                onTransferred={fetchStudents}
             />
         )}
 
