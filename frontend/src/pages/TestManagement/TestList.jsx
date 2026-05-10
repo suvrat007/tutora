@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiEdit2, FiTrash2, FiChevronLeft, FiChevronRight, FiFilter } from 'react-icons/fi';
+import { FiEdit2, FiTrash2, FiChevronLeft, FiChevronRight, FiFilter, FiLink } from 'react-icons/fi';
 import { Clock, Layers } from 'lucide-react';
 import axiosInstance from '../../utilities/axiosInstance';
 import { API, TEST_STATUS } from '../../utilities/constants';
@@ -293,6 +293,21 @@ const TestList = ({ batches, tests, setEditingTest, setSelectedTest, fetchTests,
                                         >
                                             <FiTrash2 className="w-3 h-3" /> Delete
                                         </button>
+                                        {test.status !== 'cancelled' && (
+                                            <button
+                                                onClick={() => {
+                                                    const url = test._isGroup
+                                                        ? `${window.location.origin}/test-submit/group/${test.groupId}`
+                                                        : `${window.location.origin}/test-submit/${test._id}`;
+                                                    navigator.clipboard.writeText(url);
+                                                    toast.success('Link copied!');
+                                                }}
+                                                title="Copy student submission link"
+                                                className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-[#7b5c4b] bg-[#f0d9c0] rounded-lg hover:bg-[#e0c4a8] transition-colors"
+                                            >
+                                                <FiLink className="w-3 h-3" />
+                                            </button>
+                                        )}
                                     </div>
                                 </motion.div>
                             ))}

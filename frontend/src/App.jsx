@@ -32,6 +32,7 @@ const Fees = lazyWithReload(() => import('@/pages/Fees Management/Fees.jsx'));
 const TestManagementPage = lazyWithReload(() => import('@/pages/TestManagement/TestManagementPage.jsx'));
 const TeacherPage = lazyWithReload(() => import('@/pages/TeacherManagement/TeacherPage.jsx'));
 const StudentOnboardingPage = lazyWithReload(() => import('@/pages/StudentRegistration/StudentOnboardingPage.jsx'));
+const TestSubmitPage = lazyWithReload(() => import('@/pages/TestSubmit/TestSubmitPage.jsx'));
 
 const PageLoader = () => (
     <div className="fixed inset-0 bg-[#f8ede3] flex flex-col items-center justify-center z-50">
@@ -68,6 +69,14 @@ const appRouter = createBrowserRouter([
     {
         path: "/register/:adminId",
         element: <Suspense fallback={<PageLoader />}><StudentOnboardingPage /></Suspense>,
+    },
+    {
+        path: "/test-submit/group/:groupId",
+        element: <Suspense fallback={<PageLoader />}><TestSubmitPage /></Suspense>,
+    },
+    {
+        path: "/test-submit/:testId",
+        element: <Suspense fallback={<PageLoader />}><TestSubmitPage /></Suspense>,
     },
     {
         path: "/",

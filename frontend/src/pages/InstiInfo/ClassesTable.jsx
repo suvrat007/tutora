@@ -59,9 +59,9 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
 
     const getStatusIcon = (status) => {
         switch (status) {
-            case 'Conducted': return <CheckCircle className="w-4 h-4 text-green-600" />;
-            case 'Cancelled': return <XCircle className="w-4 h-4 text-red-500" />;
-            default: return <AlertCircle className="w-4 h-4 text-yellow-500" />;
+            case 'Conducted': return <CheckCircle className="w-3 h-3 text-green-600" />;
+            case 'Cancelled': return <XCircle className="w-3 h-3 text-red-500" />;
+            default: return <AlertCircle className="w-3 h-3 text-yellow-500" />;
         }
     };
 
@@ -301,7 +301,7 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
                                         <p className="text-xs text-[#7b5c4b]">{new Date(cls.date).toLocaleDateString('en-US', { weekday: 'long' })}</p>
                                     </td>
                                     <td className="px-4 sm:px-6 py-4">
-                                        <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(cls.status)}`}>
+                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(cls.status)}`}>
                                             {getStatusIcon(cls.status)} {cls.status}
                                         </span>
                                     </td>
