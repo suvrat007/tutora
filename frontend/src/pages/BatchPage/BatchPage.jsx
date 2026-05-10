@@ -154,11 +154,11 @@ const BatchPage = () => {
                             View Details
                         </motion.button>
                         <motion.button
-                            whileHover={{ scale: 1.05, boxShadow: "0 4px 12px rgba(0,0,0,0.1)", color: "#FF3B30" }}
+                            whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             disabled={isLoading}
                             onClick={() => setBatchToDelete(batch._id)}
-                            className="flex-1 py-2 px-3 text-sm border border-[#e6c8a8] text-[#5a4a3c] rounded-lg hover:bg-[#FF3B30] hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex-1 py-2 px-3 text-sm border border-red-200 text-red-600 bg-red-50 rounded-lg hover:bg-red-100 hover:border-red-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             Delete
                         </motion.button>

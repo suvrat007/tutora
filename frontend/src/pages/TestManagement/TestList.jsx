@@ -129,7 +129,7 @@ const TestList = ({ batches, tests, setEditingTest, setSelectedTest, fetchTests,
     return (
         <>
             <div>
-                <div className="sticky top-0 z-[100] bg-[#f8ede3] pt-3 pb-2 border-b border-[#e6c8a8] mb-3">
+                <div className="sticky top-0 z-[100] bg-[#f0d9c0] pt-3 pb-3 shadow-[0_2px_8px_rgba(0,0,0,0.07)] mb-3 rounded-2xl px-3">
                 <div className="flex items-center justify-between mb-3">
                     <h2 className="text-xl font-bold text-[#5a4a3c]">Scheduled Tests</h2>
                     {totalPages > 1 && (
@@ -137,7 +137,7 @@ const TestList = ({ batches, tests, setEditingTest, setSelectedTest, fetchTests,
                             <button
                                 onClick={() => setPage(p => Math.max(1, p - 1))}
                                 disabled={safePage === 1}
-                                className="p-1.5 rounded-lg border border-[#e6c8a8] bg-[#f8ede3] text-[#5a4a3c] hover:bg-[#e0c4a8] disabled:opacity-40 disabled:cursor-not-allowed transition"
+                                className="p-1.5 rounded-lg border border-[#e6c8a8] bg-white text-[#5a4a3c] hover:bg-[#e0c4a8] disabled:opacity-40 disabled:cursor-not-allowed transition"
                             >
                                 <FiChevronLeft className="w-4 h-4" />
                             </button>
@@ -145,7 +145,7 @@ const TestList = ({ batches, tests, setEditingTest, setSelectedTest, fetchTests,
                             <button
                                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                                 disabled={safePage === totalPages}
-                                className="p-1.5 rounded-lg border border-[#e6c8a8] bg-[#f8ede3] text-[#5a4a3c] hover:bg-[#e0c4a8] disabled:opacity-40 disabled:cursor-not-allowed transition"
+                                className="p-1.5 rounded-lg border border-[#e6c8a8] bg-white text-[#5a4a3c] hover:bg-[#e0c4a8] disabled:opacity-40 disabled:cursor-not-allowed transition"
                             >
                                 <FiChevronRight className="w-4 h-4" />
                             </button>

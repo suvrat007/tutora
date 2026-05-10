@@ -61,7 +61,7 @@ const Hero = ({ user, setIsModalOpen }) => {
                     transition={{ duration: 0.6, delay: 0.2 }}
                     className="text-lg sm:text-xl text-[#6b5c4a] max-w-xl leading-relaxed mb-10"
                 >
-                    Tutora handles attendance, fees, and class scheduling — so you can focus entirely on your students.
+                    Replace the notebook, the WhatsApp reminders, and the Excel sheet. Tutora tracks attendance, fees, and test results for every student — in one place, from your phone.
                 </motion.p>
 
                 {/* CTA buttons */}
@@ -95,7 +95,7 @@ const Hero = ({ user, setIsModalOpen }) => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.5, delay: 0.45 }}
-                    className="flex flex-wrap justify-center gap-2.5 mb-16"
+                    className="flex flex-wrap justify-center gap-2.5"
                 >
                     {[
                         { icon: Clock, text: "2h+ saved weekly" },
@@ -112,38 +112,6 @@ const Hero = ({ user, setIsModalOpen }) => {
                     ))}
                 </motion.div>
 
-                {/* Dashboard mockup */}
-                <motion.div
-                    initial={{ opacity: 0, y: 60 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.9, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                    className="w-full max-w-5xl"
-                >
-                    <div className="relative">
-                        <div className="absolute -inset-6 bg-gradient-to-b from-[#f0d5b0]/30 to-transparent rounded-3xl blur-3xl pointer-events-none" />
-                        <div className="relative rounded-t-2xl overflow-hidden border border-[#ecdec9] bg-white shadow-[0_20px_60px_rgba(26,15,7,0.10)]">
-                            {/* Browser chrome */}
-                            <div className="h-10 bg-[#f8f2ec] border-b border-[#ecdec9] flex items-center px-4 gap-1.5">
-                                <div className="w-3 h-3 rounded-full bg-[#ff6b6b]/80" />
-                                <div className="w-3 h-3 rounded-full bg-[#ffd93d]/80" />
-                                <div className="w-3 h-3 rounded-full bg-[#6bcb77]/80" />
-                                <div className="flex-1 flex justify-center">
-                                    <div className="h-5 w-44 bg-[#ecdec9]/70 rounded-full" />
-                                </div>
-                            </div>
-                            <img
-                                src="/dashboard-mockup.png"
-                                alt="Tutora Dashboard Preview"
-                                className="w-full h-auto object-cover"
-                                loading="eager"
-                                style={{
-                                    maskImage: "linear-gradient(to bottom, black 78%, transparent 100%)",
-                                    WebkitMaskImage: "linear-gradient(to bottom, black 78%, transparent 100%)",
-                                }}
-                            />
-                        </div>
-                    </div>
-                </motion.div>
             </div>
         </section>
     );
