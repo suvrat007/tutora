@@ -339,10 +339,10 @@ router.get('/attendance', parentAuth, async (req, res) => {
                 );
 
                 const classDates = heldClasses.map(c => {
-                    const attended = c.attendance.some(
+                    const attRecord = c.attendance.find(
                         a => a.studentIds && a.studentIds.toString() === req.studentId.toString()
                     );
-                    return { date: c.date, attended };
+                    return { date: c.date, attended: !!attRecord, time: attRecord?.time || null };
                 });
 
                 const attended = classDates.filter(d => d.attended).length;

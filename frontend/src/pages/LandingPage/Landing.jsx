@@ -316,6 +316,81 @@ const Landing = () => {
             <Hero user={user} setIsModalOpen={setIsModalOpen} />
             <VideoModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} handleNavigate={navigate} />
 
+            {/* ── PAIN FRAMING ─────────────────────────────── */}
+            <section className="py-16 md:py-20 px-4 sm:px-6 bg-[#faf6f1] border-t border-[#ecdec9]">
+                <div className="max-w-6xl mx-auto">
+                    <motion.div
+                        variants={fadeUp()}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={VP}
+                        className="text-center mb-10"
+                    >
+                        <Label>Sound familiar?</Label>
+                        <h2
+                            className="text-3xl sm:text-4xl font-extrabold text-[#1a0f07] tracking-tight"
+                            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                        >
+                            Managing students shouldn't feel like a second job
+                        </h2>
+                        <p className="mt-3 text-[#7b5c4b] text-base max-w-lg mx-auto">
+                            Most private tutors are still doing this — and wasting hours every week on it.
+                        </p>
+                    </motion.div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {[
+                            {
+                                before: "Calling / texting parents one by one at month-end to ask about fees",
+                                after:  "See every pending payment at a glance. Share a report in two clicks.",
+                            },
+                            {
+                                before: "Hunting through notebooks to remember who missed last Tuesday",
+                                after:  "Per-student attendance history, always up to date.",
+                            },
+                            {
+                                before: "Keeping test scores in a spreadsheet no one else can read",
+                                after:  "Log results once — trends and pass/fail tracked automatically.",
+                            },
+                            {
+                                before: "Forgetting a student's school, grade, or parent number mid-call",
+                                after:  "Every detail in one profile, searchable in seconds.",
+                            },
+                        ].map(({ before, after }, i) => (
+                            <motion.div
+                                key={i}
+                                initial={{ opacity: 0, y: 24 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={VP}
+                                transition={{ duration: 0.45, ease: "easeOut", delay: i * 0.08 }}
+                                className="bg-white rounded-2xl border border-[#e8d5c0] p-5 flex flex-col gap-4 shadow-sm"
+                            >
+                                {/* Before */}
+                                <div className="flex gap-2.5 items-start">
+                                    <div className="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5">
+                                        <svg viewBox="0 0 12 12" className="w-2.5 h-2.5 stroke-red-500 fill-none" strokeWidth="2" strokeLinecap="round">
+                                            <path d="M2 2l8 8M10 2l-8 8"/>
+                                        </svg>
+                                    </div>
+                                    <p className="text-sm text-[#9b8778] leading-snug line-through decoration-[#d4a89a]">{before}</p>
+                                </div>
+                                {/* Divider */}
+                                <div className="h-px bg-[#f0e4d5]" />
+                                {/* After */}
+                                <div className="flex gap-2.5 items-start">
+                                    <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center shrink-0 mt-0.5">
+                                        <svg viewBox="0 0 12 12" className="w-2.5 h-2.5 stroke-green-600 fill-none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M2 6l3 3 5-5"/>
+                                        </svg>
+                                    </div>
+                                    <p className="text-sm text-[#2c1a0e] font-medium leading-snug">{after}</p>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
             {/* ── HOW IT WORKS ─────────────────────────────── */}
             <section id="how-it-works" className="py-20 md:py-28 px-4 sm:px-6 bg-white">
                 <div className="max-w-6xl mx-auto">

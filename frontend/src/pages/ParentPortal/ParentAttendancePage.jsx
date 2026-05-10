@@ -70,16 +70,14 @@ const ParentAttendancePage = () => {
     );
 
     const subj = subjects[selectedSubject];
-    // Build a lookup: date → 'attended' | 'absent'
+    // Build a lookup: date → { status, time }
     const classDateMap = {};
     (subj.classDates || []).forEach(cd => {
-        classDateMap[cd.date] = cd.attended ? 'attended' : 'absent';
+        classDateMap[cd.date] = { status: cd.attended ? 'attended' : 'absent', time: cd.time || null };
     });
 
-    const absentDates = (subj.classDates || [])
-        .filter(cd => !cd.attended)
-        .map(cd => cd.date)
-        .sort((a, b) => b.localeCompare(a));
+    const sortedClassDates = [...(subj.classDates || [])].sort((a, b) => b.date.localeCompare(a.date));
+    const absentDates = sortedClassDates.filter(cd => !cd.attended);
 
     return (
         <div className="max-w-2xl mx-auto px-4 py-6">
@@ -180,12 +178,19 @@ const ParentAttendancePage = () => {
                             <div className="grid grid-cols-7 gap-1">
                                 {Array.from({ length: calendarMonths[monthIdx].startDow }).map((_, i) => <div key={`e${i}`} />)}
                                 {calendarMonths[monthIdx].dates.map(dateStr => {
-                                    const status = classDateMap[dateStr];
+                                    const entry  = classDateMap[dateStr];
+                                    const status = entry?.status;
+                                    const time   = entry?.time;
                                     const dayNum = parseInt(dateStr.split('-')[2]);
+                                    const tooltip = status === 'attended'
+                                        ? `${dateStr}: Present${time ? ` · ${time}` : ''}`
+                                        : status === 'absent'
+                                            ? `${dateStr}: Absent`
+                                            : dateStr;
                                     return (
                                         <div
                                             key={dateStr}
-                                            title={status ? `${dateStr}: ${status}` : dateStr}
+                                            title={tooltip}
                                             className={`aspect-square rounded-md md:rounded-lg flex items-center justify-center text-[10px] font-semibold ${
                                                 status === 'attended'
                                                     ? "bg-green-100/70 border border-green-600 text-green-800"
@@ -230,17 +235,48 @@ const ParentAttendancePage = () => {
                 <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-[#f5ede3] inline-block" /> No class</span>
             </div>
 
-            {/* Absent dates list */}
-            {absentDates.length > 0 && (
-                <div className="bg-white border border-[#e8d5c0] rounded-2xl p-4 shadow-sm">
-                    <p className="text-xs font-semibold text-[#7b5c4b] mb-3">Classes Missed ({absentDates.length})</p>
-                    <div className="flex flex-wrap gap-2">
-                        {absentDates.map(d => (
-                            <span key={d} className="text-xs bg-red-50 text-red-600 border border-red-200 rounded-lg px-2 py-1">
-                                {new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+            {/* Class log */}
+            {sortedClassDates.length > 0 && (
+                <div className="bg-white border border-[#e8d5c0] rounded-2xl overflow-hidden shadow-sm">
+                    <div className="px-4 py-3 border-b border-[#f0e4d5] flex items-center justify-between">
+                        <p className="text-xs font-semibold text-[#7b5c4b]">Class Log</p>
+                        <div className="flex items-center gap-3 text-[10px] text-[#9b8778]">
+                            <span className="flex items-center gap-1">
+                                <span className="w-2 h-2 rounded-sm bg-green-100 border border-green-600 inline-block" /> Present
                             </span>
+                            <span className="flex items-center gap-1">
+                                <span className="w-2 h-2 rounded-sm bg-red-100 border border-red-500 inline-block" /> Absent
+                            </span>
+                        </div>
+                    </div>
+                    <div className="divide-y divide-[#f5ede3] max-h-72 overflow-y-auto">
+                        {sortedClassDates.map(cd => (
+                            <div key={cd.date} className="flex items-center justify-between px-4 py-2.5">
+                                <div className="flex items-center gap-2.5">
+                                    <div className={`w-2 h-2 rounded-full shrink-0 ${cd.attended ? 'bg-green-500' : 'bg-red-400'}`} />
+                                    <p className="text-xs text-[#2c1a0e] font-medium">
+                                        {new Date(cd.date).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
+                                    </p>
+                                </div>
+                                {cd.attended && cd.time ? (
+                                    <span className="text-xs font-semibold text-[#8b5e3c] bg-[#f5ede3] px-2.5 py-1 rounded-lg shrink-0">
+                                        {cd.time}
+                                    </span>
+                                ) : cd.attended ? (
+                                    <span className="text-[10px] text-[#b0998a] shrink-0">Present</span>
+                                ) : (
+                                    <span className="text-[10px] font-semibold text-red-500 bg-red-50 px-2.5 py-1 rounded-lg shrink-0">Absent</span>
+                                )}
+                            </div>
                         ))}
                     </div>
+                    {absentDates.length > 0 && (
+                        <div className="px-4 py-2.5 border-t border-[#f0e4d5] bg-[#faf6f1]">
+                            <p className="text-[10px] text-[#9b8778]">
+                                {absentDates.length} class{absentDates.length > 1 ? 'es' : ''} missed
+                            </p>
+                        </div>
+                    )}
                 </div>
             )}
         </div>

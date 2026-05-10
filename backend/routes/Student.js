@@ -984,4 +984,134 @@ router.delete("/face-descriptor/:studentId", userAuth, async (req, res) => {
     }
 });
 
+// GET /api/v1/student/enrollment-history/:id
+// Returns full batch history with per-subject attendance and test results for each enrollment period.
+router.get('/enrollment-history/:id', userAuth, async (req, res, next) => {
+    try {
+        const student = await Student.findOne({ _id: req.params.id, adminId: req.adminId });
+        if (!student) return res.status(404).json({ message: 'Student not found' });
+
+        const ClassLog   = require('../models/ClassLogSchema');
+        const Test       = require('../models/Test');
+
+        // Build all periods: past (enrollmentHistory) + current batch
+        const periods = [];
+
+        for (const eh of (student.enrollmentHistory || [])) {
+            periods.push({
+                batchId   : eh.batchId,
+                batchName : eh.batchName,
+                subjectIds: eh.subjectIds || [],
+                joinedAt  : eh.joinedAt,
+                leftAt    : eh.leftAt,
+                isCurrent : false,
+            });
+        }
+
+        if (student.batchId) {
+            const currentBatch = await Batch.findById(student.batchId).select('name subject');
+            const prevEntry    = (student.enrollmentHistory || []).slice(-1)[0];
+            const joinedAt     = prevEntry ? prevEntry.leftAt : student.admission_date;
+
+            periods.push({
+                batchId   : student.batchId,
+                batchName : currentBatch?.name || 'Unknown',
+                subjectIds: student.subjectId || [],
+                joinedAt,
+                leftAt    : null,
+                isCurrent : true,
+                _batchDoc : currentBatch,
+            });
+        }
+
+        if (periods.length === 0) return res.json({ history: [] });
+
+        const studentIdStr = student._id.toString();
+
+        const history = await Promise.all(periods.map(async (period) => {
+            // Date bounds as YYYY-MM-DD strings for ClassLog (dates stored as strings)
+            const toDateStr = (d) => d ? new Date(d).toISOString().slice(0, 10) : null;
+            const fromStr   = toDateStr(period.joinedAt);
+            const toStr     = toDateStr(period.leftAt) || toDateStr(new Date());
+
+            // Get subject names from batch
+            let batchDoc = period._batchDoc;
+            if (!batchDoc) batchDoc = await Batch.findById(period.batchId).select('subject');
+            const subjectMap = {};
+            (batchDoc?.subject || []).forEach(s => { subjectMap[s._id.toString()] = s.name; });
+
+            // Attendance per subject
+            const subjectIds = period.subjectIds.map(id => id.toString());
+            const classLogs  = await ClassLog.find({
+                adminId   : req.adminId,
+                batch_id  : period.batchId,
+                subject_id: { $in: period.subjectIds },
+            }).select('subject_id classes');
+
+            const subjects = subjectIds.map(subjectIdStr => {
+                const log = classLogs.find(cl => cl.subject_id.toString() === subjectIdStr);
+                const heldClasses = (log?.classes || []).filter(c =>
+                    c.hasHeld && c.updated &&
+                    c.date >= (fromStr || '') &&
+                    c.date <= toStr
+                );
+                const total    = heldClasses.length;
+                const attended = heldClasses.filter(c =>
+                    c.attendance.some(a => a.studentIds.toString() === studentIdStr)
+                ).length;
+                return {
+                    subjectId  : subjectIdStr,
+                    subjectName: subjectMap[subjectIdStr] || 'Unknown Subject',
+                    attended,
+                    total,
+                    percentage : total > 0 ? Math.round((attended / total) * 100) : 0,
+                };
+            });
+
+            // Tests for this period
+            const dateQuery = {};
+            if (period.joinedAt) dateQuery.$gte = new Date(period.joinedAt);
+            if (period.leftAt)   dateQuery.$lte = new Date(period.leftAt);
+
+            const testQuery = {
+                adminId : req.adminId,
+                batchId : period.batchId,
+                status  : 'completed',
+                'studentResults.studentId': student._id,
+            };
+            if (Object.keys(dateQuery).length) testQuery.testDate = dateQuery;
+
+            const tests     = await Test.find(testQuery).select('testName testDate subjectId maxMarks passMarks studentResults').sort({ testDate: 1 });
+            const testResults = tests.map(t => {
+                const r = t.studentResults.find(x => x.studentId.toString() === studentIdStr);
+                return {
+                    testName   : t.testName,
+                    testDate   : t.testDate,
+                    subjectName: subjectMap[t.subjectId?.toString()] || '',
+                    marks      : r?.marks ?? 0,
+                    maxMarks   : t.maxMarks,
+                    passMarks  : t.passMarks,
+                    appeared   : r?.appeared ?? false,
+                    passed     : r?.appeared && r?.marks >= t.passMarks,
+                };
+            });
+
+            return {
+                batchId   : period.batchId,
+                batchName : period.batchName,
+                joinedAt  : period.joinedAt,
+                leftAt    : period.leftAt,
+                isCurrent : period.isCurrent,
+                subjects,
+                tests     : testResults,
+            };
+        }));
+
+        // Most recent period first
+        res.json({ history: history.reverse() });
+    } catch (err) {
+        next(err);
+    }
+});
+
 module.exports = router;

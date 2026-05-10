@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import AddStudent from "@/pages/Student/AddStudent.jsx";
 import FaceRegistrationModal from "@/pages/Student/FaceRegistrationModal.jsx";
 import InviteParentModal from "@/pages/Student/InviteParentModal.jsx";
+import EnrollmentHistory from "@/pages/Student/EnrollmentHistory.jsx";
 import axiosInstance from "@/utilities/axiosInstance.jsx";
 import toast from "react-hot-toast";
 
@@ -176,6 +177,10 @@ const StdDataDisplay = ({ seeStdDetails, setSeeStdDetails, onStudentEdited }) =>
                     inviteToken={inviteModal.inviteToken}
                     onClose={() => setInviteModal(null)}
                 />
+            )}
+
+            {seeStdDetails.stdDetails?._id && (
+                <EnrollmentHistory studentId={seeStdDetails.stdDetails._id} />
             )}
         </motion.div>
     );
