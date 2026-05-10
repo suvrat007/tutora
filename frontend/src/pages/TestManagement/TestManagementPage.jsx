@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiX } from 'react-icons/fi';
+import { FiX, FiPlus } from 'react-icons/fi';
 import TestScheduleForm from './TestScheduleForm';
 import TestList from './TestList';
 import axiosInstance from '../../utilities/axiosInstance';
@@ -22,6 +22,7 @@ const TestManagementPage = () => {
     const [editingTest, setEditingTest] = useState(null);
     const [selectedTest, setSelectedTest] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [showMobileSchedule, setShowMobileSchedule] = useState(false);
 
     const handleSelectTest = (test) => {
         if (!test._isGroup) { setSelectedTest(test); return; }
@@ -75,9 +76,9 @@ const TestManagementPage = () => {
     }, [selectedTest]);
 
     return (
-        <div className="p-4 h-full overflow-y-auto lg:overflow-hidden flex flex-col">
+        <div className="p-4 h-full flex flex-col">
             <WrapperCard>
-                <div className="bg-[#f8ede3] rounded-3xl shadow-[0_8px_24px_rgba(0,0,0,0.15)] flex flex-col h-full lg:overflow-hidden">
+                <div className="bg-[#f8ede3] rounded-3xl shadow-[0_8px_24px_rgba(0,0,0,0.15)] flex flex-col h-full overflow-y-auto lg:overflow-hidden">
                     {/* Header */}
                     <div className="p-4 sm:p-6 bg-[#f0d9c0] border-b border-[#e6c8a8] shrink-0">
                         <h1 className="text-2xl font-bold text-[#5a4a3c]">Test Management</h1>
@@ -85,8 +86,8 @@ const TestManagementPage = () => {
 
                     {/* Body */}
                     <div className="flex flex-col lg:flex-row flex-1 min-h-0 divide-y lg:divide-y-0 lg:divide-x divide-[#e6c8a8]">
-                        {/* LEFT: Schedule new test form */}
-                        <div className="lg:w-[320px] shrink-0 p-4 sm:p-6 lg:overflow-y-auto">
+                        {/* LEFT: Schedule new test form — desktop only */}
+                        <div className="hidden lg:block lg:w-[320px] shrink-0 p-4 sm:p-6 lg:overflow-y-auto">
                             <h2 className="text-base font-bold text-[#5a4a3c] mb-4">Schedule a New Test</h2>
                             <div className="bg-white border border-[#e6c8a8] rounded-2xl p-4 shadow-sm">
                                 <TestScheduleForm
@@ -101,7 +102,7 @@ const TestManagementPage = () => {
                         </div>
 
                         {/* RIGHT: Test list + detail, scrolls together */}
-                        <div className="flex-1 min-w-0 px-4 sm:px-6 pt-0 pb-3 lg:overflow-y-auto flex flex-col gap-3 min-h-[500px] lg:min-h-0">
+                        <div className="flex-1 min-w-0 px-4 sm:px-6 pt-3 pb-3 lg:overflow-y-auto flex flex-col gap-3 lg:min-h-0">
                             <TestList
                                 batches={batches}
                                 tests={tests}
@@ -124,6 +125,52 @@ const TestManagementPage = () => {
                     </div>
                 </div>
             </WrapperCard>
+
+            {/* Mobile FAB: Schedule New Test */}
+            <button
+                onClick={() => setShowMobileSchedule(true)}
+                className="lg:hidden fixed bottom-20 right-4 z-40 w-13 h-13 rounded-full bg-[#8b5e3c] text-white flex items-center justify-center shadow-xl hover:bg-[#7a5235] transition-colors p-3.5"
+                aria-label="Schedule new test"
+            >
+                <FiPlus className="w-5 h-5" />
+            </button>
+
+            {/* Mobile: Schedule New Test modal */}
+            <AnimatePresence>
+                {showMobileSchedule && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4 lg:hidden"
+                        onClick={() => setShowMobileSchedule(false)}
+                    >
+                        <motion.div
+                            initial={{ y: '100%', opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: '100%', opacity: 0 }}
+                            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                            onClick={e => e.stopPropagation()}
+                            className="bg-[#f8ede3] rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-md p-6 max-h-[92vh] overflow-y-auto border border-[#e6c8a8]"
+                        >
+                            <div className="flex justify-between items-center mb-5">
+                                <h3 className="text-lg font-bold text-[#5a4a3c]">Schedule New Test</h3>
+                                <button onClick={() => setShowMobileSchedule(false)} className="text-[#7b5c4b] hover:text-[#5a4a3c] transition-colors">
+                                    <FiX className="w-5 h-5" />
+                                </button>
+                            </div>
+                            <TestScheduleForm
+                                key="create-mobile"
+                                batches={batches}
+                                editingTest={null}
+                                setEditingTest={() => {}}
+                                fetchTests={fetchTests}
+                                showTitle={false}
+                            />
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Edit test modal */}
             <AnimatePresence>

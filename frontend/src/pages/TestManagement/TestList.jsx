@@ -33,6 +33,7 @@ const TestList = ({ batches, tests, setEditingTest, setSelectedTest, fetchTests,
     const dispatch = useDispatch();
     const [testToDelete, setTestToDelete] = useState(null);
     const [deleting, setDeleting] = useState(false);
+    const [filtersOpen, setFiltersOpen] = useState(false);
     const [page, setPage] = useState(1);
     const [batchFilter, setBatchFilter] = useState('');
     const [subjectFilter, setSubjectFilter] = useState('');
@@ -129,81 +130,94 @@ const TestList = ({ batches, tests, setEditingTest, setSelectedTest, fetchTests,
     return (
         <>
             <div>
-                <div className="sticky top-0 z-[100] bg-[#f0d9c0] pt-3 pb-3 shadow-[0_2px_8px_rgba(0,0,0,0.07)] mb-3 rounded-2xl px-3">
-                <div className="flex items-center justify-between mb-3">
-                    <h2 className="text-xl font-bold text-[#5a4a3c]">Scheduled Tests</h2>
-                    {totalPages > 1 && (
+                <div className="sticky top-0 z-[100] bg-[#f8ede3] pt-3 pb-3 border-b border-[#e6c8a8] mb-3">
+                    {/* Header row: title on its own line, controls below */}
+                    <div className="flex flex-col gap-2">
+                        <h2 className="text-xl font-bold text-[#5a4a3c]">Scheduled Tests</h2>
                         <div className="flex items-center gap-2">
+                            {/* Filter toggle button */}
                             <button
-                                onClick={() => setPage(p => Math.max(1, p - 1))}
-                                disabled={safePage === 1}
-                                className="p-1.5 rounded-lg border border-[#e6c8a8] bg-white text-[#5a4a3c] hover:bg-[#e0c4a8] disabled:opacity-40 disabled:cursor-not-allowed transition"
+                                onClick={() => setFiltersOpen(p => !p)}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${filtersOpen ? 'bg-[#e0c4a8] border-[#d4b898] text-[#5a4a3c]' : 'bg-white border-[#e6c8a8] text-[#7b5c4b] hover:bg-[#f0d9c0]'}`}
                             >
-                                <FiChevronLeft className="w-4 h-4" />
+                                <FiFilter className="w-3 h-3" />
+                                Filters{hasFilters ? ` (${[batchFilter, subjectFilter, statusFilter, dateFrom, dateTo].filter(Boolean).length})` : ''}
                             </button>
-                            <span className="text-sm text-[#7b5c4b] font-medium">{safePage} / {totalPages}</span>
-                            <button
-                                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                                disabled={safePage === totalPages}
-                                className="p-1.5 rounded-lg border border-[#e6c8a8] bg-white text-[#5a4a3c] hover:bg-[#e0c4a8] disabled:opacity-40 disabled:cursor-not-allowed transition"
-                            >
-                                <FiChevronRight className="w-4 h-4" />
-                            </button>
+                            {totalPages > 1 && (
+                                <div className="flex items-center gap-1.5 ml-auto">
+                                    <button
+                                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                                        disabled={safePage === 1}
+                                        className="p-1.5 rounded-lg border border-[#e6c8a8] bg-white text-[#5a4a3c] hover:bg-[#e0c4a8] disabled:opacity-40 disabled:cursor-not-allowed transition"
+                                    >
+                                        <FiChevronLeft className="w-4 h-4" />
+                                    </button>
+                                    <span className="text-sm text-[#7b5c4b] font-medium tabular-nums">{safePage}/{totalPages}</span>
+                                    <button
+                                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                                        disabled={safePage === totalPages}
+                                        className="p-1.5 rounded-lg border border-[#e6c8a8] bg-white text-[#5a4a3c] hover:bg-[#e0c4a8] disabled:opacity-40 disabled:cursor-not-allowed transition"
+                                    >
+                                        <FiChevronRight className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                    {/* Collapsible filters */}
+                    {filtersOpen && (
+                        <div className="mt-3 grid grid-cols-2 lg:flex lg:flex-wrap gap-2">
+                            <div className="w-full lg:w-36">
+                                <Dropdown
+                                    value={batchFilter}
+                                    onChange={e => setBatchFilter(e.target.value)}
+                                    options={[{ label: 'All Batches', value: '' }, ...batches.map(b => ({ label: b.name, value: b._id }))]}
+                                />
+                            </div>
+                            <div className="w-full lg:w-36">
+                                <Dropdown
+                                    value={subjectFilter}
+                                    onChange={e => setSubjectFilter(e.target.value)}
+                                    disabled={!batchFilter}
+                                    options={[{ label: 'All Subjects', value: '' }, ...subjectOptions.map(s => ({ label: s.name, value: s._id }))]}
+                                />
+                            </div>
+                            <div className="w-full lg:w-36">
+                                <Dropdown
+                                    value={statusFilter}
+                                    onChange={e => setStatusFilter(e.target.value)}
+                                    options={[
+                                        { label: 'All Statuses', value: '' },
+                                        { label: 'Scheduled', value: TEST_STATUS.SCHEDULED },
+                                        { label: 'Completed', value: TEST_STATUS.COMPLETED },
+                                        { label: 'Cancelled', value: TEST_STATUS.CANCELLED },
+                                    ]}
+                                />
+                            </div>
+                            <div className="w-full lg:w-36">
+                                <input
+                                    type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
+                                    max={dateTo || undefined}
+                                    className="w-full px-4 py-2.5 rounded-full border border-[#e6c8a8] bg-white text-sm text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] shadow-sm"
+                                />
+                            </div>
+                            <div className="w-full lg:w-36">
+                                <input
+                                    type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
+                                    min={dateFrom || undefined}
+                                    className="w-full px-4 py-2.5 rounded-full border border-[#e6c8a8] bg-white text-sm text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] shadow-sm"
+                                />
+                            </div>
+                            {hasFilters && (
+                                <button
+                                    onClick={resetFilters}
+                                    className="col-span-2 lg:col-span-1 px-3 py-1.5 rounded-full border border-[#e6c8a8] bg-[#f0d9c0] text-sm text-[#7b5c4b] hover:bg-[#e0c4a8] transition w-full lg:w-auto"
+                                >
+                                    Clear all
+                                </button>
+                            )}
                         </div>
                     )}
-                </div>
-                {/* Filters */}
-                <div className="flex flex-wrap gap-2">
-                    <div className="w-36">
-                        <Dropdown
-                            value={batchFilter}
-                            onChange={e => setBatchFilter(e.target.value)}
-                            options={[{ label: 'All Batches', value: '' }, ...batches.map(b => ({ label: b.name, value: b._id }))]}
-                        />
-                    </div>
-                    <div className="w-36">
-                        <Dropdown
-                            value={subjectFilter}
-                            onChange={e => setSubjectFilter(e.target.value)}
-                            disabled={!batchFilter}
-                            options={[{ label: 'All Subjects', value: '' }, ...subjectOptions.map(s => ({ label: s.name, value: s._id }))]}
-                        />
-                    </div>
-                    <div className="w-36">
-                        <Dropdown
-                            value={statusFilter}
-                            onChange={e => setStatusFilter(e.target.value)}
-                            options={[
-                                { label: 'All Statuses', value: '' },
-                                { label: 'Scheduled', value: TEST_STATUS.SCHEDULED },
-                                { label: 'Completed', value: TEST_STATUS.COMPLETED },
-                                { label: 'Cancelled', value: TEST_STATUS.CANCELLED },
-                            ]}
-                        />
-                    </div>
-                    <div className="w-36">
-                        <input
-                            type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
-                            max={dateTo || undefined}
-                            className="w-full px-4 py-2.5 rounded-full border border-[#e6c8a8] bg-white text-sm text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] shadow-sm"
-                        />
-                    </div>
-                    <div className="w-36">
-                        <input
-                            type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
-                            min={dateFrom || undefined}
-                            className="w-full px-4 py-2.5 rounded-full border border-[#e6c8a8] bg-white text-sm text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] shadow-sm"
-                        />
-                    </div>
-                    {hasFilters && (
-                        <button
-                            onClick={resetFilters}
-                            className="px-3 py-1.5 rounded-full border border-[#e6c8a8] bg-[#f0d9c0] text-sm text-[#7b5c4b] hover:bg-[#e0c4a8] transition"
-                        >
-                            Clear
-                        </button>
-                    )}
-                </div>
                 </div>{/* end sticky */}
 
                 {loading ? (
