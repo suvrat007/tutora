@@ -10,7 +10,7 @@ import {
     FaQuestionCircle,
     FaChevronRight
 } from 'react-icons/fa';
-import { ClipboardList } from 'lucide-react';
+import { ClipboardList, ArrowRight } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { useState, useMemo } from 'react';
 import WrapperCard from "@/components/ui/WrapperCard.jsx";
@@ -105,24 +105,56 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
 
     const studentSubjects = useMemo(() => {
         if (!student) return [];
-        const batch = batches.find((b) => b._id === student.batchId);
-        if (!batch || !student.subjectId) return [];
-        return student.subjectId
-            .map((sid) => batch.subject?.find((s) => s._id === sid)?.name)
-            .filter(Boolean)
-            .sort();
+        // Include subjects from all batches (current + historical)
+        const names = new Set();
+        const currentBatch = batches.find((b) => b._id === student.batchId);
+        (student.subjectId || []).forEach(sid => {
+            const name = currentBatch?.subject?.find(s => s._id === sid)?.name;
+            if (name) names.add(name);
+        });
+        (student.enrollmentHistory || []).forEach(enrollment => {
+            const batch = batches.find(b => b._id?.toString() === enrollment.batchId?.toString());
+            (enrollment.subjectIds || []).forEach(sid => {
+                const name = batch?.subject?.find(s => s._id?.toString() === sid?.toString())?.name;
+                if (name) names.add(name);
+            });
+        });
+        return [...names].sort();
     }, [student, batches]);
 
     const attendanceData = useMemo(() => {
-        if (!student || !classlogs || !student.subjectId) return [];
+        if (!student || !classlogs) return [];
 
         const admissionDate = new Date(student.admission_date);
         if (isNaN(admissionDate.getTime())) return [];
 
+        // Collect all subject IDs across current + historical enrollments
+        const allSubjectIds = new Set([
+            ...(student.subjectId || []).map(s => s?.toString()),
+            ...(student.enrollmentHistory || []).flatMap(e => (e.subjectIds || []).map(s => s?.toString())),
+        ]);
+
+        // Build enrollment windows for date-range checking
+        const enrollmentWindows = [
+            ...(student.enrollmentHistory || []).map(e => ({
+                batchId: e.batchId?.toString(),
+                from: new Date(e.joinedAt),
+                to: new Date(e.leftAt),
+            })),
+            // Current enrollment: from last history entry's leftAt (or admission_date) to now
+            {
+                batchId: student.batchId?.toString(),
+                from: student.enrollmentHistory?.length
+                    ? new Date(student.enrollmentHistory[student.enrollmentHistory.length - 1].leftAt)
+                    : admissionDate,
+                to: new Date(8640000000000000), // far future
+            },
+        ].filter(w => w.batchId);
+
         const data = classlogs
             .filter((classlog) => {
                 if (!classlog.subject_id || !classlog.classes) return false;
-                return student.subjectId.includes(classlog.subject_id);
+                return allSubjectIds.has(classlog.subject_id?.toString());
             })
             .flatMap((classlog) => {
                 const batch = batches.find((b) => {
@@ -132,10 +164,14 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
 
                 const subject = batch?.subject?.find((s) => s._id.toString() === classlog.subject_id.toString());
 
+                const logBatchId = (classlog.batch_id?._id || classlog.batch_id)?.toString();
+                const window = enrollmentWindows.find(w => w.batchId === logBatchId);
+                if (!window) return [];
+
                 return classlog.classes
                     .filter((cls) => {
                         const classDate = new Date(cls.date);
-                        return classDate >= admissionDate;
+                        return classDate >= window.from && classDate <= window.to;
                     })
                     .map((cls) => {
                         let status = 'No Data';
@@ -157,9 +193,9 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
                             subjectName: subject?.name || 'Unknown',
                             date: formatDate(cls.date),
                             rawDate: cls.date,
-                            status: status,
+                            status,
                             hasHeld: cls.hasHeld,
-                            updated: cls.updated
+                            updated: cls.updated,
                         };
                     });
             })
@@ -202,6 +238,7 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
                 return [{
                     testName: test.testName,
                     date: test.testDate,
+                    batchName: batch?.name || '—',
                     subjectName: subject?.name || '—',
                     maxMarks: test.maxMarks,
                     passMarks: test.passMarks,
@@ -383,6 +420,39 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
                     </WrapperCard>
                 </div>
 
+                {/* Enrollment history timeline */}
+                {student.enrollmentHistory?.length > 0 && (
+                    <div className="mb-4">
+                        <WrapperCard>
+                            <div className="w-full p-4 bg-[#f8ede3] border-[#ddb892] rounded-2xl shadow-md">
+                                <h2 className="text-lg font-semibold text-[#4a3a2c] mb-3 flex items-center gap-2">
+                                    <ArrowRight className="w-4 h-4 text-[#c47d3e]" />
+                                    Batch Transfer History
+                                </h2>
+                                <div className="flex flex-wrap gap-2 items-center">
+                                    {student.enrollmentHistory.map((e, i) => (
+                                        <div key={i} className="flex items-center gap-2">
+                                            <div className="flex flex-col bg-[#f0d9c0] border border-[#e6c8a8] rounded-xl px-3 py-1.5 text-xs">
+                                                <span className="font-semibold text-[#5a4a3c]">{e.batchName}</span>
+                                                <span className="text-[#7b5c4b]">
+                                                    {formatDate(e.joinedAt)} → {formatDate(e.leftAt)}
+                                                </span>
+                                            </div>
+                                            <ArrowRight className="w-3.5 h-3.5 text-[#c47d3e] shrink-0" />
+                                        </div>
+                                    ))}
+                                    <div className="flex flex-col bg-[#e0c4a8] border border-[#d0b498] rounded-xl px-3 py-1.5 text-xs">
+                                        <span className="font-semibold text-[#5a4a3c]">{student.batchName} (Current)</span>
+                                        <span className="text-[#7b5c4b]">
+                                            {formatDate(student.enrollmentHistory[student.enrollmentHistory.length - 1].leftAt)} → Now
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </WrapperCard>
+                    </div>
+                )}
+
                 <div className="flex-1 h-full">
                     <WrapperCard>
                         <div
@@ -429,6 +499,7 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
                                         <tr>
                                             <th className="p-3 border-b border-[#ddb892]">Sr No</th>
                                             <th className="p-3 border-b border-[#ddb892]">Date</th>
+                                            <th className="p-3 border-b border-[#ddb892]">Batch</th>
                                             <th className="p-3 border-b border-[#ddb892]">Subject</th>
                                             <th className="p-3 border-b border-[#ddb892]">Status</th>
                                         </tr>
@@ -440,6 +511,7 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
                                                     className="hover:bg-[#e7c6a5]/50">
                                                     <td className="p-3 border-b border-[#ddb892]">{index + 1}</td>
                                                     <td className="p-3 border-b border-[#ddb892]">{entry.date}</td>
+                                                    <td className="p-3 border-b border-[#ddb892] text-[#7b5c4b] text-xs">{entry.batchName}</td>
                                                     <td className="p-3 border-b border-[#ddb892]">{entry.subjectName}</td>
                                                     <td className="p-3 border-b border-[#ddb892]">
                                                         <StatusBadge status={entry.status}/>
@@ -448,7 +520,7 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
                                             ))
                                         ) : (
                                             <tr>
-                                                <td colSpan={4} className="p-6 text-center text-[#6b4c3b]">
+                                                <td colSpan={5} className="p-6 text-center text-[#6b4c3b]">
                                                     <div className="flex flex-col items-center">
                                                         <FaCalendarAlt className="text-4xl text-[#6b4c3b] mb-2"/>
                                                         <p className="text-lg">No attendance data found</p>
@@ -511,6 +583,7 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
                                             <th className="p-3 border-b border-[#ddb892]">#</th>
                                             <th className="p-3 border-b border-[#ddb892]">Test</th>
                                             <th className="p-3 border-b border-[#ddb892]">Date</th>
+                                            <th className="p-3 border-b border-[#ddb892]">Batch</th>
                                             <th className="p-3 border-b border-[#ddb892]">Subject</th>
                                             <th className="p-3 border-b border-[#ddb892]">Marks</th>
                                             <th className="p-3 border-b border-[#ddb892]">Result</th>
@@ -523,6 +596,7 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
                                                     <td className="p-3 border-b border-[#ddb892] text-[#6b4c3b]">{i + 1}</td>
                                                     <td className="p-3 border-b border-[#ddb892] font-medium text-[#4a3a2c]">{t.testName}</td>
                                                     <td className="p-3 border-b border-[#ddb892] text-[#6b4c3b] whitespace-nowrap">{formatDate(t.date)}</td>
+                                                    <td className="p-3 border-b border-[#ddb892] text-[#7b5c4b] text-xs whitespace-nowrap">{t.batchName}</td>
                                                     <td className="p-3 border-b border-[#ddb892] text-[#6b4c3b]">{t.subjectName}</td>
                                                     <td className="p-3 border-b border-[#ddb892]">
                                                         {!t.appeared ? (
@@ -557,7 +631,7 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
                                             ))
                                         ) : (
                                             <tr>
-                                                <td colSpan={6} className="p-8 text-center text-[#6b4c3b]">
+                                                <td colSpan={7} className="p-8 text-center text-[#6b4c3b]">
                                                     <div className="flex flex-col items-center gap-2">
                                                         <ClipboardList className="w-10 h-10 text-[#ddb892]" />
                                                         <p className="font-medium">{testResults.length === 0 ? 'No test data found' : 'No tests match filters'}</p>

@@ -240,6 +240,51 @@ router.patch("/update-student/:id", userAuth, async (req, res) => {
 });
 
 
+router.post("/transfer-batch/:id", userAuth, async (req, res) => {
+    const { id } = req.params;
+    const { newBatchId, newSubjectIds } = req.body;
+    const adminId = req.adminId;
+
+    try {
+        const student = await Student.findOne({ _id: id, adminId });
+        if (!student) return res.status(404).json({ message: "Student not found" });
+
+        if (student.batchId?.toString() === newBatchId) {
+            return res.status(400).json({ message: "Student is already in this batch" });
+        }
+
+        const newBatch = await Batch.findOne({ _id: newBatchId, adminId });
+        if (!newBatch) return res.status(404).json({ message: "Target batch not found" });
+
+        // Record current enrollment in history before switching
+        if (student.batchId) {
+            const currentBatch = await Batch.findById(student.batchId);
+            // joinedAt = when they joined the current batch:
+            //   first ever transfer → admission_date
+            //   subsequent transfers → leftAt of previous history entry
+            const prevEntry = student.enrollmentHistory?.slice(-1)[0];
+            const joinedAt = prevEntry ? prevEntry.leftAt : student.admission_date;
+
+            student.enrollmentHistory.push({
+                batchId: student.batchId,
+                batchName: currentBatch?.name || "Unknown Batch",
+                subjectIds: [...(student.subjectId || [])],
+                joinedAt,
+                leftAt: new Date(),
+            });
+        }
+
+        student.batchId = newBatchId;
+        student.subjectId = Array.isArray(newSubjectIds) ? newSubjectIds : [];
+        await student.save();
+
+        return res.status(200).json({ message: "Student transferred successfully", student });
+    } catch (err) {
+        console.error("Transfer error:", err);
+        return res.status(500).json({ message: "Transfer failed", error: err.message });
+    }
+});
+
 router.get('/attendance/summary', userAuth, async (req, res) => {
     try {
         if (!req.adminId) {
