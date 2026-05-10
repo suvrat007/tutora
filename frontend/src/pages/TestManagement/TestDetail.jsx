@@ -106,32 +106,34 @@ const TestDetail = ({ test, fetchTests, setEditingTest }) => {
 
     return (
         <div className="p-6 border border-[#e6c8a8] rounded-3xl bg-[#f8ede3] shadow-[0_8px_24px_rgba(0,0,0,0.15)] mt-4">
-            <div className="flex justify-between items-start mb-6 border-b border-[#e6c8a8] pb-4">
-                <div>
-                    <h2 className="text-2xl font-bold text-[#5a4a3c] mb-2">
+            <div className="mb-5 border-b border-[#e6c8a8] pb-4">
+                {/* Title row */}
+                <div className="flex items-start justify-between gap-3 mb-3">
+                    <h2 className="text-xl sm:text-2xl font-bold text-[#5a4a3c] min-w-0">
                         {test.testName}
                     </h2>
-                    <div className="flex flex-wrap gap-2 text-sm font-medium">
-                        <span className="bg-[#f0d9c0] text-[#5a4a3c] px-3 py-1 rounded-full">{getBatchName(test.batchId)}</span>
-                        <span className="bg-[#f0d9c0] text-[#5a4a3c] px-3 py-1 rounded-full">{getSubjectName(test.batchId, test.subjectId)}</span>
-                        <span className="bg-[#f0d9c0] text-[#5a4a3c] px-3 py-1 rounded-full">{formatDateTime(test.testDate)}</span>
+                    <div className="flex items-start gap-2 shrink-0">
+                        <div className="bg-[#f0d9c0] px-3 py-1.5 rounded-xl border border-[#e6c8a8] text-center">
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-[#7b5c4b]">Max</div>
+                            <div className="text-2xl font-black text-[#5a4a3c] leading-tight">{test.maxMarks}</div>
+                            <div className="text-[10px] font-medium text-[#7b5c4b] capitalize">{test.status}</div>
+                        </div>
+                        {setEditingTest && (
+                            <button
+                                onClick={() => setEditingTest(test)}
+                                title="Edit test details"
+                                className="p-2 rounded-lg text-[#7b5c4b] hover:text-[#5a4a3c] hover:bg-[#f0d9c0] transition-colors border border-[#e6c8a8]"
+                            >
+                                <FiSettings className="w-4 h-4" />
+                            </button>
+                        )}
                     </div>
                 </div>
-                <div className="flex items-start gap-3">
-                    <div className="text-right bg-[#f0d9c0] px-4 py-2 rounded-xl border border-[#e6c8a8]">
-                        <div className="text-xs font-bold uppercase tracking-widest text-[#7b5c4b]">Max Marks</div>
-                        <div className="text-3xl font-black text-[#5a4a3c]">{test.maxMarks}</div>
-                        <div className="text-xs mt-1 font-medium text-[#7b5c4b] capitalize">Status: {test.status}</div>
-                    </div>
-                    {setEditingTest && (
-                        <button
-                            onClick={() => setEditingTest(test)}
-                            title="Edit test details"
-                            className="p-2 rounded-lg text-[#7b5c4b] hover:text-[#5a4a3c] hover:bg-[#f0d9c0] transition-colors border border-[#e6c8a8]"
-                        >
-                            <FiSettings className="w-4 h-4" />
-                        </button>
-                    )}
+                {/* Tags — full width so they never wrap inside the pill */}
+                <div className="flex flex-wrap gap-2 text-xs sm:text-sm font-medium">
+                    <span className="bg-[#f0d9c0] text-[#5a4a3c] px-3 py-1 rounded-full whitespace-nowrap">{getBatchName(test.batchId)}</span>
+                    <span className="bg-[#f0d9c0] text-[#5a4a3c] px-3 py-1 rounded-full whitespace-nowrap">{getSubjectName(test.batchId, test.subjectId)}</span>
+                    <span className="bg-[#f0d9c0] text-[#5a4a3c] px-3 py-1 rounded-full whitespace-nowrap">{formatDateTime(test.testDate)}</span>
                 </div>
             </div>
 
@@ -167,35 +169,35 @@ const TestDetail = ({ test, fetchTests, setEditingTest }) => {
                     );
                 })()}
 
-                <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
-                    <h4 className="font-bold text-lg text-[#5a4a3c]">Student Results</h4>
-                    <div className="flex items-center gap-3">
-                        {results.length > 0 && (
-                            <input
-                                type="text"
-                                value={nameSearch}
-                                onChange={e => { setNameSearch(e.target.value); setDetailPage(1); }}
-                                placeholder="Search by name…"
-                                className="px-3 py-1.5 text-sm rounded-full border border-[#e6c8a8] bg-white text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8] w-44"
-                            />
-                        )}
-                        <span className="text-sm font-medium">
+                <div className="mb-4">
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                        <h4 className="font-bold text-lg text-[#5a4a3c]">Student Results</h4>
+                        <span className="text-xs font-medium shrink-0">
                             {saving ? (
-                                <span className="text-[#8b5e3c] animate-pulse flex items-center">
-                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <span className="text-[#8b5e3c] animate-pulse flex items-center gap-1">
+                                    <svg className="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                     </svg>
                                     Saving...
                                 </span>
                             ) : (
-                                <span className="text-[#34C759] flex items-center">
-                                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                                    Sync Active
+                                <span className="text-[#34C759] flex items-center gap-1">
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                    Synced
                                 </span>
                             )}
                         </span>
                     </div>
+                    {results.length > 0 && (
+                        <input
+                            type="text"
+                            value={nameSearch}
+                            onChange={e => { setNameSearch(e.target.value); setDetailPage(1); }}
+                            placeholder="Search by name…"
+                            className="w-full px-3 py-1.5 text-sm rounded-full border border-[#e6c8a8] bg-white text-[#5a4a3c] focus:outline-none focus:ring-2 focus:ring-[#e0c4a8]"
+                        />
+                    )}
                 </div>
 
                 {results.length > 0 ? (() => {
@@ -207,7 +209,50 @@ const TestDetail = ({ test, fetchTests, setEditingTest }) => {
                     const pagedResults = filtered.slice((safeDetailPage - 1) * DETAIL_PAGE_SIZE, safeDetailPage * DETAIL_PAGE_SIZE);
                     return (
                     <>
-                    <div className="overflow-x-auto rounded-xl border border-[#e6c8a8]">
+                    {/* Mobile list layout — one row per student */}
+                    <div className="md:hidden rounded-xl border border-[#e6c8a8] overflow-hidden bg-[#f8ede3] divide-y divide-[#e6c8a8]">
+                        {pagedResults.map(r => {
+                            const stId = r.studentId._id || r.studentId;
+                            const stName = r.studentId.name || 'Unknown Student';
+                            const percent = r.appeared ? ((r.marks / test.maxMarks) * 100).toFixed(1) : 0;
+                            return (
+                                <div key={stId} className="px-3 py-2.5 flex flex-col gap-1.5">
+                                    <span className="text-sm font-semibold text-[#5a4a3c]">{stName}</span>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="checkbox"
+                                            checked={r.appeared}
+                                            onChange={e => handleResultChange(stId, 'appeared', e.target.checked)}
+                                            className="w-4 h-4 rounded accent-[#8b5e3c] cursor-pointer shrink-0"
+                                        />
+                                        <Input
+                                            type="text"
+                                            inputMode="numeric"
+                                            value={r.marks}
+                                            onChange={e => handleResultChange(stId, 'marks', e.target.value)}
+                                            disabled={!r.appeared}
+                                            className={`w-16 text-sm text-center font-medium border-[#e6c8a8] ${!r.appeared ? 'bg-[#f0d9c0] text-[#7b5c4b] opacity-50' : 'bg-white'}`}
+                                        />
+                                        <span className="text-xs text-[#7b5c4b]">/{test.maxMarks}</span>
+                                        {!r.appeared ? (
+                                            <span className="text-xs px-2 py-0.5 bg-[#f0d9c0] text-[#7b5c4b] rounded-full font-medium">Absent</span>
+                                        ) : test.passMarks > 0 ? (
+                                            <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${r.marks >= test.passMarks ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                {r.marks >= test.passMarks ? 'PASS' : 'FAIL'}
+                                            </span>
+                                        ) : (
+                                            <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${Number(percent) >= 40 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                {percent}%
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Desktop table layout */}
+                    <div className="hidden md:block overflow-x-auto rounded-xl border border-[#e6c8a8]">
                         <table className="min-w-full text-left text-sm whitespace-nowrap">
                             <thead className="uppercase tracking-wider border-b border-[#e6c8a8] bg-[#f0d9c0] text-[#7b5c4b] font-semibold">
                                 <tr>

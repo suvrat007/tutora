@@ -50,6 +50,7 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
     const [page, setPage] = useState(1);
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedClass, setSelectedClass] = useState(null);
+    const [filtersOpen, setFiltersOpen] = useState(false);
     const navigate = useNavigate();
 
     const getSubjectName = (subjectId, batch) => {
@@ -177,25 +178,34 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
             className="flex-1 min-h-0 flex flex-col bg-[#f8ede3] overflow-hidden"
         >
             {/* Header */}
-            <div className="flex-shrink-0 px-6 py-4 bg-[#f0d9c0] border-b border-[#e6c8a8] flex items-center justify-between">
-                <div>
-                    <h2 className="text-xl font-semibold text-[#5a4a3c] flex items-center gap-2">
-                        <Calendar className="w-5 h-5 text-[#e6c8a8]"/>
-                        Class Management
+            <div className="flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 bg-[#f0d9c0] border-b border-[#e6c8a8]">
+                <div className="flex items-center justify-between gap-2">
+                    <h2 className="text-base sm:text-xl font-semibold text-[#5a4a3c] flex items-center gap-2 min-w-0">
+                        <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-[#e6c8a8] shrink-0"/>
+                        <span className="sm:hidden truncate">Classes</span>
+                        <span className="hidden sm:inline">Class Management</span>
                     </h2>
-                    <p className="text-sm text-[#7b5c4b]">Overview of all scheduled classes</p>
+                    <div className="flex items-center gap-2 shrink-0">
+                        <button
+                            onClick={() => setFiltersOpen(p => !p)}
+                            className={`md:hidden flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-colors ${filtersOpen ? 'bg-[#e0c4a8] border-[#d4b898] text-[#5a4a3c]' : 'bg-white border-[#e6c8a8] text-[#7b5c4b]'}`}
+                        >
+                            Filters{(batchFilter !== 'All' || subjectFilter !== 'All' || gradeFilter !== 'All' || statusFilter !== 'All' || dateFrom || dateTo) ? ' ●' : ''}
+                        </button>
+                        <button
+                            onClick={handleExportCSV}
+                            className="flex items-center gap-1 px-2.5 sm:px-4 py-1.5 sm:py-2 bg-[#e0c4a8] hover:bg-[#d0b498] text-[#5a4a3c] text-xs sm:text-sm font-semibold rounded-lg shadow-sm transition-colors border border-[#d0b498]"
+                        >
+                            <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            <span className="hidden sm:inline">Export CSV</span>
+                        </button>
+                    </div>
                 </div>
-                <button
-                    onClick={handleExportCSV}
-                    className="flex items-center gap-2 px-4 py-2 h-[38px] bg-[#e0c4a8] hover:bg-[#d0b498] text-[#5a4a3c] text-sm font-semibold rounded-lg shadow-sm transition-colors border border-[#d0b498]"
-                >
-                    <Download className="w-4 h-4" />
-                    Export CSV
-                </button>
+                <p className="text-xs sm:text-sm text-[#7b5c4b] hidden sm:block mt-0.5">Overview of all scheduled classes</p>
             </div>
 
-            {/* Filters — always visible */}
-            <div className="flex-shrink-0 flex flex-wrap items-end gap-4 p-4 bg-[#f0d9c0] border-b border-[#e6c8a8]">
+            {/* Filters — always visible on desktop, collapsible on mobile */}
+            <div className={`flex-shrink-0 flex flex-wrap items-end gap-3 sm:gap-4 p-3 sm:p-4 bg-[#f0d9c0] border-b border-[#e6c8a8] ${filtersOpen ? 'flex' : 'hidden md:flex'}`}>
                 {[{
                     label: 'Batch', value: batchFilter, onChange: changeFilter(setBatchFilter), options: filterOptions.batches
                 }, {
@@ -236,148 +246,242 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
                 </div>
             </div>
 
-            {/* Table — only this scrolls */}
-            <div className="flex-1 overflow-y-auto overflow-x-auto min-h-0 no-scrollbar">
-                <table className="w-full divide-y divide-[#e6c8a8] border-collapse">
-                    <thead className="bg-[#f0d9c0] sticky top-0 z-10">
-                    <tr>
-                        {['S.No.', 'Batch', 'Subject', 'Date', 'Status', 'Note', 'Attendance', ''].map((label, i) => (
-                            <th key={i} className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-[#7b5c4b] uppercase">{label}</th>
-                        ))}
-                    </tr>
-                    </thead>
-                    <tbody className="bg-[#f8ede3] divide-y divide-[#e6c8a8] text-sm text-[#5a4a3c]">
-                    <AnimatePresence>
-                        {pagedRows.length === 0 ? (
-                            <motion.tr variants={placeholderVariants} animate="pulse">
-                                <td colSpan="8" className="px-6 py-12 text-center text-[#7b5c4b]">
-                                    <div className="flex flex-col items-center gap-2">
-                                        <Calendar className="w-10 h-10 text-[#e6c8a8]" />
-                                        <p className="font-medium">No classes found</p>
-                                        <p className="text-xs">Adjust filters or create a new class</p>
-                                    </div>
-                                </td>
-                            </motion.tr>
-                        ) : pagedRows.map(({ log, cls }, index) => {
-                            const { text, needsReadMore } = truncateNote(cls.note);
-                            const isExpanded = expandedNotes[cls._id];
-                            const isZeroAttendance = cls.status === 'Conducted' && cls.attendance.length === 0;
-                            const serial = (safePage - 1) * PAGE_SIZE + index + 1;
+            {/* Content — only this scrolls */}
+            <div className="flex-1 overflow-y-auto min-h-0 no-scrollbar">
 
-                            return (
-                                <motion.tr
-                                    key={cls._id}
-                                    custom={index}
-                                    variants={cardVariants}
-                                    initial="hidden"
-                                    animate="visible"
-                                    exit="hidden"
-                                    className="hover:bg-[#e0c4a8]/50 transition"
-                                >
-                                    <td className="px-4 sm:px-6 py-4">{serial}</td>
-                                    <td className="px-4 sm:px-6 py-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-full bg-[#e6c8a8] flex items-center justify-center text-xs font-semibold text-[#5a4a3c]">
-                                                {log.batch_id.name.charAt(0)}
-                                            </div>
-                                            <div>
-                                                <div className="max-w-[120px] truncate font-medium" title={log.batch_id.name}>
-                                                    {log.batch_id.name}
-                                                </div>
-                                                <p className="text-xs text-[#7b5c4b]">Grade {log.batch_id.forStandard}</p>
-                                            </div>
+                {/* Mobile card list */}
+                <div className="md:hidden flex flex-col divide-y divide-[#e6c8a8]">
+                    {pagedRows.length === 0 ? (
+                        <div className="px-6 py-12 text-center text-[#7b5c4b]">
+                            <div className="flex flex-col items-center gap-2">
+                                <Calendar className="w-10 h-10 text-[#e6c8a8]" />
+                                <p className="font-medium">No classes found</p>
+                                <p className="text-xs">Adjust filters or create a new class</p>
+                            </div>
+                        </div>
+                    ) : pagedRows.map(({ log, cls }, index) => {
+                        const { text, needsReadMore } = truncateNote(cls.note);
+                        const isExpanded = expandedNotes[cls._id];
+                        const isZeroAttendance = cls.status === 'Conducted' && cls.attendance.length === 0;
+
+                        return (
+                            <motion.div
+                                key={cls._id}
+                                custom={index}
+                                variants={cardVariants}
+                                initial="hidden"
+                                animate="visible"
+                                className="px-4 py-3 bg-[#f8ede3]"
+                            >
+                                {/* Row 1: batch + subject */}
+                                <div className="flex items-center justify-between gap-2 mb-2">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <div className="w-8 h-8 rounded-full bg-[#e6c8a8] flex items-center justify-center text-xs font-semibold text-[#5a4a3c] shrink-0">
+                                            {log.batch_id.name.charAt(0)}
                                         </div>
-                                    </td>
-                                    <td className="px-4 sm:px-6 py-4">
-                                        <div className="flex items-center gap-2">
-                                            <BookOpen className="w-4 h-4 text-[#e6c8a8]" />
-                                            <div className="max-w-[120px] truncate" title={getSubjectName(log.subject_id, log.batch_id)}>
-                                                {getSubjectName(log.subject_id, log.batch_id)}
-                                            </div>
+                                        <div className="min-w-0">
+                                            <p className="font-semibold text-sm text-[#5a4a3c] truncate">{log.batch_id.name}</p>
+                                            <p className="text-xs text-[#7b5c4b]">Grade {log.batch_id.forStandard}</p>
                                         </div>
-                                    </td>
-                                    <td className="px-4 sm:px-6 py-4">
-                                        <p>{formatDate(cls.date)}</p>
-                                        <p className="text-xs text-[#7b5c4b]">{new Date(cls.date).toLocaleDateString('en-US', { weekday: 'long' })}</p>
-                                    </td>
-                                    <td className="px-4 sm:px-6 py-4">
-                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(cls.status)}`}>
-                                            {getStatusIcon(cls.status)} {cls.status}
-                                        </span>
-                                    </td>
-                                    <td className="px-4 sm:px-6 py-4">
-                                        <div className="flex items-start gap-2 w-44 xl:w-56">
-                                            <p className={`text-sm flex-1 min-w-0 ${isExpanded ? 'whitespace-normal break-words' : 'truncate'}`} title={cls.note}>
-                                                {isExpanded ? cls.note || '—' : text}
-                                            </p>
-                                            {needsReadMore && (
-                                                <button onClick={() => toggleNote(cls._id)} className="text-xs text-[#5a4a3c] hover:text-[#e0c4a8] font-medium whitespace-nowrap shrink-0">
-                                                    {isExpanded ? 'Less' : 'More'}
-                                                </button>
-                                            )}
-                                        </div>
-                                    </td>
-                                    <td className="px-4 sm:px-6 py-4">
-                                        <div className="group relative flex items-center gap-2">
-                                            <div
-                                                className={`flex items-center gap-2 ${isZeroAttendance ? 'bg-red-100 px-3 py-1 rounded-lg cursor-pointer' : ''}`}
-                                                onClick={() => isZeroAttendance && navigate('/main/attendance', {
-                                                    state: {
-                                                        batchName: log.batch_id.name,
-                                                        subjectName: getSubjectName(log.subject_id, log.batch_id),
-                                                        date: toYYYYMMDD(cls.date),
-                                                    }
-                                                })}
-                                            >
-                                                <Users className="w-4 h-4 text-[#e6c8a8]" />
-                                                <div>
-                                                    <p className={`font-semibold ${isZeroAttendance ? 'text-red-700' : ''}`}>{cls.attendance.length}</p>
-                                                    <p className="text-xs text-[#7b5c4b]">Present</p>
-                                                </div>
-                                            </div>
-                                            {isZeroAttendance && (
-                                                <span className="absolute left-0 -top-10 hidden group-hover:block bg-[#5a4a3c] text-white text-xs rounded-lg py-1 px-2 shadow-lg whitespace-nowrap">
-                                                    Click to mark attendance
-                                                </span>
-                                            )}
-                                        </div>
-                                    </td>
-                                    <td className="px-4 sm:px-6 py-4">
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-xs text-[#7b5c4b] shrink-0">
+                                        <BookOpen className="w-3.5 h-3.5 text-[#e6c8a8]" />
+                                        <span className="truncate max-w-[100px]">{getSubjectName(log.subject_id, log.batch_id)}</span>
+                                    </div>
+                                </div>
+
+                                {/* Row 2: date + status */}
+                                <div className="flex items-center justify-between gap-2 mb-2">
+                                    <div className="text-xs text-[#5a4a3c]">
+                                        <span className="font-medium">{formatDate(cls.date)}</span>
+                                        <span className="text-[#7b5c4b] ml-1">· {new Date(cls.date).toLocaleDateString('en-US', { weekday: 'short' })}</span>
+                                    </div>
+                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(cls.status)}`}>
+                                        {getStatusIcon(cls.status)} {cls.status}
+                                    </span>
+                                </div>
+
+                                {/* Row 3: attendance + note + edit */}
+                                <div className="flex items-start justify-between gap-2">
+                                    <div
+                                        className={`flex items-center gap-1.5 text-xs ${isZeroAttendance ? 'bg-red-100 px-2 py-0.5 rounded-lg cursor-pointer' : ''}`}
+                                        onClick={() => isZeroAttendance && navigate('/main/attendance', {
+                                            state: {
+                                                batchName: log.batch_id.name,
+                                                subjectName: getSubjectName(log.subject_id, log.batch_id),
+                                                date: toYYYYMMDD(cls.date),
+                                            }
+                                        })}
+                                    >
+                                        <Users className="w-3.5 h-3.5 text-[#e6c8a8]" />
+                                        <span className={`font-semibold ${isZeroAttendance ? 'text-red-700' : 'text-[#5a4a3c]'}`}>{cls.attendance.length}</span>
+                                        <span className="text-[#7b5c4b]">present{isZeroAttendance ? ' — tap to mark' : ''}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                        {cls.note && cls.note !== 'No Data' && (
+                                            <p className="text-xs text-[#7b5c4b] max-w-[120px] truncate">{text}</p>
+                                        )}
                                         {!isToday(cls.date) && cls.status === 'No data recorded' && (
                                             <motion.button
                                                 whileHover={{ scale: 1.05 }}
                                                 whileTap={{ scale: 0.95 }}
                                                 onClick={() => handleEditClass(log, cls)}
-                                                className="text-[#5a4a3c] hover:text-[#e0c4a8]"
+                                                className="text-[#5a4a3c] hover:text-[#8b5e3c] p-1"
                                             >
-                                                <PencilIcon className="w-5 h-5" />
+                                                <PencilIcon className="w-4 h-4" />
                                             </motion.button>
                                         )}
+                                    </div>
+                                </div>
+                            </motion.div>
+                        );
+                    })}
+                </div>
+
+                {/* Desktop table */}
+                <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full divide-y divide-[#e6c8a8] border-collapse">
+                        <thead className="bg-[#f0d9c0] sticky top-0 z-10">
+                        <tr>
+                            {['S.No.', 'Batch', 'Subject', 'Date', 'Status', 'Note', 'Attendance', ''].map((label, i) => (
+                                <th key={i} className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-[#7b5c4b] uppercase">{label}</th>
+                            ))}
+                        </tr>
+                        </thead>
+                        <tbody className="bg-[#f8ede3] divide-y divide-[#e6c8a8] text-sm text-[#5a4a3c]">
+                        <AnimatePresence>
+                            {pagedRows.length === 0 ? (
+                                <motion.tr variants={placeholderVariants} animate="pulse">
+                                    <td colSpan="8" className="px-6 py-12 text-center text-[#7b5c4b]">
+                                        <div className="flex flex-col items-center gap-2">
+                                            <Calendar className="w-10 h-10 text-[#e6c8a8]" />
+                                            <p className="font-medium">No classes found</p>
+                                            <p className="text-xs">Adjust filters or create a new class</p>
+                                        </div>
                                     </td>
                                 </motion.tr>
-                            );
-                        })}
-                    </AnimatePresence>
-                    </tbody>
-                </table>
+                            ) : pagedRows.map(({ log, cls }, index) => {
+                                const { text, needsReadMore } = truncateNote(cls.note);
+                                const isExpanded = expandedNotes[cls._id];
+                                const isZeroAttendance = cls.status === 'Conducted' && cls.attendance.length === 0;
+                                const serial = (safePage - 1) * PAGE_SIZE + index + 1;
+
+                                return (
+                                    <motion.tr
+                                        key={cls._id}
+                                        custom={index}
+                                        variants={cardVariants}
+                                        initial="hidden"
+                                        animate="visible"
+                                        exit="hidden"
+                                        className="hover:bg-[#e0c4a8]/50 transition"
+                                    >
+                                        <td className="px-4 sm:px-6 py-4">{serial}</td>
+                                        <td className="px-4 sm:px-6 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-full bg-[#e6c8a8] flex items-center justify-center text-xs font-semibold text-[#5a4a3c]">
+                                                    {log.batch_id.name.charAt(0)}
+                                                </div>
+                                                <div>
+                                                    <div className="max-w-[120px] truncate font-medium" title={log.batch_id.name}>
+                                                        {log.batch_id.name}
+                                                    </div>
+                                                    <p className="text-xs text-[#7b5c4b]">Grade {log.batch_id.forStandard}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-4 sm:px-6 py-4">
+                                            <div className="flex items-center gap-2">
+                                                <BookOpen className="w-4 h-4 text-[#e6c8a8]" />
+                                                <div className="max-w-[120px] truncate" title={getSubjectName(log.subject_id, log.batch_id)}>
+                                                    {getSubjectName(log.subject_id, log.batch_id)}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-4 sm:px-6 py-4">
+                                            <p>{formatDate(cls.date)}</p>
+                                            <p className="text-xs text-[#7b5c4b]">{new Date(cls.date).toLocaleDateString('en-US', { weekday: 'long' })}</p>
+                                        </td>
+                                        <td className="px-4 sm:px-6 py-4">
+                                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(cls.status)}`}>
+                                                {getStatusIcon(cls.status)} {cls.status}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 sm:px-6 py-4">
+                                            <div className="flex items-start gap-2 w-44 xl:w-56">
+                                                <p className={`text-sm flex-1 min-w-0 ${isExpanded ? 'whitespace-normal break-words' : 'truncate'}`} title={cls.note}>
+                                                    {isExpanded ? cls.note || '—' : text}
+                                                </p>
+                                                {needsReadMore && (
+                                                    <button onClick={() => toggleNote(cls._id)} className="text-xs text-[#5a4a3c] hover:text-[#e0c4a8] font-medium whitespace-nowrap shrink-0">
+                                                        {isExpanded ? 'Less' : 'More'}
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="px-4 sm:px-6 py-4">
+                                            <div className="group relative flex items-center gap-2">
+                                                <div
+                                                    className={`flex items-center gap-2 ${isZeroAttendance ? 'bg-red-100 px-3 py-1 rounded-lg cursor-pointer' : ''}`}
+                                                    onClick={() => isZeroAttendance && navigate('/main/attendance', {
+                                                        state: {
+                                                            batchName: log.batch_id.name,
+                                                            subjectName: getSubjectName(log.subject_id, log.batch_id),
+                                                            date: toYYYYMMDD(cls.date),
+                                                        }
+                                                    })}
+                                                >
+                                                    <Users className="w-4 h-4 text-[#e6c8a8]" />
+                                                    <div>
+                                                        <p className={`font-semibold ${isZeroAttendance ? 'text-red-700' : ''}`}>{cls.attendance.length}</p>
+                                                        <p className="text-xs text-[#7b5c4b]">Present</p>
+                                                    </div>
+                                                </div>
+                                                {isZeroAttendance && (
+                                                    <span className="absolute left-0 -top-10 hidden group-hover:block bg-[#5a4a3c] text-white text-xs rounded-lg py-1 px-2 shadow-lg whitespace-nowrap">
+                                                        Click to mark attendance
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="px-4 sm:px-6 py-4">
+                                            {!isToday(cls.date) && cls.status === 'No data recorded' && (
+                                                <motion.button
+                                                    whileHover={{ scale: 1.05 }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                    onClick={() => handleEditClass(log, cls)}
+                                                    className="text-[#5a4a3c] hover:text-[#e0c4a8]"
+                                                >
+                                                    <PencilIcon className="w-5 h-5" />
+                                                </motion.button>
+                                            )}
+                                        </td>
+                                    </motion.tr>
+                                );
+                            })}
+                        </AnimatePresence>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {/* Pagination — always visible */}
             {totalPages > 1 && (
-                <div className="flex-shrink-0 bg-[#f0d9c0] px-6 py-3 border-t border-[#e6c8a8] flex items-center justify-between">
-                    <span className="text-sm font-medium text-[#7b5c4b]">
-                        {allFilteredRows.length} classes &middot; Page {safePage} of {totalPages}
+                <div className="flex-shrink-0 bg-[#f0d9c0] px-3 sm:px-6 py-2.5 border-t border-[#e6c8a8] flex items-center justify-between gap-2">
+                    <span className="text-xs sm:text-sm font-medium text-[#7b5c4b] whitespace-nowrap">
+                        <span className="hidden sm:inline">{allFilteredRows.length} classes &middot; Page {safePage} of {totalPages}</span>
+                        <span className="sm:hidden">{safePage}/{totalPages}</span>
                     </span>
                     <div className="flex items-center gap-1">
                         <button
                             onClick={() => setPage(1)}
                             disabled={safePage === 1}
-                            className="px-2 py-1.5 text-xs rounded-md border border-[#e0c4a8] bg-[#f8ede3] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white transition text-[#5a4a3c] font-medium"
+                            className="hidden sm:block px-2 py-1.5 text-xs rounded-md border border-[#e0c4a8] bg-[#f8ede3] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white transition text-[#5a4a3c] font-medium"
                         >«</button>
                         <button
                             onClick={() => setPage(p => Math.max(1, p - 1))}
                             disabled={safePage === 1}
-                            className="px-3 py-1.5 text-sm rounded-md border border-[#e0c4a8] bg-[#f8ede3] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white transition text-[#5a4a3c] font-medium"
+                            className="px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md border border-[#e0c4a8] bg-[#f8ede3] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white transition text-[#5a4a3c] font-medium"
                         >Prev</button>
 
                         {Array.from({ length: totalPages }, (_, i) => i + 1)
@@ -389,12 +493,12 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
                             }, [])
                             .map((item, i) =>
                                 item === '…' ? (
-                                    <span key={`ellipsis-${i}`} className="px-2 text-[#7b5c4b] text-sm">…</span>
+                                    <span key={`ellipsis-${i}`} className="px-1 text-[#7b5c4b] text-xs sm:text-sm">…</span>
                                 ) : (
                                     <button
                                         key={item}
                                         onClick={() => setPage(item)}
-                                        className={`px-3 py-1.5 text-sm rounded-md border transition font-medium ${
+                                        className={`px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md border transition font-medium ${
                                             item === safePage
                                                 ? 'bg-[#e0c4a8] border-[#d0b498] text-[#5a4a3c]'
                                                 : 'bg-[#f8ede3] border-[#e0c4a8] text-[#5a4a3c] hover:bg-white'
@@ -407,12 +511,12 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
                         <button
                             onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                             disabled={safePage === totalPages}
-                            className="px-3 py-1.5 text-sm rounded-md border border-[#e0c4a8] bg-[#f8ede3] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white transition text-[#5a4a3c] font-medium"
+                            className="px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md border border-[#e0c4a8] bg-[#f8ede3] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white transition text-[#5a4a3c] font-medium"
                         >Next</button>
                         <button
                             onClick={() => setPage(totalPages)}
                             disabled={safePage === totalPages}
-                            className="px-2 py-1.5 text-xs rounded-md border border-[#e0c4a8] bg-[#f8ede3] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white transition text-[#5a4a3c] font-medium"
+                            className="hidden sm:block px-2 py-1.5 text-xs rounded-md border border-[#e0c4a8] bg-[#f8ede3] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white transition text-[#5a4a3c] font-medium"
                         >»</button>
                     </div>
                 </div>
