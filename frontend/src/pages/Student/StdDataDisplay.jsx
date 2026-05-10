@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { AiOutlineClose, AiOutlineEdit } from "react-icons/ai";
+import { AiOutlineClose, AiOutlineEdit, AiOutlineCamera } from "react-icons/ai";
 import { motion } from "framer-motion";
 import AddStudent from "@/pages/Student/AddStudent.jsx";
+import FaceRegistrationModal from "@/pages/Student/FaceRegistrationModal.jsx";
 
 const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
@@ -10,6 +11,7 @@ const fadeInUp = {
 
 const StdDataDisplay = ({ seeStdDetails, setSeeStdDetails, onStudentEdited }) => {
     const [edit, setEdit] = useState(false);
+    const [showFaceModal, setShowFaceModal] = useState(false);
 
     const handleStudentAdded = () => {
         console.log("Student was added or edited!");
@@ -34,15 +36,38 @@ const StdDataDisplay = ({ seeStdDetails, setSeeStdDetails, onStudentEdited }) =>
                     onStudentAdded={onStudentEdited}
                 />
             )}
+            {showFaceModal && (
+                <FaceRegistrationModal
+                    studentId={seeStdDetails.stdDetails?._id}
+                    studentName={seeStdDetails.stdDetails?.name}
+                    hasFace={seeStdDetails.stdDetails?.face_descriptor?.has_face}
+                    onClose={() => setShowFaceModal(false)}
+                    onRegistered={() => setShowFaceModal(false)}
+                />
+            )}
             <div className="flex justify-between p-2 sm:p-3">
-                <motion.button
-                    whileHover={{ scale: 1.1, color: "#34C759" }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => setEdit(true)}
-                    className="text-[#e0c4a8] hover:text-[#34C759] transition ml-2"
-                >
-                    <AiOutlineEdit className="w-5 h-5 sm:w-6 sm:h-6" />
-                </motion.button>
+                <div className="flex items-center gap-1 ml-2">
+                    <motion.button
+                        whileHover={{ scale: 1.1, color: "#34C759" }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => setEdit(true)}
+                        className="text-[#e0c4a8] hover:text-[#34C759] transition"
+                    >
+                        <AiOutlineEdit className="w-5 h-5 sm:w-6 sm:h-6" />
+                    </motion.button>
+                    <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => setShowFaceModal(true)}
+                        className="relative text-[#e0c4a8] hover:text-[#8b5e3c] transition"
+                        title={seeStdDetails.stdDetails?.face_descriptor?.has_face ? 'Update face registration' : 'Register face'}
+                    >
+                        <AiOutlineCamera className="w-5 h-5 sm:w-6 sm:h-6" />
+                        {seeStdDetails.stdDetails?.face_descriptor?.has_face && (
+                            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[#34C759] rounded-full" />
+                        )}
+                    </motion.button>
+                </div>
                 <motion.button
                     whileHover={{ scale: 1.1, color: "#FF3B30" }}
                     whileTap={{ scale: 0.9 }}
