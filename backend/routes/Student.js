@@ -870,4 +870,73 @@ router.get("/fees/list", userAuth, async (req, res) => {
     }
 });
 
+// ── Face Descriptor Endpoints ─────────────────────────────────────────────────
+
+router.patch("/face-descriptor/:studentId", userAuth, async (req, res) => {
+    const { descriptor } = req.body;
+    const adminId = req.adminId;
+    const { studentId } = req.params;
+
+    if (!Array.isArray(descriptor) || descriptor.length !== 128) {
+        return res.status(400).json({ message: "descriptor must be an array of 128 numbers" });
+    }
+
+    try {
+        const student = await Student.findOne({ _id: studentId, adminId });
+        if (!student) return res.status(404).json({ message: "Student not found" });
+
+        student.face_descriptor = {
+            descriptor,
+            has_face: true,
+            registered_at: new Date()
+        };
+        await student.save();
+
+        return res.status(200).json({ message: "Face registered successfully", studentId });
+    } catch (error) {
+        console.error("Error saving face descriptor:", error);
+        return res.status(500).json({ message: "Failed to save face descriptor", error: error.message });
+    }
+});
+
+router.get("/face-descriptors", userAuth, async (req, res) => {
+    const adminId = req.adminId;
+    const { batchId } = req.query;
+
+    try {
+        const query = { adminId, "face_descriptor.has_face": true };
+        if (batchId) query.batchId = batchId;
+
+        const students = await Student.find(query, "_id name face_descriptor.descriptor");
+        const result = students.map(s => ({
+            _id: s._id,
+            name: s.name,
+            descriptor: s.face_descriptor.descriptor
+        }));
+
+        return res.status(200).json(result);
+    } catch (error) {
+        console.error("Error fetching face descriptors:", error);
+        return res.status(500).json({ message: "Failed to fetch face descriptors", error: error.message });
+    }
+});
+
+router.delete("/face-descriptor/:studentId", userAuth, async (req, res) => {
+    const adminId = req.adminId;
+    const { studentId } = req.params;
+
+    try {
+        const student = await Student.findOne({ _id: studentId, adminId });
+        if (!student) return res.status(404).json({ message: "Student not found" });
+
+        student.face_descriptor = { descriptor: null, has_face: false, registered_at: null };
+        await student.save();
+
+        return res.status(200).json({ message: "Face data deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting face descriptor:", error);
+        return res.status(500).json({ message: "Failed to delete face descriptor", error: error.message });
+    }
+});
+
 module.exports = router;

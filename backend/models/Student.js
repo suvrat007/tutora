@@ -32,6 +32,11 @@ const Student = new Schema({
                 paid_at: { type: Date, default: null }
             }
         ]
+    },
+    face_descriptor: {
+        descriptor: { type: [Number], default: null },
+        has_face: { type: Boolean, default: false },
+        registered_at: { type: Date, default: null }
     }
 });
 
