@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Loader2 } from "lucide-react";
+import { Loader2, Camera } from "lucide-react";
 import useAttendanceConstraints from "../hooks/useAttendanceConstraints.js";
 import { getLocalTimeHHMM } from "@/lib/utils.js";
 import { useAttendanceState } from "@/pages/Attendence/hooks/useAttendanceState.js";
@@ -10,6 +10,7 @@ import { useStudentFetcher } from "@/pages/Attendence/hooks/useStudentFetcher.js
 import { useStudentActions } from "@/pages/Attendence/hooks/useStudentActions.js";
 import AttendancePercentages from "@/pages/Attendence/components/AttendancePercentages.jsx";
 import { StudentList } from "@/pages/Attendence/components/StudentList.jsx";
+import FaceScanPanel from "@/pages/Attendence/components/FaceScanPanel.jsx";
 import { useAttendanceSubmission } from "@/pages/Attendence/hooks/useAttendanceSubmission.js";
 import WrapperCard from "@/components/ui/WrapperCard.jsx";
 import useFetchStudents from "@/hooks/useFetchStudents.js";
@@ -40,6 +41,7 @@ export const AttendancePage = () => {
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [saving, setSaving] = useState(false);
     const [dirtyCount, setDirtyCount] = useState(0);
+    const [faceScanMode, setFaceScanMode] = useState(false);
     const saveTimeoutRef = useRef(null);
 
     const { canMark, constraintError, isValidDateTime } = useAttendanceConstraints(batchName, subjectName, date, batches);
@@ -73,6 +75,11 @@ export const AttendancePage = () => {
     );
 
     const { submit } = useAttendanceSubmission(batches);
+
+    // Reset face scan mode when the selected class changes
+    useEffect(() => {
+        setFaceScanMode(false);
+    }, [batchName, subjectName, date]);
 
     const markDirty = useCallback(() => setDirtyCount((c) => c + 1), []);
 
@@ -111,6 +118,12 @@ export const AttendancePage = () => {
         }, 800);
         return () => clearTimeout(saveTimeoutRef.current);
     }, [dirtyCount]);
+
+    const handleFaceRecognized = useCallback((studentId) => {
+        if (!presentIds.has(studentId)) {
+            actions.togglePresent(studentId);
+        }
+    }, [presentIds, actions]);
 
     const selectedBatch = batches.find((b) => b.name === batchName);
 
@@ -166,6 +179,20 @@ export const AttendancePage = () => {
                                 Clear
                             </button>
 
+                            {isFilterActive && canMark && (
+                                <button
+                                    onClick={() => setFaceScanMode(prev => !prev)}
+                                    className={`px-4 py-2.5 text-sm font-medium rounded-full shadow-sm transition-colors flex items-center gap-1.5 ${
+                                        faceScanMode
+                                            ? 'bg-[#8b5e3c] text-white'
+                                            : 'bg-[#e0c4a8] text-[#5a4a3c] hover:bg-[#d8bca0]'
+                                    }`}
+                                >
+                                    <Camera className="w-4 h-4" />
+                                    {faceScanMode ? 'Manual Mode' : 'Face Scan'}
+                                </button>
+                            )}
+
                             <div className="ml-auto text-sm">
                                 {loading ? (
                                     <span className="text-[#7b5c4b] flex items-center gap-1.5">
@@ -199,22 +226,33 @@ export const AttendancePage = () => {
                 {/* Left: Mark Attendance */}
                 <div className="lg:w-[380px] shrink-0 min-h-[24rem] lg:min-h-0">
                     <WrapperCard>
-                        <StudentList
-                            students={displayStudents}
-                            presentIds={presentIds}
-                            loading={loading}
-                            markedPresentStudents={markedPresentStudents}
-                            togglePresent={actions.togglePresent}
-                            selectAll={actions.selectAll}
-                            clearAll={actions.clearAll}
-                            markAllPreviouslyPresent={actions.markAllPreviouslyPresent}
-                            saving={saving}
-                            readOnly={!isFilterActive || !canMark}
-                            constraintError={isFilterActive ? constraintError : ""}
-                            batchName={batchName}
-                            subjectName={subjectName}
-                            date={date}
-                        />
+                        {faceScanMode ? (
+                            <FaceScanPanel
+                                students={displayStudents}
+                                batchId={selectedBatch?._id}
+                                presentIds={presentIds}
+                                onStudentRecognized={handleFaceRecognized}
+                                onClose={() => setFaceScanMode(false)}
+                                canMark={canMark}
+                            />
+                        ) : (
+                            <StudentList
+                                students={displayStudents}
+                                presentIds={presentIds}
+                                loading={loading}
+                                markedPresentStudents={markedPresentStudents}
+                                togglePresent={actions.togglePresent}
+                                selectAll={actions.selectAll}
+                                clearAll={actions.clearAll}
+                                markAllPreviouslyPresent={actions.markAllPreviouslyPresent}
+                                saving={saving}
+                                readOnly={!isFilterActive || !canMark}
+                                constraintError={isFilterActive ? constraintError : ""}
+                                batchName={batchName}
+                                subjectName={subjectName}
+                                date={date}
+                            />
+                        )}
                     </WrapperCard>
                 </div>
 

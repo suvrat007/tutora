@@ -73,7 +73,13 @@ const TestSubmitPage = () => {
         return (
             <div className="min-h-screen bg-[#f8ede3] flex items-center justify-center p-4">
                 <div className="bg-white rounded-3xl shadow-lg border border-[#e6c8a8] p-8 max-w-sm w-full text-center">
-                    <p className="text-2xl mb-3">📋</p>
+                    <div className="w-12 h-12 rounded-2xl bg-[#f5ede3] border border-[#e6c8a8] flex items-center justify-center mx-auto mb-3">
+                        <svg viewBox="0 0 24 24" className="w-6 h-6 stroke-[#8b5e3c] fill-none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+                            <rect x="9" y="3" width="6" height="4" rx="1"/>
+                            <line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/>
+                        </svg>
+                    </div>
                     <h2 className="text-lg font-bold text-[#5a4a3c] mb-2">Test Unavailable</h2>
                     <p className="text-sm text-[#7b5c4b]">{error}</p>
                 </div>
@@ -85,7 +91,11 @@ const TestSubmitPage = () => {
         return (
             <div className="min-h-screen bg-[#f8ede3] flex items-center justify-center p-4">
                 <div className="bg-white rounded-3xl shadow-lg border border-[#e6c8a8] p-8 max-w-sm w-full text-center">
-                    <p className="text-4xl mb-4">✅</p>
+                    <div className="w-14 h-14 rounded-2xl bg-[#f5ede3] border border-[#e6c8a8] flex items-center justify-center mx-auto mb-4">
+                        <svg viewBox="0 0 24 24" className="w-7 h-7 stroke-[#8b5e3c] fill-none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                    </div>
                     <h2 className="text-xl font-bold text-[#5a4a3c] mb-2">Marks Submitted!</h2>
                     <p className="text-sm text-[#7b5c4b]">Your marks have been recorded successfully.</p>
                     <p className="text-xs text-[#b0998a] mt-4">{testInfo.testName}</p>
@@ -129,7 +139,12 @@ const TestSubmitPage = () => {
 
                 {availableStudents.length === 0 ? (
                     <div className="text-center py-6">
-                        <p className="text-2xl mb-3">🎉</p>
+                        <div className="w-12 h-12 rounded-2xl bg-[#f5ede3] border border-[#e6c8a8] flex items-center justify-center mx-auto mb-3">
+                            <svg viewBox="0 0 24 24" className="w-6 h-6 stroke-[#8b5e3c] fill-none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="9 12 11 14 15 10"/>
+                            </svg>
+                        </div>
                         <p className="text-sm font-semibold text-[#5a4a3c]">All students have submitted</p>
                         <p className="text-xs text-[#b0998a] mt-1">No pending submissions</p>
                     </div>

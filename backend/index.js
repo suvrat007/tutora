@@ -17,6 +17,7 @@ const InstituteRouter = require("./routes/Institute.js");
 const TestRouter = require("./routes/Test.js");
 const TeacherRouter = require("./routes/Teacher.js");
 const RegistrationRouter = require("./routes/Registration.js");
+const ParentRouter = require("./routes/Parent.js");
 
 app.use(cors({
     origin:['http://localhost:5173','https://tutor-a.vercel.app'],
@@ -55,6 +56,7 @@ app.use('/api/v1/institute', InstituteRouter);
 app.use('/api/v1/test', TestRouter);
 app.use('/api/v1/teacher', TeacherRouter);
 app.use('/api/v1/register', RegistrationRouter);
+app.use('/api/v1/parent', ParentRouter);
 app.get('/', (req, res) => {
     res.send('Welcome to the Tutor-A API');
 });

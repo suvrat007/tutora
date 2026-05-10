@@ -240,6 +240,51 @@ router.patch("/update-student/:id", userAuth, async (req, res) => {
 });
 
 
+router.post("/transfer-batch/:id", userAuth, async (req, res) => {
+    const { id } = req.params;
+    const { newBatchId, newSubjectIds } = req.body;
+    const adminId = req.adminId;
+
+    try {
+        const student = await Student.findOne({ _id: id, adminId });
+        if (!student) return res.status(404).json({ message: "Student not found" });
+
+        if (student.batchId?.toString() === newBatchId) {
+            return res.status(400).json({ message: "Student is already in this batch" });
+        }
+
+        const newBatch = await Batch.findOne({ _id: newBatchId, adminId });
+        if (!newBatch) return res.status(404).json({ message: "Target batch not found" });
+
+        // Record current enrollment in history before switching
+        if (student.batchId) {
+            const currentBatch = await Batch.findById(student.batchId);
+            // joinedAt = when they joined the current batch:
+            //   first ever transfer → admission_date
+            //   subsequent transfers → leftAt of previous history entry
+            const prevEntry = student.enrollmentHistory?.slice(-1)[0];
+            const joinedAt = prevEntry ? prevEntry.leftAt : student.admission_date;
+
+            student.enrollmentHistory.push({
+                batchId: student.batchId,
+                batchName: currentBatch?.name || "Unknown Batch",
+                subjectIds: [...(student.subjectId || [])],
+                joinedAt,
+                leftAt: new Date(),
+            });
+        }
+
+        student.batchId = newBatchId;
+        student.subjectId = Array.isArray(newSubjectIds) ? newSubjectIds : [];
+        await student.save();
+
+        return res.status(200).json({ message: "Student transferred successfully", student });
+    } catch (err) {
+        console.error("Transfer error:", err);
+        return res.status(500).json({ message: "Transfer failed", error: err.message });
+    }
+});
+
 router.get('/attendance/summary', userAuth, async (req, res) => {
     try {
         if (!req.adminId) {
@@ -867,6 +912,205 @@ router.get("/fees/list", userAuth, async (req, res) => {
     } catch (error) {
         console.error("Error fetching fee list:", error);
         res.status(500).json({ error: "Failed to fetch fee list", details: error.message });
+    }
+});
+
+// ── Face Descriptor Endpoints ─────────────────────────────────────────────────
+
+router.patch("/face-descriptor/:studentId", userAuth, async (req, res) => {
+    const { descriptor } = req.body;
+    const adminId = req.adminId;
+    const { studentId } = req.params;
+
+    if (!Array.isArray(descriptor) || descriptor.length !== 128) {
+        return res.status(400).json({ message: "descriptor must be an array of 128 numbers" });
+    }
+
+    try {
+        const student = await Student.findOne({ _id: studentId, adminId });
+        if (!student) return res.status(404).json({ message: "Student not found" });
+
+        student.face_descriptor = {
+            descriptor,
+            has_face: true,
+            registered_at: new Date()
+        };
+        await student.save();
+
+        return res.status(200).json({ message: "Face registered successfully", studentId });
+    } catch (error) {
+        console.error("Error saving face descriptor:", error);
+        return res.status(500).json({ message: "Failed to save face descriptor", error: error.message });
+    }
+});
+
+router.get("/face-descriptors", userAuth, async (req, res) => {
+    const adminId = req.adminId;
+    const { batchId } = req.query;
+
+    try {
+        const query = { adminId, "face_descriptor.has_face": true };
+        if (batchId) query.batchId = batchId;
+
+        const students = await Student.find(query, "_id name face_descriptor.descriptor");
+        const result = students.map(s => ({
+            _id: s._id,
+            name: s.name,
+            descriptor: s.face_descriptor.descriptor
+        }));
+
+        return res.status(200).json(result);
+    } catch (error) {
+        console.error("Error fetching face descriptors:", error);
+        return res.status(500).json({ message: "Failed to fetch face descriptors", error: error.message });
+    }
+});
+
+router.delete("/face-descriptor/:studentId", userAuth, async (req, res) => {
+    const adminId = req.adminId;
+    const { studentId } = req.params;
+
+    try {
+        const student = await Student.findOne({ _id: studentId, adminId });
+        if (!student) return res.status(404).json({ message: "Student not found" });
+
+        student.face_descriptor = { descriptor: null, has_face: false, registered_at: null };
+        await student.save();
+
+        return res.status(200).json({ message: "Face data deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting face descriptor:", error);
+        return res.status(500).json({ message: "Failed to delete face descriptor", error: error.message });
+    }
+});
+
+// GET /api/v1/student/enrollment-history/:id
+// Returns full batch history with per-subject attendance and test results for each enrollment period.
+router.get('/enrollment-history/:id', userAuth, async (req, res, next) => {
+    try {
+        const student = await Student.findOne({ _id: req.params.id, adminId: req.adminId });
+        if (!student) return res.status(404).json({ message: 'Student not found' });
+
+        const ClassLog   = require('../models/ClassLogSchema');
+        const Test       = require('../models/Test');
+
+        // Build all periods: past (enrollmentHistory) + current batch
+        const periods = [];
+
+        for (const eh of (student.enrollmentHistory || [])) {
+            periods.push({
+                batchId   : eh.batchId,
+                batchName : eh.batchName,
+                subjectIds: eh.subjectIds || [],
+                joinedAt  : eh.joinedAt,
+                leftAt    : eh.leftAt,
+                isCurrent : false,
+            });
+        }
+
+        if (student.batchId) {
+            const currentBatch = await Batch.findById(student.batchId).select('name subject');
+            const prevEntry    = (student.enrollmentHistory || []).slice(-1)[0];
+            const joinedAt     = prevEntry ? prevEntry.leftAt : student.admission_date;
+
+            periods.push({
+                batchId   : student.batchId,
+                batchName : currentBatch?.name || 'Unknown',
+                subjectIds: student.subjectId || [],
+                joinedAt,
+                leftAt    : null,
+                isCurrent : true,
+                _batchDoc : currentBatch,
+            });
+        }
+
+        if (periods.length === 0) return res.json({ history: [] });
+
+        const studentIdStr = student._id.toString();
+
+        const history = await Promise.all(periods.map(async (period) => {
+            // Date bounds as YYYY-MM-DD strings for ClassLog (dates stored as strings)
+            const toDateStr = (d) => d ? new Date(d).toISOString().slice(0, 10) : null;
+            const fromStr   = toDateStr(period.joinedAt);
+            const toStr     = toDateStr(period.leftAt) || toDateStr(new Date());
+
+            // Get subject names from batch
+            let batchDoc = period._batchDoc;
+            if (!batchDoc) batchDoc = await Batch.findById(period.batchId).select('subject');
+            const subjectMap = {};
+            (batchDoc?.subject || []).forEach(s => { subjectMap[s._id.toString()] = s.name; });
+
+            // Attendance per subject
+            const subjectIds = period.subjectIds.map(id => id.toString());
+            const classLogs  = await ClassLog.find({
+                adminId   : req.adminId,
+                batch_id  : period.batchId,
+                subject_id: { $in: period.subjectIds },
+            }).select('subject_id classes');
+
+            const subjects = subjectIds.map(subjectIdStr => {
+                const log = classLogs.find(cl => cl.subject_id.toString() === subjectIdStr);
+                const heldClasses = (log?.classes || []).filter(c =>
+                    c.hasHeld && c.updated &&
+                    c.date >= (fromStr || '') &&
+                    c.date <= toStr
+                );
+                const total    = heldClasses.length;
+                const attended = heldClasses.filter(c =>
+                    c.attendance.some(a => a.studentIds.toString() === studentIdStr)
+                ).length;
+                return {
+                    subjectId  : subjectIdStr,
+                    subjectName: subjectMap[subjectIdStr] || 'Unknown Subject',
+                    attended,
+                    total,
+                    percentage : total > 0 ? Math.round((attended / total) * 100) : 0,
+                };
+            });
+
+            // Tests for this period
+            const dateQuery = {};
+            if (period.joinedAt) dateQuery.$gte = new Date(period.joinedAt);
+            if (period.leftAt)   dateQuery.$lte = new Date(period.leftAt);
+
+            const testQuery = {
+                adminId : req.adminId,
+                batchId : period.batchId,
+                status  : 'completed',
+                'studentResults.studentId': student._id,
+            };
+            if (Object.keys(dateQuery).length) testQuery.testDate = dateQuery;
+
+            const tests     = await Test.find(testQuery).select('testName testDate subjectId maxMarks passMarks studentResults').sort({ testDate: 1 });
+            const testResults = tests.map(t => {
+                const r = t.studentResults.find(x => x.studentId.toString() === studentIdStr);
+                return {
+                    testName   : t.testName,
+                    testDate   : t.testDate,
+                    subjectName: subjectMap[t.subjectId?.toString()] || '',
+                    marks      : r?.marks ?? 0,
+                    maxMarks   : t.maxMarks,
+                    passMarks  : t.passMarks,
+                    appeared   : r?.appeared ?? false,
+                    passed     : r?.appeared && r?.marks >= t.passMarks,
+                };
+            });
+
+            return {
+                batchId   : period.batchId,
+                batchName : period.batchName,
+                joinedAt  : period.joinedAt,
+                leftAt    : period.leftAt,
+                isCurrent : period.isCurrent,
+                subjects,
+                tests     : testResults,
+            };
+        }));
+
+        // Most recent period first
+        res.json({ history: history.reverse() });
+    } catch (err) {
+        next(err);
     }
 });
 
