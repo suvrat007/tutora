@@ -128,26 +128,26 @@ const TestScheduleForm = ({ batches, editingTest, setEditingTest, fetchTests, sh
             <Input
                 {...register('testName')}
                 placeholder="Test Name"
-                className="border-[#e6c8a8] bg-white focus:ring-[#e0c4a8] text-[#5a4a3c]"
+                className="rounded-full border-[#e6c8a8] bg-white focus:ring-[#e0c4a8] text-[#5a4a3c]"
             />
             <div className="grid grid-cols-2 gap-3">
                 <Input
                     {...register('maxMarks')}
                     type="number"
                     placeholder="Max Marks"
-                    className="border-[#e6c8a8] bg-white focus:ring-[#e0c4a8] text-[#5a4a3c]"
+                    className="rounded-full border-[#e6c8a8] bg-white focus:ring-[#e0c4a8] text-[#5a4a3c]"
                 />
                 <Input
                     {...register('passMarks')}
                     type="number"
                     placeholder="Pass Marks (opt.)"
-                    className="border-[#e6c8a8] bg-white focus:ring-[#e0c4a8] text-[#5a4a3c]"
+                    className="rounded-full border-[#e6c8a8] bg-white focus:ring-[#e0c4a8] text-[#5a4a3c]"
                 />
             </div>
             <Input
                 {...register('testDate')}
                 type="datetime-local"
-                className="border-[#e6c8a8] bg-white focus:ring-[#e0c4a8] text-[#5a4a3c]"
+                className="rounded-full border-[#e6c8a8] bg-white focus:ring-[#e0c4a8] text-[#5a4a3c]"
             />
             <Dropdown 
                 {...register('batchId')} 
@@ -181,21 +181,21 @@ const TestScheduleForm = ({ batches, editingTest, setEditingTest, fetchTests, sh
                 <Input
                     {...register('cancellationReason')}
                     placeholder="Cancellation Reason"
-                    className="border-[#e6c8a8] bg-white focus:ring-[#e0c4a8] text-[#5a4a3c]"
+                    className="rounded-full border-[#e6c8a8] bg-white focus:ring-[#e0c4a8] text-[#5a4a3c]"
                 />
             )}
             {formError && (
                 <p className="text-red-500 text-sm mt-1">{formError}</p>
             )}
             <div className="flex gap-2 mt-1">
-                <Button type="submit" className="bg-[#8b5e3c] text-white hover:bg-[#7a4f2f] border-0 flex-1">
+                <Button type="submit" className="rounded-full bg-[#8b5e3c] text-white hover:bg-[#7a4f2f] border-0 flex-1">
                     {editingTest ? 'Update Test' : 'Schedule Test'}
                 </Button>
                 {editingTest && (
                     <Button
                         type="button"
                         onClick={() => setEditingTest(null)}
-                        className="bg-[#e0c4a8] text-[#5a4a3c] hover:bg-[#d8bca0] border-0"
+                        className="rounded-full bg-[#e0c4a8] text-[#5a4a3c] hover:bg-[#d8bca0] border-0"
                     >
                         Cancel
                     </Button>

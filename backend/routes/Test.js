@@ -182,4 +182,145 @@ router.delete('/:testId', userAuth, async (req, res) => {
     }
 });
 
+// Public: get group test info + all students across all batches
+// Must be defined before GET /public/:testId to avoid "group" being matched as a testId
+router.get('/public/group/:groupId', async (req, res) => {
+    try {
+        const tests = await Test.find({ groupId: req.params.groupId }).populate('batchId', 'name');
+        if (!tests.length) return res.status(404).json({ message: 'Test not found' });
+        if (tests[0].status === 'cancelled') return res.status(400).json({ message: 'This test has been cancelled' });
+
+        const allStudents = [];
+        for (const test of tests) {
+            if (!test.batchId) continue;
+            const students = await Student.find({ batchId: test.batchId._id }, 'name grade').sort('name');
+            students.forEach(s => {
+                const result = test.studentResults.find(r => r.studentId.toString() === s._id.toString());
+                allStudents.push({
+                    _id: s._id,
+                    name: s.name,
+                    grade: s.grade,
+                    batchName: test.batchId.name,
+                    appeared: result?.appeared || false,
+                });
+            });
+        }
+
+        const first = tests[0];
+        res.json({
+            testName: first.testName,
+            testDate: first.testDate,
+            maxMarks: first.maxMarks,
+            passMarks: first.passMarks,
+            status: first.status,
+            isGroup: true,
+            students: allStudents,
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Public: get single test info + student list (with appeared status)
+router.get('/public/:testId', async (req, res) => {
+    try {
+        const test = await Test.findById(req.params.testId).populate('batchId', 'name');
+        if (!test) return res.status(404).json({ message: 'Test not found' });
+        if (test.status === 'cancelled') return res.status(400).json({ message: 'This test has been cancelled' });
+
+        const students = test.batchId
+            ? await Student.find({ batchId: test.batchId._id }, 'name grade').sort('name')
+            : [];
+
+        res.json({
+            testName: test.testName,
+            testDate: test.testDate,
+            maxMarks: test.maxMarks,
+            passMarks: test.passMarks,
+            status: test.status,
+            batchName: test.batchId?.name,
+            students: students.map(s => {
+                const result = test.studentResults.find(r => r.studentId.toString() === s._id.toString());
+                return { _id: s._id, name: s.name, grade: s.grade, appeared: result?.appeared || false };
+            }),
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Public: submit marks for a group test (backend resolves which batch's test via student's batchId)
+// Must be defined before POST /public/submit/:testId
+router.post('/public/submit/group/:groupId', async (req, res) => {
+    try {
+        const { studentId, marks } = req.body;
+        if (!studentId || marks === undefined || marks === null) {
+            return res.status(400).json({ message: 'studentId and marks are required' });
+        }
+
+        const student = await Student.findById(studentId, 'batchId');
+        if (!student) return res.status(404).json({ message: 'Student not found' });
+
+        const test = await Test.findOne({ groupId: req.params.groupId, batchId: student.batchId });
+        if (!test) return res.status(404).json({ message: 'Test not found for your batch' });
+        if (test.status === 'cancelled') return res.status(400).json({ message: 'This test has been cancelled' });
+
+        const marksNum = Number(marks);
+        if (isNaN(marksNum) || marksNum < 0 || marksNum > test.maxMarks) {
+            return res.status(400).json({ message: `Marks must be between 0 and ${test.maxMarks}` });
+        }
+
+        const existing = test.studentResults.find(r => r.studentId.toString() === studentId);
+        if (existing?.appeared) {
+            return res.status(400).json({ message: 'Marks already submitted for this test' });
+        }
+        if (existing) {
+            existing.marks = marksNum;
+            existing.appeared = true;
+        } else {
+            test.studentResults.push({ studentId, marks: marksNum, appeared: true });
+        }
+
+        await test.save();
+        res.json({ message: 'Marks submitted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Public: submit marks for a single test
+router.post('/public/submit/:testId', async (req, res) => {
+    try {
+        const { studentId, marks } = req.body;
+        if (!studentId || marks === undefined || marks === null) {
+            return res.status(400).json({ message: 'studentId and marks are required' });
+        }
+
+        const test = await Test.findById(req.params.testId);
+        if (!test) return res.status(404).json({ message: 'Test not found' });
+        if (test.status === 'cancelled') return res.status(400).json({ message: 'This test has been cancelled' });
+
+        const marksNum = Number(marks);
+        if (isNaN(marksNum) || marksNum < 0 || marksNum > test.maxMarks) {
+            return res.status(400).json({ message: `Marks must be between 0 and ${test.maxMarks}` });
+        }
+
+        const existing = test.studentResults.find(r => r.studentId.toString() === studentId);
+        if (existing?.appeared) {
+            return res.status(400).json({ message: 'Marks already submitted for this test' });
+        }
+        if (existing) {
+            existing.marks = marksNum;
+            existing.appeared = true;
+        } else {
+            test.studentResults.push({ studentId, marks: marksNum, appeared: true });
+        }
+
+        await test.save();
+        res.json({ message: 'Marks submitted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 module.exports = router;
