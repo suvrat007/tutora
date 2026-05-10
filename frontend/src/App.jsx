@@ -34,6 +34,17 @@ const TeacherPage = lazyWithReload(() => import('@/pages/TeacherManagement/Teach
 const StudentOnboardingPage = lazyWithReload(() => import('@/pages/StudentRegistration/StudentOnboardingPage.jsx'));
 const TestSubmitPage = lazyWithReload(() => import('@/pages/TestSubmit/TestSubmitPage.jsx'));
 
+// Parent portal pages
+const ParentLogin = lazyWithReload(() => import('@/pages/ParentPortal/ParentLogin.jsx'));
+const ParentSetup = lazyWithReload(() => import('@/pages/ParentPortal/ParentSetup.jsx'));
+const ParentBody = lazyWithReload(() => import('@/pages/ParentPortal/ParentBody.jsx'));
+const ParentLayout = lazyWithReload(() => import('@/pages/ParentPortal/ParentLayout.jsx'));
+const ParentDashboard = lazyWithReload(() => import('@/pages/ParentPortal/ParentDashboard.jsx'));
+const ParentAttendancePage = lazyWithReload(() => import('@/pages/ParentPortal/ParentAttendancePage.jsx'));
+const ParentFeesPage = lazyWithReload(() => import('@/pages/ParentPortal/ParentFeesPage.jsx'));
+const ParentTestsPage = lazyWithReload(() => import('@/pages/ParentPortal/ParentTestsPage.jsx'));
+const ParentSchedulePage = lazyWithReload(() => import('@/pages/ParentPortal/ParentSchedulePage.jsx'));
+
 const PageLoader = () => (
     <div className="fixed inset-0 bg-[#f8ede3] flex flex-col items-center justify-center z-50">
         <div className="absolute top-1/4 -left-20 w-72 h-72 bg-[#e0c4a8] rounded-full blur-3xl opacity-20 pointer-events-none" />
@@ -77,6 +88,45 @@ const appRouter = createBrowserRouter([
     {
         path: "/test-submit/:testId",
         element: <Suspense fallback={<PageLoader />}><TestSubmitPage /></Suspense>,
+    },
+    {
+        path: "/parent/login",
+        element: <Suspense fallback={<PageLoader />}><ParentLogin /></Suspense>,
+    },
+    {
+        path: "/parent/setup/:token",
+        element: <Suspense fallback={<PageLoader />}><ParentSetup /></Suspense>,
+    },
+    {
+        path: "/parent",
+        element: <Suspense fallback={<PageLoader />}><ParentBody /></Suspense>,
+        children: [
+            {
+                element: <Suspense fallback={<PageLoader />}><ParentLayout /></Suspense>,
+                children: [
+                    {
+                        index: true,
+                        element: <Suspense fallback={<PageLoader />}><ParentDashboard /></Suspense>,
+                    },
+                    {
+                        path: "attendance",
+                        element: <Suspense fallback={<PageLoader />}><ParentAttendancePage /></Suspense>,
+                    },
+                    {
+                        path: "fees",
+                        element: <Suspense fallback={<PageLoader />}><ParentFeesPage /></Suspense>,
+                    },
+                    {
+                        path: "tests",
+                        element: <Suspense fallback={<PageLoader />}><ParentTestsPage /></Suspense>,
+                    },
+                    {
+                        path: "schedule",
+                        element: <Suspense fallback={<PageLoader />}><ParentSchedulePage /></Suspense>,
+                    },
+                ],
+            },
+        ],
     },
     {
         path: "/",
