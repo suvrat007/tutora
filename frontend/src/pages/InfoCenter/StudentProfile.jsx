@@ -457,13 +457,13 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
                     <WrapperCard>
                         <div
                             className="w-full h-full p-4 bg-[#f8ede3] border-[#ddb892] rounded-2xl shadow-md flex flex-col">
-                            <div className="flex items-center justify-between gap-2 mb-3 flex-shrink-0">
-                                <h2 className="text-base sm:text-xl font-semibold text-[#4a3a2c] flex items-center">
+                            <div className="mb-3 flex-shrink-0">
+                                <h2 className="text-base sm:text-xl font-semibold text-[#4a3a2c] flex items-center mb-2">
                                     <FaCalendarAlt className="text-[#6b4c3b] mr-2 shrink-0"/>
                                     Attendance History
                                 </h2>
-                                <div className="flex items-center gap-1.5 shrink-0">
-                                    <div className="w-24 sm:w-32">
+                                <div className="flex items-center gap-2">
+                                    <div className="flex-1">
                                         <Dropdown
                                             value={statusFilter}
                                             onChange={(e) => setStatusFilter(e.target.value)}
@@ -476,12 +476,12 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
                                             ]}
                                         />
                                     </div>
-                                    <div className="w-24 sm:w-32">
+                                    <div className="flex-1">
                                         <Dropdown
                                             value={subjectFilter}
                                             onChange={(e) => setSubjectFilter(e.target.value)}
                                             options={[
-                                                { label: "All Subj.", value: "" },
+                                                { label: "All Subjects", value: "" },
                                                 ...studentSubjects.map(subject => ({ label: subject, value: subject }))
                                             ]}
                                         />
@@ -489,7 +489,7 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
                                     {(statusFilter || subjectFilter) && (
                                         <button
                                             onClick={resetFilters}
-                                            className="px-2 py-1.5 text-xs bg-[#d7b48f] text-[#4a3a2c] hover:bg-[#d7b48f]/80 rounded-md whitespace-nowrap"
+                                            className="px-2.5 py-2 text-xs bg-[#d7b48f] text-[#4a3a2c] hover:bg-[#d7b48f]/80 rounded-md whitespace-nowrap shrink-0"
                                         >
                                             Reset
                                         </button>
@@ -560,24 +560,24 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
                 <div className="mt-4">
                     <WrapperCard>
                         <div className="w-full p-4 bg-[#f8ede3] border-[#ddb892] rounded-2xl shadow-md flex flex-col">
-                            <div className="flex items-center justify-between gap-2 mb-3 flex-shrink-0">
-                                <h2 className="text-base sm:text-xl font-semibold text-[#4a3a2c] flex items-center gap-1.5 min-w-0">
+                            <div className="mb-3 flex-shrink-0">
+                                <h2 className="text-base sm:text-xl font-semibold text-[#4a3a2c] flex items-center gap-1.5 mb-2">
                                     <ClipboardList className="w-4 h-4 sm:w-5 sm:h-5 text-[#6b4c3b] shrink-0" />
-                                    <span>Tests</span>
+                                    Test Performance
                                     <span className="text-xs sm:text-sm font-normal text-[#6b4c3b]">({testResults.length})</span>
                                 </h2>
-                                <div className="flex items-center gap-1.5 shrink-0">
-                                    <div className="w-24 sm:w-32">
+                                <div className="flex items-center gap-2">
+                                    <div className="flex-1">
                                         <Dropdown
                                             value={testSubjectFilter}
                                             onChange={(e) => setTestSubjectFilter(e.target.value)}
                                             options={[
-                                                { label: "All Subj.", value: "" },
+                                                { label: "All Subjects", value: "" },
                                                 ...testSubjects.map(s => ({ label: s, value: s }))
                                             ]}
                                         />
                                     </div>
-                                    <div className="w-24 sm:w-32">
+                                    <div className="flex-1">
                                         <Dropdown
                                             value={testResultFilter}
                                             onChange={(e) => setTestResultFilter(e.target.value)}
@@ -592,7 +592,7 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
                                     {(testSubjectFilter || testResultFilter) && (
                                         <button
                                             onClick={() => { setTestSubjectFilter(''); setTestResultFilter(''); }}
-                                            className="px-2 py-1.5 text-xs bg-[#d7b48f] text-[#4a3a2c] hover:bg-[#d7b48f]/80 rounded-md whitespace-nowrap"
+                                            className="px-2.5 py-2 text-xs bg-[#d7b48f] text-[#4a3a2c] hover:bg-[#d7b48f]/80 rounded-md whitespace-nowrap shrink-0"
                                         >
                                             Reset
                                         </button>
