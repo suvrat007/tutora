@@ -59,7 +59,7 @@ const ClassFrequencyTrend = () => {
     const totalHeld = weeks.reduce((sum, w) => sum + w.count, 0);
 
     return (
-        <div className="bg-[#f8ede3] rounded-3xl border border-[#e6c8a8] shadow-xl p-4 sm:p-6 sm:h-full flex flex-col overflow-hidden">
+        <div className="bg-[#f8ede3] rounded-3xl border border-[#e6c8a8] shadow-xl p-4 sm:p-6 h-full flex flex-col overflow-hidden">
             <div className="flex items-center justify-between border-b border-[#e6c8a8] pb-2.5 mb-4">
                 <h2 className="text-lg font-semibold text-[#5a4a3c] flex items-center gap-2">
                     <BarChart3 className="w-5 h-5 text-[#c47d3e]" />

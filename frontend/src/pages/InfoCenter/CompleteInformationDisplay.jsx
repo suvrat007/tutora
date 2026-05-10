@@ -15,6 +15,7 @@ const CompleteInformationDisplay = () => {
   const [attendanceFilter, setAttendanceFilter] = useState('');
   const [showStudentProfile, setShowStudentProfile] = useState({ show: false, student: null });
   const [page, setPage] = useState(1);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const PAGE_SIZE = 10;
 
   const batches = useSelector((state) => state.batches) || [];
@@ -167,11 +168,11 @@ const CompleteInformationDisplay = () => {
           {/* Avg Marks */}
           <div className="flex-1 xl:flex-none min-w-0">
             <Card className="w-full bg-[#f8ede3] text-[#4a3a2c] p-5 rounded-2xl flex flex-col gap-4 border border-[#ddb892]">
-              <div className="flex items-center justify-between">
+              <div>
                 <h2 className="text-base font-semibold">Avg. Test Score</h2>
-                <span className="text-xs text-[#6b4c3b] bg-[#f0d9c0] px-2 py-1 rounded-full">
+                <p className="text-xs text-[#7b5c4b] mt-0.5">
                   {testDistribution.total} student{testDistribution.total !== 1 ? 's' : ''} with data
-                </span>
+                </p>
               </div>
               {testDistribution.total === 0 ? (
                 <div className="flex flex-col items-center justify-center py-8 text-sm text-[#6b4c3b] gap-2">
@@ -259,12 +260,18 @@ const CompleteInformationDisplay = () => {
             <div className="bg-[#f8ede3] rounded-3xl overflow-hidden flex flex-col h-full border border-[#ddb892]">
 
               {/* Header */}
-              <div className="px-6 py-4 bg-[#f0d9c0] border-b border-[#e6c8a8]">
-                <h2 className="text-xl font-semibold text-[#5a4a3c]">Students</h2>
+              <div className="px-4 sm:px-6 py-3 sm:py-4 bg-[#f0d9c0] border-b border-[#e6c8a8] flex items-center justify-between gap-2">
+                <h2 className="text-base sm:text-xl font-semibold text-[#5a4a3c]">Students</h2>
+                <button
+                  onClick={() => setFiltersOpen(p => !p)}
+                  className={`md:hidden flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-colors ${filtersOpen ? 'bg-[#e0c4a8] border-[#d4b898] text-[#5a4a3c]' : 'bg-white border-[#e6c8a8] text-[#7b5c4b]'}`}
+                >
+                  Filters{(batchName || subjectName || gradeFilter || attendanceFilter) ? ' ●' : ''}
+                </button>
               </div>
 
               {/* Filters */}
-              <div className="flex flex-wrap gap-3 p-4 border-b border-[#e6c8a8] bg-[#f8ede3]">
+              <div className={`flex-wrap gap-3 p-4 border-b border-[#e6c8a8] bg-[#f8ede3] ${filtersOpen ? 'flex' : 'hidden md:flex'}`}>
                 <div className="flex-1 min-w-[110px]">
                   <label className="block text-xs font-semibold text-[#7b5c4b] uppercase mb-1">Batch</label>
                   <Dropdown
@@ -314,85 +321,139 @@ const CompleteInformationDisplay = () => {
                 </div>
               </div>
 
-              {/* Scrollable table body only */}
+              {/* Scrollable body */}
               <div className="flex flex-col flex-1 min-h-0">
               <div className="flex-1 overflow-y-auto overflow-x-auto">
                 {isLoadingBatches || loadingAttendance ? (
-                  <div className="flex items-center justify-center h-full text-[#6b4c3b]">
+                  <div className="flex items-center justify-center h-full py-16 text-[#6b4c3b]">
                     <Loader2 className="animate-spin w-5 h-5 mr-2" /> Loading data...
                   </div>
                 ) : (
-                  <table className="min-w-[700px] w-full divide-y divide-[#e6c8a8]">
-                    <thead className="bg-[#f0d9c0] sticky top-0 z-10 shadow-sm">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-[#7b5c4b] uppercase tracking-wider">#</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-[#7b5c4b] uppercase tracking-wider">Name</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-[#7b5c4b] uppercase tracking-wider">Grade</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-[#7b5c4b] uppercase tracking-wider">Batch</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-[#7b5c4b] uppercase tracking-wider">Subjects</th>
-                        <th className="px-4 py-3 text-center text-xs font-bold text-[#7b5c4b] uppercase tracking-wider">Attendance</th>
-                        <th className="px-4 py-3 text-center text-xs font-bold text-[#7b5c4b] uppercase tracking-wider">Avg Marks</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-[#7b5c4b] uppercase tracking-wider">School</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-[#7b5c4b] uppercase tracking-wider">Contact</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-[#f8ede3] divide-y divide-[#e6c8a8]">
-                      {pagedData.length > 0 ? (
-                        pagedData.map((student, index) => (
-                          <tr key={student.studentId} className="hover:bg-[#f0d9c0] transition-colors">
-                            <td className="px-4 py-3 text-sm text-[#5a4a3c]">{(safePage - 1) * PAGE_SIZE + index + 1}</td>
-                            <td
-                              className="px-4 py-3 text-sm font-medium text-[#5a4a3c] cursor-pointer hover:underline hover:text-[#8b5e3c]"
-                              onClick={() => handleStudentDisplay(student)}
-                            >
-                              {student.studentName}
-                            </td>
-                            <td className="px-4 py-3 text-sm text-[#5a4a3c]">{student.grade}</td>
-                            <td className="px-4 py-3 text-sm text-[#5a4a3c]">{student.batchName}</td>
-                            <td className="px-4 py-3 text-sm text-[#5a4a3c]">{student.subjects}</td>
-                            <td className="px-4 py-3 text-sm text-center">
-                              <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                  <>
+                    {/* Mobile card list */}
+                    <div className="md:hidden flex flex-col divide-y divide-[#e6c8a8]">
+                      {pagedData.length === 0 ? (
+                        <p className="px-4 py-10 text-center text-sm text-[#6b4c3b]">No students match the current filters</p>
+                      ) : pagedData.map((student, index) => {
+                        const score = testScoreByStudent[student.studentId?.toString()];
+                        return (
+                          <div key={student.studentId} className="px-4 py-3 bg-[#f8ede3]">
+                            {/* Row 1: serial + name + attendance */}
+                            <div className="flex items-center justify-between gap-2 mb-1">
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <span className="text-xs text-[#b0998a] shrink-0">{(safePage - 1) * PAGE_SIZE + index + 1}.</span>
+                                <span
+                                  className="text-sm font-semibold text-[#5a4a3c] cursor-pointer hover:underline hover:text-[#8b5e3c] truncate"
+                                  onClick={() => handleStudentDisplay(student)}
+                                >
+                                  {student.studentName}
+                                </span>
+                              </div>
+                              <span className={`px-2 py-0.5 rounded-full text-xs font-semibold shrink-0 ${
                                 student.percentage >= 75 ? 'bg-green-100 text-green-700' :
                                 student.percentage >= 50 ? 'bg-yellow-100 text-yellow-700' :
                                 'bg-red-100 text-red-700'
-                              }`}>
-                                {student.percentage}%
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 text-sm text-center">
-                              {testScoreByStudent[student.studentId?.toString()] != null ? (
-                                <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                                  testScoreByStudent[student.studentId?.toString()] >= 75 ? 'bg-green-100 text-green-700' :
-                                  testScoreByStudent[student.studentId?.toString()] >= 50 ? 'bg-yellow-100 text-yellow-700' :
-                                  'bg-red-100 text-red-700'
-                                }`}>
-                                  {testScoreByStudent[student.studentId?.toString()]}%
-                                </span>
-                              ) : (
-                                <span className="text-xs text-[#b0998a]">—</span>
-                              )}
-                            </td>
-                            <td className="px-4 py-3 text-sm text-[#5a4a3c]">{student.school_name}</td>
-                            <td className="px-4 py-3 text-sm text-[#5a4a3c]">{student.contact_info?.phoneNumbers?.student || 'N/A'}</td>
+                              }`}>{student.percentage}%</span>
+                            </div>
+                            {/* Row 2: grade · batch · subjects */}
+                            <p className="text-xs text-[#7b5c4b] truncate mb-1">
+                              Cl.{student.grade} · {student.batchName} · {student.subjects}
+                            </p>
+                            {/* Row 3: marks + contact */}
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-1 text-xs text-[#7b5c4b]">
+                                <span>Marks:</span>
+                                {score != null ? (
+                                  <span className={`px-1.5 py-0.5 rounded-full text-xs font-semibold ${
+                                    score >= 75 ? 'bg-green-100 text-green-700' :
+                                    score >= 50 ? 'bg-yellow-100 text-yellow-700' :
+                                    'bg-red-100 text-red-700'
+                                  }`}>{score}%</span>
+                                ) : <span className="text-[#b0998a]">—</span>}
+                              </div>
+                              <span className="text-xs text-[#7b5c4b]">{student.contact_info?.phoneNumbers?.student || ''}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Desktop table */}
+                    <div className="hidden md:block">
+                      <table className="min-w-[700px] w-full divide-y divide-[#e6c8a8]">
+                        <thead className="bg-[#f0d9c0] sticky top-0 z-10 shadow-sm">
+                          <tr>
+                            <th className="px-4 py-3 text-left text-xs font-bold text-[#7b5c4b] uppercase tracking-wider">#</th>
+                            <th className="px-4 py-3 text-left text-xs font-bold text-[#7b5c4b] uppercase tracking-wider">Name</th>
+                            <th className="px-4 py-3 text-left text-xs font-bold text-[#7b5c4b] uppercase tracking-wider">Grade</th>
+                            <th className="px-4 py-3 text-left text-xs font-bold text-[#7b5c4b] uppercase tracking-wider">Batch</th>
+                            <th className="px-4 py-3 text-left text-xs font-bold text-[#7b5c4b] uppercase tracking-wider">Subjects</th>
+                            <th className="px-4 py-3 text-center text-xs font-bold text-[#7b5c4b] uppercase tracking-wider">Attendance</th>
+                            <th className="px-4 py-3 text-center text-xs font-bold text-[#7b5c4b] uppercase tracking-wider">Avg Marks</th>
+                            <th className="px-4 py-3 text-left text-xs font-bold text-[#7b5c4b] uppercase tracking-wider">School</th>
+                            <th className="px-4 py-3 text-left text-xs font-bold text-[#7b5c4b] uppercase tracking-wider">Contact</th>
                           </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan={9} className="px-4 py-10 text-center text-sm text-[#6b4c3b]">
-                            No students match the current filters
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
+                        </thead>
+                        <tbody className="bg-[#f8ede3] divide-y divide-[#e6c8a8]">
+                          {pagedData.length > 0 ? (
+                            pagedData.map((student, index) => (
+                              <tr key={student.studentId} className="hover:bg-[#f0d9c0] transition-colors">
+                                <td className="px-4 py-3 text-sm text-[#5a4a3c]">{(safePage - 1) * PAGE_SIZE + index + 1}</td>
+                                <td
+                                  className="px-4 py-3 text-sm font-medium text-[#5a4a3c] cursor-pointer hover:underline hover:text-[#8b5e3c]"
+                                  onClick={() => handleStudentDisplay(student)}
+                                >
+                                  {student.studentName}
+                                </td>
+                                <td className="px-4 py-3 text-sm text-[#5a4a3c]">{student.grade}</td>
+                                <td className="px-4 py-3 text-sm text-[#5a4a3c]">{student.batchName}</td>
+                                <td className="px-4 py-3 text-sm text-[#5a4a3c]">{student.subjects}</td>
+                                <td className="px-4 py-3 text-sm text-center">
+                                  <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                                    student.percentage >= 75 ? 'bg-green-100 text-green-700' :
+                                    student.percentage >= 50 ? 'bg-yellow-100 text-yellow-700' :
+                                    'bg-red-100 text-red-700'
+                                  }`}>
+                                    {student.percentage}%
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3 text-sm text-center">
+                                  {testScoreByStudent[student.studentId?.toString()] != null ? (
+                                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                                      testScoreByStudent[student.studentId?.toString()] >= 75 ? 'bg-green-100 text-green-700' :
+                                      testScoreByStudent[student.studentId?.toString()] >= 50 ? 'bg-yellow-100 text-yellow-700' :
+                                      'bg-red-100 text-red-700'
+                                    }`}>
+                                      {testScoreByStudent[student.studentId?.toString()]}%
+                                    </span>
+                                  ) : (
+                                    <span className="text-xs text-[#b0998a]">—</span>
+                                  )}
+                                </td>
+                                <td className="px-4 py-3 text-sm text-[#5a4a3c]">{student.school_name}</td>
+                                <td className="px-4 py-3 text-sm text-[#5a4a3c]">{student.contact_info?.phoneNumbers?.student || 'N/A'}</td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan={9} className="px-4 py-10 text-center text-sm text-[#6b4c3b]">
+                                No students match the current filters
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </>
                 )}
               </div>
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="flex items-center justify-between px-4 py-2.5 border-t border-[#e6c8a8] bg-[#f8ede3] shrink-0">
-                  <span className="text-xs text-[#7b5c4b]">
-                    {filteredData.length} students · Page {safePage} of {totalPages}
+                <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 border-t border-[#e6c8a8] bg-[#f8ede3] shrink-0">
+                  <span className="text-xs text-[#7b5c4b] whitespace-nowrap">
+                    <span className="hidden sm:inline">{filteredData.length} students · Page {safePage} of {totalPages}</span>
+                    <span className="sm:hidden">{safePage}/{totalPages}</span>
                   </span>
                   <div className="flex items-center gap-1.5">
                     <button

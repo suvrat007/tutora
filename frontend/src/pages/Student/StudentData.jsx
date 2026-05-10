@@ -151,7 +151,7 @@ const StudentData = () => {
           <PendingApprovals />
 
           {/* Main content: student grid + filters */}
-          <div className="flex flex-col-reverse lg:flex-row gap-4 flex-1 min-h-0">
+          <div className="flex flex-col-reverse lg:flex-row gap-4 lg:flex-1 lg:min-h-0">
           {/* Students List */}
           <div className="w-full lg:w-2/3">
             <WrapperCard>
@@ -184,7 +184,7 @@ const StudentData = () => {
                       <p className="text-sm sm:text-base text-center font-medium">Click here to add a new student</p>
                     </motion.div>
                 ) : (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 p-3 sm:p-4 overflow-y-auto flex-1 min-h-0">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 p-3 sm:p-4 lg:overflow-y-auto lg:flex-1 lg:min-h-0">
                       <motion.div
                           variants={cardVariants}
                           initial="hidden"
@@ -358,9 +358,9 @@ const StudentData = () => {
                   </div>
                 )}
 
-                {/* Student Details Overlay */}
+                {/* Student Details Overlay - Desktop only */}
                 {seeStdDetails?.show && (
-                    <div className="absolute inset-0 z-50 p-3 sm:p-4 bg-[#f8ede3] rounded-3xl overflow-y-auto shadow-xl">
+                    <div className="hidden lg:block absolute inset-0 z-50 p-3 sm:p-4 bg-[#f8ede3] rounded-3xl overflow-y-auto shadow-xl">
                       <StdDataDisplay
                           seeStdDetails={seeStdDetails}
                           setSeeStdDetails={setSeeStdDetails}
@@ -373,6 +373,19 @@ const StudentData = () => {
           </div>
           </div>
         </div>
+
+        {/* Student Details Modal - Mobile only */}
+        {seeStdDetails?.show && (
+            <div className="lg:hidden fixed inset-0 z-[100] flex items-end justify-center bg-black/50 backdrop-blur-sm">
+              <div className="w-full max-h-[92vh] overflow-y-auto rounded-t-3xl bg-[#f8ede3] shadow-2xl">
+                <StdDataDisplay
+                    seeStdDetails={seeStdDetails}
+                    setSeeStdDetails={setSeeStdDetails}
+                    onStudentEdited={handleStudentEdited}
+                />
+              </div>
+            </div>
+        )}
 
         {/* Add Student Modal */}
         {showAddStd && (

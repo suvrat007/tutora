@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AiOutlineDown, AiOutlineUp } from "react-icons/ai";
 import {
@@ -141,6 +141,10 @@ const Sidebar = () => {
     const [register, setRegister] = useState(false);
     const [mobileExpand, setMobileExpand] = useState(null);
 
+    useEffect(() => {
+        setMobileExpand(null);
+    }, [location.pathname]);
+
     return (
         <>
             {/* ── Desktop ── */}
@@ -236,6 +240,9 @@ const Sidebar = () => {
             </motion.div>
 
             {/* ── Mobile Bottom Nav ── */}
+            {mobileExpand && (
+                <div className="fixed inset-0 z-40 md:hidden" onClick={() => setMobileExpand(null)} />
+            )}
             <div className="fixed bottom-0 left-0 right-0 bg-[#e7c6a5] shadow-inner flex md:hidden justify-around py-2 z-50">
                 <MobileNavItem icon={<FaHome />} onClick={() => navigate("/main")} label="Home" />
                 <MobileNavDropdown

@@ -200,9 +200,11 @@ const TeacherPage = () => {
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={openAdd}
-                                className="flex items-center gap-2 bg-[#e0c4a8] text-[#5a4a3c] px-4 py-2 rounded-lg hover:bg-[#d8bca0] transition-all font-medium shadow-sm"
+                                className="flex items-center gap-1.5 bg-[#e0c4a8] text-[#5a4a3c] px-2.5 sm:px-4 py-1.5 sm:py-2 text-sm rounded-lg hover:bg-[#d8bca0] transition-all font-medium shadow-sm whitespace-nowrap"
                             >
-                                <FiPlus /> Add Teacher
+                                <FiPlus className="shrink-0" />
+                                <span className="sm:hidden">Add</span>
+                                <span className="hidden sm:inline">Add Teacher</span>
                             </motion.button>
                         </div>
 

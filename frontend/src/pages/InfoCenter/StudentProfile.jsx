@@ -303,24 +303,24 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
     };
 
     return (
-        <div className="flex flex-col gap-6 p-6 h-full overflow-hidden">
+        <div className="flex flex-col gap-4 p-4 sm:p-6 h-full overflow-hidden">
             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
                     <button
                         onClick={handleGoBack}
-                        className="p-2 bg-[#f4e3d0] rounded-lg shadow-md border border-[#ddb892] hover:bg-[#d7b48f] transition-colors"
+                        className="p-2 bg-[#f4e3d0] rounded-lg shadow-md border border-[#ddb892] hover:bg-[#d7b48f] transition-colors shrink-0"
                     >
-                        <FaChevronLeft className="w-5 h-5 text-[#4a3a2c]"/>
+                        <FaChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-[#4a3a2c]"/>
                     </button>
-                    <h1 className="text-2xl font-bold text-[#4a3a2c]">Student Profile</h1>
+                    <h1 className="text-base sm:text-2xl font-bold text-[#4a3a2c]">Student Profile</h1>
                 </div>
-                <div className="flex items-center gap-3">
-                    <h1 className="text-2xl font-bold text-[#4a3a2c]">Edit Info</h1>
+                <div className="flex items-center gap-2 sm:gap-3">
+                    <h1 className="text-base sm:text-2xl font-bold text-[#4a3a2c]">Edit Info</h1>
                     <button
                         onClick={() => navigate('/main/student-data')}
-                        className="p-2 bg-[#f4e3d0] rounded-lg shadow-md border border-[#ddb892] hover:bg-[#d7b48f] transition-colors"
+                        className="p-2 bg-[#f4e3d0] rounded-lg shadow-md border border-[#ddb892] hover:bg-[#d7b48f] transition-colors shrink-0"
                     >
-                        <FaChevronRight className="w-5 h-5 text-[#4a3a2c]"/>
+                        <FaChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-[#4a3a2c]"/>
                     </button>
                 </div>
             </div>
@@ -457,45 +457,67 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
                     <WrapperCard>
                         <div
                             className="w-full h-full p-4 bg-[#f8ede3] border-[#ddb892] rounded-2xl shadow-md flex flex-col">
-                            <div
-                                className="sm:flex sm:flex-row flex flex-col justify-between items-center mb-4 flex-shrink-0">
-                                <h2 className="text-xl font-semibold text-[#4a3a2c] flex items-center">
-                                    <FaCalendarAlt className="text-[#6b4c3b] mr-2"/>
+                            <div className="mb-3 flex-shrink-0">
+                                <h2 className="text-base sm:text-xl font-semibold text-[#4a3a2c] flex items-center mb-2">
+                                    <FaCalendarAlt className="text-[#6b4c3b] mr-2 shrink-0"/>
                                     Attendance History
                                 </h2>
-                                <div className="flex flex-wrap sm:flex-nowrap items-center justify-center mt-2 gap-2">
-                                    <Dropdown
-                                        value={statusFilter}
-                                        onChange={(e) => setStatusFilter(e.target.value)}
-                                        options={[
-                                            { label: "All Status", value: "" },
-                                            { label: "Present", value: "Present" },
-                                            { label: "Absent", value: "Absent" },
-                                            { label: "No Class", value: "No Class" },
-                                            { label: "No Data", value: "No Data" }
-                                        ]}
-                                    />
-                                    <Dropdown
-                                        value={subjectFilter}
-                                        onChange={(e) => setSubjectFilter(e.target.value)}
-                                        options={[
-                                            { label: "All Subjects", value: "" },
-                                            ...studentSubjects.map(subject => ({ label: subject, value: subject }))
-                                        ]}
-                                    />
-                                    <button
-                                        onClick={resetFilters}
-                                        className="px-3 py-2 text-sm bg-[#d7b48f] text-[#4a3a2c] hover:bg-[#d7b48f]/80 rounded-md"
-                                    >
-                                        Reset
-                                    </button>
+                                <div className="flex items-center gap-2">
+                                    <div className="flex-1">
+                                        <Dropdown
+                                            value={statusFilter}
+                                            onChange={(e) => setStatusFilter(e.target.value)}
+                                            options={[
+                                                { label: "All Status", value: "" },
+                                                { label: "Present", value: "Present" },
+                                                { label: "Absent", value: "Absent" },
+                                                { label: "No Class", value: "No Class" },
+                                                { label: "No Data", value: "No Data" }
+                                            ]}
+                                        />
+                                    </div>
+                                    <div className="flex-1">
+                                        <Dropdown
+                                            value={subjectFilter}
+                                            onChange={(e) => setSubjectFilter(e.target.value)}
+                                            options={[
+                                                { label: "All Subjects", value: "" },
+                                                ...studentSubjects.map(subject => ({ label: subject, value: subject }))
+                                            ]}
+                                        />
+                                    </div>
+                                    {(statusFilter || subjectFilter) && (
+                                        <button
+                                            onClick={resetFilters}
+                                            className="px-2.5 py-2 text-xs bg-[#d7b48f] text-[#4a3a2c] hover:bg-[#d7b48f]/80 rounded-md whitespace-nowrap shrink-0"
+                                        >
+                                            Reset
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                             <div className="flex-1 overflow-y-auto h-full">
-                                <div className="overflow-x-auto">
+                                {/* Mobile cards */}
+                                <div className="sm:hidden flex flex-col divide-y divide-[#ddb892]">
+                                    {filteredAttendanceData.length === 0 ? (
+                                        <div className="p-6 text-center text-[#6b4c3b]">
+                                            <FaCalendarAlt className="text-3xl text-[#6b4c3b] mx-auto mb-2"/>
+                                            <p>No attendance data found</p>
+                                        </div>
+                                    ) : filteredAttendanceData.map((entry, index) => (
+                                        <div key={`${entry.date}-${entry.subjectName}-${index}`} className="py-2.5 px-1">
+                                            <div className="flex items-center justify-between gap-2 mb-1">
+                                                <span className="text-sm font-medium text-[#4a3a2c]">{entry.date}</span>
+                                                <StatusBadge status={entry.status}/>
+                                            </div>
+                                            <p className="text-xs text-[#7b5c4b]">{entry.subjectName} · {entry.batchName}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                                {/* Desktop table */}
+                                <div className="hidden sm:block overflow-x-auto">
                                     <table className="min-w-[600px] w-full text-sm text-left border-collapse">
-                                        <thead
-                                            className="bg-[#d7b48f]/20 text-[#4a3a2c] font-semibold sticky top-0 z-10">
+                                        <thead className="bg-[#d7b48f]/20 text-[#4a3a2c] font-semibold sticky top-0 z-10">
                                         <tr>
                                             <th className="p-3 border-b border-[#ddb892]">Sr No</th>
                                             <th className="p-3 border-b border-[#ddb892]">Date</th>
@@ -507,15 +529,12 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
                                         <tbody>
                                         {filteredAttendanceData.length > 0 ? (
                                             filteredAttendanceData.map((entry, index) => (
-                                                <tr key={`${entry.date}-${entry.subjectName}-${index}`}
-                                                    className="hover:bg-[#e7c6a5]/50">
+                                                <tr key={`${entry.date}-${entry.subjectName}-${index}`} className="hover:bg-[#e7c6a5]/50">
                                                     <td className="p-3 border-b border-[#ddb892]">{index + 1}</td>
                                                     <td className="p-3 border-b border-[#ddb892]">{entry.date}</td>
                                                     <td className="p-3 border-b border-[#ddb892] text-[#7b5c4b] text-xs">{entry.batchName}</td>
                                                     <td className="p-3 border-b border-[#ddb892]">{entry.subjectName}</td>
-                                                    <td className="p-3 border-b border-[#ddb892]">
-                                                        <StatusBadge status={entry.status}/>
-                                                    </td>
+                                                    <td className="p-3 border-b border-[#ddb892]"><StatusBadge status={entry.status}/></td>
                                                 </tr>
                                             ))
                                         ) : (
@@ -541,42 +560,91 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
                 <div className="mt-4">
                     <WrapperCard>
                         <div className="w-full p-4 bg-[#f8ede3] border-[#ddb892] rounded-2xl shadow-md flex flex-col">
-                            <div className="sm:flex sm:flex-row flex flex-col justify-between items-center mb-4 flex-shrink-0">
-                                <h2 className="text-xl font-semibold text-[#4a3a2c] flex items-center gap-2">
-                                    <ClipboardList className="w-5 h-5 text-[#6b4c3b]" />
+                            <div className="mb-3 flex-shrink-0">
+                                <h2 className="text-base sm:text-xl font-semibold text-[#4a3a2c] flex items-center gap-1.5 mb-2">
+                                    <ClipboardList className="w-4 h-4 sm:w-5 sm:h-5 text-[#6b4c3b] shrink-0" />
                                     Test Performance
-                                    <span className="text-sm font-normal text-[#6b4c3b]">({testResults.length} test{testResults.length !== 1 ? 's' : ''})</span>
+                                    <span className="text-xs sm:text-sm font-normal text-[#6b4c3b]">({testResults.length})</span>
                                 </h2>
-                                <div className="flex flex-wrap sm:flex-nowrap items-center justify-center mt-2 gap-2">
-                                    <Dropdown
-                                        value={testSubjectFilter}
-                                        onChange={(e) => setTestSubjectFilter(e.target.value)}
-                                        options={[
-                                            { label: "All Subjects", value: "" },
-                                            ...testSubjects.map(s => ({ label: s, value: s }))
-                                        ]}
-                                    />
-                                    <Dropdown
-                                        value={testResultFilter}
-                                        onChange={(e) => setTestResultFilter(e.target.value)}
-                                        options={[
-                                            { label: "All Results", value: "" },
-                                            { label: "Pass", value: "Pass" },
-                                            { label: "Fail", value: "Fail" },
-                                            { label: "Absent", value: "Absent" },
-                                        ]}
-                                    />
+                                <div className="flex items-center gap-2">
+                                    <div className="flex-1">
+                                        <Dropdown
+                                            value={testSubjectFilter}
+                                            onChange={(e) => setTestSubjectFilter(e.target.value)}
+                                            options={[
+                                                { label: "All Subjects", value: "" },
+                                                ...testSubjects.map(s => ({ label: s, value: s }))
+                                            ]}
+                                        />
+                                    </div>
+                                    <div className="flex-1">
+                                        <Dropdown
+                                            value={testResultFilter}
+                                            onChange={(e) => setTestResultFilter(e.target.value)}
+                                            options={[
+                                                { label: "All Results", value: "" },
+                                                { label: "Pass", value: "Pass" },
+                                                { label: "Fail", value: "Fail" },
+                                                { label: "Absent", value: "Absent" },
+                                            ]}
+                                        />
+                                    </div>
                                     {(testSubjectFilter || testResultFilter) && (
                                         <button
                                             onClick={() => { setTestSubjectFilter(''); setTestResultFilter(''); }}
-                                            className="px-3 py-2 text-sm bg-[#d7b48f] text-[#4a3a2c] hover:bg-[#d7b48f]/80 rounded-md"
+                                            className="px-2.5 py-2 text-xs bg-[#d7b48f] text-[#4a3a2c] hover:bg-[#d7b48f]/80 rounded-md whitespace-nowrap shrink-0"
                                         >
                                             Reset
                                         </button>
                                     )}
                                 </div>
                             </div>
-                            <div className="overflow-x-auto">
+
+                            {/* Mobile cards */}
+                            <div className="sm:hidden flex flex-col divide-y divide-[#ddb892]">
+                                {filteredTestResults.length === 0 ? (
+                                    <div className="p-6 text-center text-[#6b4c3b]">
+                                        <ClipboardList className="w-8 h-8 text-[#ddb892] mx-auto mb-2" />
+                                        <p className="text-sm">{testResults.length === 0 ? 'No test data found' : 'No tests match filters'}</p>
+                                    </div>
+                                ) : filteredTestResults.map((t, i) => (
+                                    <div key={i} className="py-2.5 px-1">
+                                        {/* Row 1: test name + result badge */}
+                                        <div className="flex items-start justify-between gap-2 mb-1">
+                                            <span className="text-sm font-medium text-[#4a3a2c] leading-snug">{t.testName}</span>
+                                            {!t.appeared ? (
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200 shrink-0">
+                                                    <FaTimesCircle className="w-3 h-3" /> Absent
+                                                </span>
+                                            ) : t.passed === 'Pass' ? (
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 border border-green-200 shrink-0">
+                                                    <FaCheckCircle className="w-3 h-3" /> Pass
+                                                </span>
+                                            ) : t.passed === 'Fail' ? (
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-600 border border-red-200 shrink-0">
+                                                    <FaTimesCircle className="w-3 h-3" /> Fail
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-600 border border-blue-200 shrink-0">
+                                                    <FaCheckCircle className="w-3 h-3" /> Appeared
+                                                </span>
+                                            )}
+                                        </div>
+                                        {/* Row 2: date · subject · batch */}
+                                        <p className="text-xs text-[#7b5c4b] mb-0.5">{formatDate(t.date)} · {t.subjectName} · {t.batchName}</p>
+                                        {/* Row 3: marks */}
+                                        {t.appeared && (
+                                            <p className="text-xs text-[#4a3a2c]">
+                                                Marks: <span className="font-semibold">{t.marks}</span>
+                                                <span className="text-[#7b5c4b]"> / {t.maxMarks}</span>
+                                            </p>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Desktop table */}
+                            <div className="hidden sm:block overflow-x-auto">
                                 <table className="min-w-[600px] w-full text-sm text-left border-collapse">
                                     <thead className="bg-[#d7b48f]/20 text-[#4a3a2c] font-semibold">
                                         <tr>
@@ -603,8 +671,7 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
                                                             <span className="text-[#6b4c3b]">—</span>
                                                         ) : (
                                                             <span className="font-semibold text-[#4a3a2c]">
-                                                                {t.marks}
-                                                                <span className="text-xs font-normal text-[#6b4c3b]"> / {t.maxMarks}</span>
+                                                                {t.marks}<span className="text-xs font-normal text-[#6b4c3b]"> / {t.maxMarks}</span>
                                                             </span>
                                                         )}
                                                     </td>
