@@ -32,11 +32,21 @@ router.post('/google-auth',async (req, res) => {
         let isNewUser = false;
 
         if (!user) {
+            const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress;
+            const fingerprint = req.body.fingerprint || req.headers['x-fingerprint'] || null;
+
+            let flagged = false;
+            if (fingerprint) {
+                const existing = await Admin.findOne({ 'fraud.browserFingerprint': fingerprint });
+                if (existing) flagged = true;
+            }
+
             user = new Admin({
                 name: given_name,
                 emailId: email,
                 adminPicURL: picture,
                 isGoogleAuth: true,
+                fraud: { ipAtSignup: ip, browserFingerprint: fingerprint, flagged },
             });
             await user.save();
             isNewUser = true;
@@ -77,8 +87,20 @@ router.post("/signup", async (req, res) => {
         const existingUser = await Admin.findOne({ emailId });
         if (existingUser) return res.status(403).json({ message: "User already exists" });
 
+        const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress;
+        const fingerprint = req.body.fingerprint || req.headers['x-fingerprint'] || null;
+
+        let flagged = false;
+        if (fingerprint) {
+            const existing = await Admin.findOne({ 'fraud.browserFingerprint': fingerprint });
+            if (existing) flagged = true;
+        }
+
         const hashedPassword = await bcrypt.hash(password, 12);
-        const newUser = new Admin({ name, emailId, password: hashedPassword });
+        const newUser = new Admin({
+            name, emailId, password: hashedPassword,
+            fraud: { ipAtSignup: ip, browserFingerprint: fingerprint, flagged },
+        });
         await newUser.save();
 
         const newInstitute = new Institute({

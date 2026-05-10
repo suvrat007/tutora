@@ -1,15 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
 import SideBar from "@/pages/Navbar/SideBar.jsx";
 import Navbar from "@/pages/Navbar/Navbar.jsx";
 import { Outlet, useNavigation } from "react-router-dom";
 import WalkthroughModal, { STORAGE_KEY } from "@/pages/Auth/WalkthroughModal.jsx";
 import LoadingPage from "@/pages/LoadingPage.jsx";
+import UpgradeModal from "@/components/UpgradeModal.jsx";
 
 const MainLayout = () => {
     const navigation = useNavigation();
     const isNavigating = navigation.state === "loading";
     const [dataLoaded, setDataLoaded] = useState(false);
+    const [upgradeModal, setUpgradeModal] = useState({ open: false, reason: 'UPGRADE_TO_PRO' });
+
+    useEffect(() => {
+        const handler = (e) => setUpgradeModal({ open: true, reason: e.detail?.reason ?? 'UPGRADE_TO_PRO' });
+        window.addEventListener('merikaksha:upgrade', handler);
+        return () => window.removeEventListener('merikaksha:upgrade', handler);
+    }, []);
+
     const [showTour, setShowTour] = useState(() => {
         const isNewSignup = sessionStorage.getItem('tutora_new_signup') === '1';
         if (isNewSignup) sessionStorage.removeItem('tutora_new_signup');
@@ -46,6 +55,12 @@ const MainLayout = () => {
             <AnimatePresence>
                 {showTour && <WalkthroughModal onDone={() => setShowTour(false)} />}
             </AnimatePresence>
+
+            <UpgradeModal
+                open={upgradeModal.open}
+                reason={upgradeModal.reason}
+                onClose={() => setUpgradeModal((p) => ({ ...p, open: false }))}
+            />
         </div>
     );
 };

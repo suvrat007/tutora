@@ -4,8 +4,9 @@ const mongoose = require('mongoose');
 const Student = require("../models/Student.js");
 const Batch = require("../models/Batch.js");
 const userAuth = require("../middleware/userAuth.js");
+const checkStudentLimit = require("../middleware/checkStudentLimit.js");
 
-router.post("/add-new-student", userAuth, async (req, res) => {
+router.post("/add-new-student", userAuth, checkStudentLimit, async (req, res) => {
     const { contact_info, batchId, fee_status } = req.body;
     const adminId = req.adminId;
 

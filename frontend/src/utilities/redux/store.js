@@ -9,11 +9,13 @@ import teacherSlice from './teacherSlice';
 import attendanceSlice from './attendanceSlice';
 import feeSummarySlice from './feeSummarySlice';
 import parentUserSlice from './parentUserSlice';
+import subscriptionSlice from './subscriptionSlice';
 
 const store =  configureStore({
     reducer: {
         user: userSlice,
         parentUser: parentUserSlice,
+        subscription: subscriptionSlice,
         batches : batchSlice,
         students : studentSlice,
         classlogs : classLogsSlice,

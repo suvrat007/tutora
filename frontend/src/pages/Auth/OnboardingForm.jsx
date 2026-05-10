@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import axiosInstance from "@/utilities/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import useFetchUser from "@/hooks/useFetchUser.js";
@@ -39,6 +39,15 @@ const OnboardingForm = ({ adminCreds }) => {
     const [localPreview, setLocalPreview] = useState(null);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
+    const fingerprintRef = useRef(null);
+
+    useEffect(() => {
+        import('@fingerprintjs/fingerprintjs').then(({ default: FingerprintJS }) =>
+            FingerprintJS.load().then((fp) => fp.get()).then((result) => {
+                fingerprintRef.current = result.visitorId;
+            })
+        ).catch(() => {});
+    }, []);
 
     const cloudName = import.meta.env.VITE_CLOUD_NAME;
     const uploadPreset = import.meta.env.VITE_UPLOAD_PRESET;
@@ -94,6 +103,7 @@ const OnboardingForm = ({ adminCreds }) => {
                     emailId: adminCreds.emailId,
                     password: adminCreds.password,
                     institute_info: { ...formData },
+                    fingerprint: fingerprintRef.current,
                 }, { withCredentials: true });
             }
 

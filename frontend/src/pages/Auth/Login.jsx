@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "@/utilities/axiosInstance";
 import { useSelector } from "react-redux";
@@ -13,6 +13,17 @@ import { ArrowRight, Eye, EyeOff, Loader2 } from "lucide-react";
 const inputClass =
     "w-full px-4 py-3 rounded-xl border border-[#e8d5c0] bg-white text-[#2c1a0e] placeholder-[#b0998a] text-sm focus:outline-none focus:ring-2 focus:ring-[#c47d3e]/40 focus:border-[#c47d3e] transition-all disabled:opacity-50";
 
+const getFingerprint = async () => {
+    try {
+        const FingerprintJS = (await import('@fingerprintjs/fingerprintjs')).default;
+        const fp = await FingerprintJS.load();
+        const result = await fp.get();
+        return result.visitorId;
+    } catch {
+        return null;
+    }
+};
+
 const Login = () => {
     const [isSignup, setIsSignup] = useState(false);
     const [signupCreds, setSignupCreds] = useState(null);
@@ -22,10 +33,15 @@ const Login = () => {
     const navigate = useNavigate();
     const fetchUser = useFetchUser();
     const loggedInUser = useSelector((state) => state.user);
+    const fingerprintRef = useRef(null);
 
     useEffect(() => {
         if (loggedInUser && !isLoading) navigate("/main");
     }, [loggedInUser, isLoading, navigate]);
+
+    useEffect(() => {
+        getFingerprint().then((fp) => { fingerprintRef.current = fp; });
+    }, []);
 
     const handleInputChange = (e) =>
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -47,7 +63,8 @@ const Login = () => {
     const handleGoogleLogin = async (tokenResponse) => {
         setIsLoading(true);
         try {
-            await axiosInstance.post("auth/google-auth", { access_token: tokenResponse.access_token }, { withCredentials: true });
+            const fp = fingerprintRef.current ?? await getFingerprint();
+            await axiosInstance.post("auth/google-auth", { access_token: tokenResponse.access_token, fingerprint: fp }, { withCredentials: true });
             const user = await fetchUser();
             if (!user?.institute_info?.name) {
                 setSignupCreds({ isGoogleUser: true });

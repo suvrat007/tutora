@@ -14,6 +14,7 @@ const Institute = require('../models/Institutes.js');
 
 const userAuth = require('../middleware/userAuth.js');
 const parentAuth = require('../middleware/parentAuth.js');
+const checkSubscription = require('../middleware/checkSubscription.js');
 
 const isProd = process.env.NODE_ENV === 'production';
 const parentCookieOptions = {
@@ -26,8 +27,8 @@ const parentCookieOptions = {
 
 // ─── Admin-triggered routes ───────────────────────────────────────────────────
 
-// POST /invite — admin generates invite link for a parent
-router.post('/invite', userAuth, async (req, res) => {
+// POST /invite — admin generates invite link for a parent (Pro only)
+router.post('/invite', userAuth, checkSubscription, async (req, res) => {
     try {
         const { studentId, relation } = req.body;
         if (!['mom', 'dad'].includes(relation)) {

@@ -5,10 +5,11 @@ const Test = require('../models/Test');
 const Student = require('../models/Student');
 const Reminder = require('../models/ReminderSchema');
 const userAuth = require('../middleware/userAuth');
+const checkSubscription = require('../middleware/checkSubscription');
 const Batch = require('../models/Batch');
 
-// Create a new test (schedule or log)
-router.post('/createTest', userAuth, async (req, res) => {
+// Create a new test (schedule or log) — Pro only
+router.post('/createTest', userAuth, checkSubscription, async (req, res) => {
     try {
         const { testName, batchId, subjectId, maxMarks, passMarks, testDate, status, studentResults = [], groupId } = req.body;
         

@@ -18,11 +18,16 @@ const TestRouter = require("./routes/Test.js");
 const TeacherRouter = require("./routes/Teacher.js");
 const RegistrationRouter = require("./routes/Registration.js");
 const ParentRouter = require("./routes/Parent.js");
+const SubscriptionRouter = require("./routes/Subscription.js");
+const WebhookRouter = require("./routes/Webhook.js");
 
 app.use(cors({
     origin:['http://localhost:5173','https://tutor-a.vercel.app'],
     credentials: true,
 }))
+
+// Raw body parser for Razorpay webhook MUST come before express.json()
+app.use('/api/webhooks/razorpay', express.raw({ type: 'application/json' }));
 
 app.use(express.json());
 app.use(cookieParser())
@@ -57,6 +62,8 @@ app.use('/api/v1/test', TestRouter);
 app.use('/api/v1/teacher', TeacherRouter);
 app.use('/api/v1/register', RegistrationRouter);
 app.use('/api/v1/parent', ParentRouter);
+app.use('/api/v1/subscription', SubscriptionRouter);
+app.use('/api/webhooks', WebhookRouter);
 app.get('/', (req, res) => {
     res.send('Welcome to the Tutor-A API');
 });

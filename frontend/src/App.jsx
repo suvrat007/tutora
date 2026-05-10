@@ -32,6 +32,8 @@ const Fees = lazyWithReload(() => import('@/pages/Fees Management/Fees.jsx'));
 const TestManagementPage = lazyWithReload(() => import('@/pages/TestManagement/TestManagementPage.jsx'));
 const TeacherPage = lazyWithReload(() => import('@/pages/TeacherManagement/TeacherPage.jsx'));
 const StudentOnboardingPage = lazyWithReload(() => import('@/pages/StudentRegistration/StudentOnboardingPage.jsx'));
+const PricingPage = lazyWithReload(() => import('@/pages/Pricing/Pricing.jsx'));
+const BillingPage = lazyWithReload(() => import('@/pages/Billing/Billing.jsx'));
 const TestSubmitPage = lazyWithReload(() => import('@/pages/TestSubmit/TestSubmitPage.jsx'));
 
 // Parent portal pages
@@ -137,6 +139,10 @@ const appRouter = createBrowserRouter([
                 element: <Suspense fallback={<PageLoader />}><Landing /></Suspense>,
             },
             {
+                path: "pricing",
+                element: <Suspense fallback={<PageLoader />}><PricingPage /></Suspense>,
+            },
+            {
                 path: "login",
                 element: <Suspense fallback={<PageLoader />}><Login /></Suspense>,
             },
@@ -183,6 +189,10 @@ const appRouter = createBrowserRouter([
                     {
                         path: "teachers",
                         element: <Suspense fallback={<PageLoader />}><TeacherPage /></Suspense>,
+                    },
+                    {
+                        path: "billing",
+                        element: <Suspense fallback={<PageLoader />}><BillingPage /></Suspense>,
                     },
                 ],
             },

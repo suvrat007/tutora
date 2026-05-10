@@ -1,14 +1,19 @@
 import axiosInstance from "@/utilities/axiosInstance.jsx";
-import {useDispatch} from "react-redux";
-import {setUser} from "@/utilities/redux/userSlice.js";
+import { useDispatch } from "react-redux";
+import { setUser } from "@/utilities/redux/userSlice.js";
+import { setSubscription } from "@/utilities/redux/subscriptionSlice.js";
 
 const useFetchUser = () => {
     const dispatch = useDispatch();
     const getUser = async () => {
         try {
-            const response = await axiosInstance.get("admin/get", { withCredentials: true });
-            dispatch(setUser(response.data.data));
-            return response.data.data;
+            const [userRes, subRes] = await Promise.all([
+                axiosInstance.get("admin/get", { withCredentials: true }),
+                axiosInstance.get("subscription/status", { withCredentials: true }),
+            ]);
+            dispatch(setUser(userRes.data.data));
+            dispatch(setSubscription(subRes.data));
+            return userRes.data.data;
         } catch (error) {
             console.error("Failed to fetch user session, clearing user state.");
             return null;
@@ -16,4 +21,4 @@ const useFetchUser = () => {
     };
     return getUser;
 }
-export default useFetchUser
+export default useFetchUser;

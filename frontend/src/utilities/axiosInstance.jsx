@@ -17,6 +17,13 @@ axiosInstance.interceptors.response.use(
             error.message = 'Request timed out. Please check your connection and try again.';
         } else if (error.response?.status === 401) {
             console.warn("401 Unauthorized request:", error.config?.url);
+        } else if (error.response?.status === 403) {
+            const code = error.response?.data?.code;
+            if (code === 'UPGRADE_TO_PRO' || code === 'STUDENT_LIMIT_REACHED') {
+                window.dispatchEvent(new CustomEvent('merikaksha:upgrade', {
+                    detail: { reason: error.response.data.error ?? code },
+                }));
+            }
         }
         return Promise.reject(error);
     }

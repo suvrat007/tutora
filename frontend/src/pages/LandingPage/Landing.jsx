@@ -11,6 +11,7 @@ import { useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import Hero from "@/pages/LandingPage/Hero.jsx";
 import VideoModal from "@/pages/LandingPage/VideoModal.jsx";
+import { PricingCards } from "@/pages/Pricing/Pricing.jsx";
 
 /* ── helpers ─────────────────────────────────────────────── */
 const fadeUp = (delay = 0) => ({
@@ -143,7 +144,7 @@ const benefits = [
     { icon: Clock, stat: "2h+", label: "Saved per week vs manual registers" },
     { icon: Zap, stat: "0", label: "Learning curve — works like your phone" },
     { icon: Shield, stat: "100%", label: "Data stays yours — never shared" },
-    { icon: Heart, stat: "Free", label: "Always free for solo educators" },
+    { icon: Heart, stat: "Free", label: "Free to start — no credit card" },
 ];
 
 const testimonials = [
@@ -171,7 +172,7 @@ const testimonials = [
 ];
 
 const faqs = [
-    { question: "Is Tutora free?", answer: "Yes — all core features are free. No hidden charges, no paywalls for things you actually use daily." },
+    { question: "Is MeriKaksha free?", answer: "Yes — the free plan supports up to 12 students and 1 batch with all core daily features (attendance, fees, scheduling, reminders). Upgrade to Pro (₹349/month or ₹2,999/year) to unlock unlimited students, parent portal invites, and test management." },
     { question: "Do I need any tech skills?", answer: "Not at all. If you can use WhatsApp you can use Tutora. The interface is designed to be minimal and self-explanatory." },
     { question: "Is it only for math tutors?", answer: "Tutora works for any subject — math, science, music, language, or anything else. Batches and subjects are fully customizable." },
     { question: "Is student data safe?", answer: "Yes. Data is stored securely and is tied to your account only. No third party ever sees your students' information." },
@@ -616,6 +617,11 @@ const Landing = () => {
                 </div>
             </section>
 
+            {/* ── PRICING ───────────────────────────────────── */}
+            <section id="pricing" className="py-20 md:py-28 px-4 sm:px-6 bg-white">
+                <PricingCards showTitle />
+            </section>
+
             {/* ── FAQ ──────────────────────────────────────── */}
             <section id="faq" className="py-20 md:py-28 px-4 sm:px-6" style={{ background: "#faf6f1" }}>
                 <div className="max-w-3xl mx-auto">
@@ -701,7 +707,7 @@ const Landing = () => {
 
                             <div className="relative">
                                 <p className="text-xs font-bold tracking-widest uppercase text-[#c4a882] mb-4">
-                                    Free forever
+                                    Free to start
                                 </p>
                                 <h2
                                     className="text-4xl sm:text-5xl font-extrabold text-[#fdf5ec] mb-4 tracking-tight leading-tight"
@@ -710,7 +716,7 @@ const Landing = () => {
                                     Give Tutora a try
                                 </h2>
                                 <p className="text-[#c4a882] mb-8 text-base leading-relaxed">
-                                    Free to use. No credit card. Setup takes under a minute.
+                                    Free plan for up to 12 students. No credit card required.
                                 </p>
                                 <motion.button
                                     whileHover={{ scale: 1.03 }}
