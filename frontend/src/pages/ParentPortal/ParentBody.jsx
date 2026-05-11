@@ -9,9 +9,9 @@ const ParentBody = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        fetchParentUser().then((user) => {
-            if (!user) navigate("/parent/login");
-        });
+        fetchParentUser()
+            .then((user) => { if (!user) navigate("/parent/login"); })
+            .catch(() => { /* server/network error — user is authenticated, let page handle it */ });
     }, []);
 
     return <Outlet />;

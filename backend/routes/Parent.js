@@ -168,7 +168,7 @@ router.post('/login', async (req, res) => {
 
 // POST /logout
 router.post('/logout', (req, res) => {
-    res.cookie('parentToken', null, { expires: new Date(Date.now()) });
+    res.clearCookie('parentToken', { httpOnly: true, secure: isProd, sameSite: isProd ? 'none' : 'lax', path: '/' });
     res.status(200).json({ message: 'Logged out successfully' });
 });
 

@@ -10,8 +10,9 @@ const useFetchParentUser = () => {
             dispatch(setParentUser(response.data));
             return response.data;
         } catch (error) {
-            console.error("Failed to fetch parent session, clearing parent state.");
-            return null;
+            const status = error.response?.status;
+            if (status === 401 || status === 403) return null;
+            throw error;
         }
     };
     return getParentUser;
