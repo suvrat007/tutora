@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Eye, EyeOff, Loader2, Download, Upload } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Loader2, Download, Upload, GraduationCap, Users } from "lucide-react";
 import { useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -14,8 +14,6 @@ import { useInstallPWA } from "@/hooks/useInstallPWA.js";
 
 const inputClass =
     "w-full px-4 py-3 rounded-xl border border-[#e8d5c0] bg-white text-[#2c1a0e] placeholder-[#b0998a] text-sm focus:outline-none focus:ring-2 focus:ring-[#c47d3e]/40 focus:border-[#c47d3e] transition-all disabled:opacity-50";
-
-const ROLES = ["tutor", "parent"];
 
 const UnifiedLogin = ({ defaultRole = "tutor" }) => {
     const [role, setRole] = useState(defaultRole);
@@ -164,25 +162,27 @@ const UnifiedLogin = ({ defaultRole = "tutor" }) => {
                     </AnimatePresence>
 
                     <div className="p-5 sm:p-7">
-                        {/* ── Role toggle ── */}
-                        <div className="relative flex bg-[#f5ede3] rounded-xl p-1 mb-4 sm:mb-6 gap-1">
-                            {/* Sliding pill */}
-                            <motion.div
-                                className="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-lg shadow-sm"
-                                animate={{ left: isTutor ? "4px" : "calc(50%)" }}
-                                transition={{ type: "spring", stiffness: 400, damping: 35 }}
-                            />
-                            {ROLES.map((r) => (
-                                <button
-                                    key={r}
-                                    onClick={() => switchRole(r)}
+                        {/* ── Role selector ── */}
+                        <div className="grid grid-cols-2 gap-3 mb-5 sm:mb-6">
+                            {[
+                                { key: "tutor",  label: "Tutor",  sub: "Manage your institute", Icon: GraduationCap },
+                                { key: "parent", label: "Parent", sub: "Track your child",       Icon: Users },
+                            ].map(({ key, label, sub, Icon }) => (
+                                <motion.button
+                                    key={key}
+                                    onClick={() => switchRole(key)}
                                     disabled={isLoading}
-                                    className={`relative z-10 flex-1 py-2 text-sm font-semibold rounded-lg transition-colors cursor-pointer capitalize ${
-                                        role === r ? "text-[#2c1a0e]" : "text-[#9b8778] hover:text-[#5a4a3c]"
+                                    whileTap={{ scale: 0.97 }}
+                                    className={`flex flex-col items-center gap-1.5 py-4 px-3 rounded-2xl border-2 transition-all cursor-pointer ${
+                                        role === key
+                                            ? "border-[#2c1a0e] bg-[#2c1a0e] text-white shadow-md"
+                                            : "border-[#e8d5c0] bg-white text-[#9b8778] hover:border-[#c8a882] hover:text-[#5a4a3c]"
                                     }`}
                                 >
-                                    {r === "tutor" ? "Tutor" : "Parent"}
-                                </button>
+                                    <Icon className="w-5 h-5" />
+                                    <span className="text-sm font-bold leading-none">{label}</span>
+                                    <span className={`text-[10px] leading-tight text-center ${role === key ? "text-white/70" : "text-[#b0998a]"}`}>{sub}</span>
+                                </motion.button>
                             ))}
                         </div>
 
