@@ -206,9 +206,7 @@ const Navbar = ({ user, navigate }) => {
             <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
                 {/* Logo */}
                 <a href="/" className="flex items-center gap-2.5 shrink-0">
-                    <div className="w-8 h-8 rounded-lg bg-[#1a0f07] flex items-center justify-center">
-                        <BookOpen className="w-4 h-4 text-[#f0d5b0]" />
-                    </div>
+                    <img src="/pwa-192x192.png" alt="Tutora Logo" className="w-8 h-8 rounded-lg shadow-sm" />
                     <span
                         className="font-extrabold text-[#1a0f07] text-lg tracking-tight"
                         style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
@@ -733,9 +731,7 @@ const Landing = () => {
                 <div className="max-w-xl mx-auto flex flex-col items-center gap-7">
                     {/* Logo */}
                     <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-lg bg-[#1a0f07] flex items-center justify-center">
-                            <BookOpen className="w-4 h-4 text-[#f0d5b0]" />
-                        </div>
+                        <img src="/pwa-192x192.png" alt="Tutora Logo" className="w-8 h-8 rounded-lg shadow-sm" />
                         <span
                             className="font-extrabold text-[#1a0f07] text-lg tracking-tight"
                             style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}

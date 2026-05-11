@@ -1,6 +1,12 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
+
+// Capture install prompt before React mounts — the event can fire before any useEffect runs
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault()
+  window.__pwaInstallPrompt = e
+})
 import App from './App.jsx'
 import ErrorBoundary from './components/ui/ErrorBoundary.jsx'
 import { GoogleOAuthProvider } from '@react-oauth/google';
