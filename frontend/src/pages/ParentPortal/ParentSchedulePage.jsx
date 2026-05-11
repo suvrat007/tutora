@@ -10,6 +10,7 @@ const ParentSchedulePage = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const todayName = DAYS[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1];
+    const [selectedDay, setSelectedDay] = useState(todayName);
 
     useEffect(() => {
         axiosInstance.get("parent/schedule")
@@ -35,6 +36,8 @@ const ParentSchedulePage = () => {
         </div>
     );
 
+    const classesOnDay = subjects.filter(s => s.days.includes(selectedDay));
+
     return (
         <div className="max-w-2xl mx-auto px-4 py-6">
             <div className="mb-5">
@@ -42,8 +45,56 @@ const ParentSchedulePage = () => {
                 {data.batchName && <p className="text-sm text-[#9b8778] mt-0.5">Batch: {data.batchName}</p>}
             </div>
 
-            {/* Weekly grid */}
-            <div className="bg-white rounded-2xl border border-[#e8d5c0] overflow-hidden shadow-sm mb-6">
+            {/* ── Mobile day-picker view ── */}
+            <div className="sm:hidden mb-6">
+                {/* Day pills */}
+                <div className="flex gap-1.5 mb-4">
+                    {DAYS.map((day, i) => {
+                        const hasClass = subjects.some(s => s.days.includes(day));
+                        const isSelected = selectedDay === day;
+                        const isToday = day === todayName;
+                        return (
+                            <button
+                                key={day}
+                                onClick={() => setSelectedDay(day)}
+                                className={`relative flex-1 py-2.5 rounded-xl flex flex-col items-center justify-center text-[10px] font-semibold transition-colors ${
+                                    isSelected
+                                        ? "bg-[#2c1a0e] text-white"
+                                        : isToday
+                                        ? "bg-[#f5ede3] text-[#7b5c4b] border border-[#e8d5c0]"
+                                        : "bg-white text-[#9b8778] border border-[#e8d5c0]"
+                                }`}
+                            >
+                                {DAY_SHORT[i]}
+                                {hasClass && (
+                                    <span className={`mt-0.5 w-1 h-1 rounded-full ${isSelected ? "bg-white" : "bg-[#8b5e3c]"}`} />
+                                )}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {/* Classes for selected day */}
+                <div className="space-y-2">
+                    {classesOnDay.length === 0 ? (
+                        <div className="bg-white border border-[#e8d5c0] rounded-xl px-4 py-5 text-center">
+                            <p className="text-sm text-[#b0998a]">No classes on {selectedDay}</p>
+                        </div>
+                    ) : (
+                        classesOnDay.map(subj => (
+                            <div key={subj.subjectId} className="bg-white border border-[#e8d5c0] rounded-xl px-4 py-3.5 flex items-center justify-between">
+                                <p className="text-sm font-semibold text-[#2c1a0e]">{subj.subjectName}</p>
+                                <span className="px-2.5 py-1 rounded-lg bg-[#2c1a0e] text-white text-xs font-medium">
+                                    {subj.time}
+                                </span>
+                            </div>
+                        ))
+                    )}
+                </div>
+            </div>
+
+            {/* ── Desktop grid table ── */}
+            <div className="hidden sm:block bg-white rounded-2xl border border-[#e8d5c0] overflow-hidden shadow-sm mb-6">
                 <div className="grid grid-cols-8 border-b border-[#e8d5c0]">
                     <div className="p-3 text-xs font-semibold text-[#9b8778] border-r border-[#e8d5c0]">Subject</div>
                     {DAYS.map((day, i) => (
@@ -53,8 +104,8 @@ const ParentSchedulePage = () => {
                                 day === todayName ? "bg-[#f5ede3] text-[#7b5c4b]" : "text-[#9b8778]"
                             }`}
                         >
-                            <span className="hidden sm:inline">{day}</span>
-                            <span className="sm:hidden">{DAY_SHORT[i]}</span>
+                            <span className="hidden lg:inline">{day}</span>
+                            <span className="lg:hidden">{DAY_SHORT[i]}</span>
                         </div>
                     ))}
                 </div>
@@ -89,8 +140,8 @@ const ParentSchedulePage = () => {
                 ))}
             </div>
 
-            {/* Subject cards with start dates */}
-            <div className="space-y-2">
+            {/* Subject summary cards — desktop only */}
+            <div className="hidden sm:block space-y-2">
                 {subjects.map(subj => (
                     <div key={subj.subjectId} className="bg-white border border-[#e8d5c0] rounded-xl p-4 flex items-center justify-between">
                         <div>
