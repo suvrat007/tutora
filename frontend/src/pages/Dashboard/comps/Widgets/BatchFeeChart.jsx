@@ -17,7 +17,7 @@ const BatchFeeChart = () => {
     const fmt = n => new Intl.NumberFormat("en-IN").format(n);
 
     return (
-        <div className="bg-[#f8ede3] rounded-3xl border border-[#e6c8a8] shadow-xl p-4 sm:p-6 sm:h-full flex flex-col overflow-hidden">
+        <div className="bg-[#f8ede3] rounded-3xl border border-[#e6c8a8] shadow-xl p-4 sm:p-6 h-full flex flex-col overflow-hidden">
             <h2 className="text-lg font-semibold text-[#5a4a3c] border-b border-[#e6c8a8] pb-2.5 mb-4 flex items-center gap-2">
                 <LayoutGrid className="w-5 h-5 text-[#c47d3e]" />
                 Batch-wise Fee Breakdown

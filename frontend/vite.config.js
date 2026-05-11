@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["tutora-logo.png", "models/**/*"],
+      includeAssets: ["tutora-logo.png", "pwa-192x192.png", "pwa-512x512.png", "models/**/*"],
       manifest: {
         name: "Tutora",
         short_name: "Tutora",
@@ -21,21 +21,16 @@ export default defineConfig({
         start_url: "/login",
         icons: [
           {
-            src: "/tutora-logo.png",
+            src: "/pwa-192x192.png",
             sizes: "192x192",
-            type: "image/png",
+            type: "image/png"
           },
           {
-            src: "/tutora-logo.png",
+            src: "/pwa-512x512.png",
             sizes: "512x512",
             type: "image/png",
-          },
-          {
-            src: "/tutora-logo.png",
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "maskable any",
-          },
+            purpose: "any maskable"
+          }
         ],
       },
       workbox: {
