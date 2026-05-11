@@ -19,6 +19,10 @@ const TeacherRouter = require("./routes/Teacher.js");
 const RegistrationRouter = require("./routes/Registration.js");
 const ParentRouter = require("./routes/Parent.js");
 
+// Trust Vercel's proxy so rate limiting uses the real client IP
+// instead of Vercel's shared egress IP (which would bucket all users together)
+app.set('trust proxy', 1);
+
 app.use(cors({
     origin:['http://localhost:5173','https://tutor-a.vercel.app'],
     credentials: true,
@@ -37,14 +41,17 @@ const authLimiter = rateLimit({
 
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 100,
+    max: 200,
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: 'Too many requests, please try again later.' },
 });
 
+// Auth routes only get authLimiter — skip apiLimiter so auth attempts
+// don't eat into the general API quota
 app.use('/api/v1/auth', authLimiter);
-app.use('/api', apiLimiter);
+app.use('/api/v1/parent', rateLimit({ windowMs: 15 * 60 * 1000, max: 20, standardHeaders: true, legacyHeaders: false, message: { error: 'Too many attempts, please try again later.' } }));
+app.use(/^\/api\/(?!v1\/auth|v1\/parent)/, apiLimiter);
 
 app.use('/api/v1/student', StudentRouter);
 app.use('/api/v1/batch', BatchRouter);
