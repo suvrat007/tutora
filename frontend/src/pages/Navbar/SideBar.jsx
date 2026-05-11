@@ -14,8 +14,10 @@ import {
 } from "react-icons/fa";
 import { HiOutlineClipboardList, HiOutlineDocumentText } from "react-icons/hi";
 import { MdExpandLess, MdExpandMore } from "react-icons/md";
-import { FiLogOut } from "react-icons/fi";
+import { FiLogOut, FiDownload } from "react-icons/fi";
+import { Upload } from "lucide-react";
 import useLogoutAdmin from "@/hooks/useLogoutAdmin.js";
+import { useInstallPWA } from "@/hooks/useInstallPWA.js";
 
 // ── Animated hamburger: bottom line shrinks to half when sidebar is closed ───
 
@@ -140,6 +142,7 @@ const Sidebar = () => {
     const [management, setManagement] = useState(false);
     const [register, setRegister] = useState(false);
     const [mobileExpand, setMobileExpand] = useState(null);
+    const { canInstall, install, showIOSHint } = useInstallPWA();
 
     useEffect(() => {
         setMobileExpand(null);
@@ -213,8 +216,40 @@ const Sidebar = () => {
                     />
                 </div>
 
-                {/* Logout — always pinned at bottom */}
-                <div className="pt-4 border-t border-[#d4a97f] shrink-0">
+                {/* Install / iOS hint + Logout — always pinned at bottom */}
+                <div className="pt-4 border-t border-[#d4a97f] shrink-0 flex flex-col gap-1">
+                    {canInstall && (
+                        <button
+                            onClick={install}
+                            className={`cursor-pointer flex w-full items-center gap-3 p-3 rounded-lg transition-all text-[#4a3a2c] hover:bg-[#d1ac8a] ${
+                                !isOpen ? "justify-center" : ""
+                            }`}
+                            title="Install App"
+                        >
+                            <FiDownload size={20} className="flex-shrink-0" />
+                            <AnimatePresence>
+                                {isOpen && (
+                                    <motion.span
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        transition={{ duration: 0.15 }}
+                                        className="whitespace-nowrap"
+                                    >
+                                        Install App
+                                    </motion.span>
+                                )}
+                            </AnimatePresence>
+                        </button>
+                    )}
+                    {showIOSHint && isOpen && (
+                        <div className="flex items-start gap-2 rounded-lg bg-[#f4e3d0] border border-[#d4a97f] px-3 py-2">
+                            <Upload className="w-3.5 h-3.5 mt-0.5 shrink-0 text-[#6b4c3b]" />
+                            <p className="text-[10px] text-[#6b4c3b] leading-snug">
+                                Tap <span className="font-semibold">Share <Upload className="inline w-2.5 h-2.5" /></span> in Safari then <span className="font-semibold">"Add to Home Screen"</span>
+                            </p>
+                        </div>
+                    )}
                     <button
                         onClick={handleLogout}
                         className={`cursor-pointer flex w-full items-center gap-3 p-3 rounded-lg transition-all text-[#4a3a2c] hover:bg-[#d1ac8a] ${
