@@ -50,8 +50,8 @@ const apiLimiter = rateLimit({
 // Auth routes only get authLimiter — skip apiLimiter so auth attempts
 // don't eat into the general API quota
 app.use('/api/v1/auth', authLimiter);
-app.use('/api/v1/parent', rateLimit({ windowMs: 15 * 60 * 1000, max: 20, standardHeaders: true, legacyHeaders: false, message: { error: 'Too many attempts, please try again later.' } }));
-app.use(/^\/api\/(?!v1\/auth|v1\/parent)/, apiLimiter);
+app.use('/api/v1/parent/login', authLimiter);
+app.use(/^\/api\/(?!v1\/auth)/, apiLimiter);
 
 app.use('/api/v1/student', StudentRouter);
 app.use('/api/v1/batch', BatchRouter);
