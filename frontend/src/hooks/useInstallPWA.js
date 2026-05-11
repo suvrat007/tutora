@@ -19,8 +19,14 @@ export function useInstallPWA() {
     setIsStandalone(standalone)
     setIsIOS(detectIOS())
 
+    // Pick up event captured before React mounted
+    if (window.__pwaInstallPrompt) {
+      setPromptEvent(window.__pwaInstallPrompt)
+    }
+
     const handler = (e) => {
       e.preventDefault()
+      window.__pwaInstallPrompt = e
       setPromptEvent(e)
     }
     window.addEventListener("beforeinstallprompt", handler)
