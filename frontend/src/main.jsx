@@ -5,6 +5,7 @@ import App from './App.jsx'
 import ErrorBoundary from './components/ui/ErrorBoundary.jsx'
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import ToastProvider from './components/ui/Toast.jsx';
+import PWAUpdatePrompt from './components/ui/PWAUpdatePrompt.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -12,6 +13,7 @@ createRoot(document.getElementById('root')).render(
       <ErrorBoundary>
         <App />
         <ToastProvider />
+        <PWAUpdatePrompt />
       </ErrorBoundary>
     </GoogleOAuthProvider>
   </StrictMode>,

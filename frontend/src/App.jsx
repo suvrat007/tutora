@@ -26,7 +26,6 @@ const StudentData = lazyWithReload(() => import('./pages/Student/StudentData.jsx
 const BatchPage = lazyWithReload(() => import('./pages/BatchPage/BatchPage.jsx'));
 const Landing = lazyWithReload(() => import('./pages/LandingPage/Landing'));
 const CompleteInformationDisplay = lazyWithReload(() => import('./pages/InfoCenter/CompleteInformationDisplay'));
-const Login = lazyWithReload(() => import('@/pages/Auth/Login.jsx'));
 const InstituteInfo = lazyWithReload(() => import('@/pages/InstiInfo/InstituteInfo.jsx'));
 const Fees = lazyWithReload(() => import('@/pages/Fees Management/Fees.jsx'));
 const TestManagementPage = lazyWithReload(() => import('@/pages/TestManagement/TestManagementPage.jsx'));
@@ -34,8 +33,9 @@ const TeacherPage = lazyWithReload(() => import('@/pages/TeacherManagement/Teach
 const StudentOnboardingPage = lazyWithReload(() => import('@/pages/StudentRegistration/StudentOnboardingPage.jsx'));
 const TestSubmitPage = lazyWithReload(() => import('@/pages/TestSubmit/TestSubmitPage.jsx'));
 
+const UnifiedLogin = lazyWithReload(() => import('@/pages/Auth/UnifiedLogin.jsx'));
+
 // Parent portal pages
-const ParentLogin = lazyWithReload(() => import('@/pages/ParentPortal/ParentLogin.jsx'));
 const ParentSetup = lazyWithReload(() => import('@/pages/ParentPortal/ParentSetup.jsx'));
 const ParentBody = lazyWithReload(() => import('@/pages/ParentPortal/ParentBody.jsx'));
 const ParentLayout = lazyWithReload(() => import('@/pages/ParentPortal/ParentLayout.jsx'));
@@ -91,7 +91,7 @@ const appRouter = createBrowserRouter([
     },
     {
         path: "/parent/login",
-        element: <Suspense fallback={<PageLoader />}><ParentLogin /></Suspense>,
+        element: <Suspense fallback={<PageLoader />}><UnifiedLogin defaultRole="parent" /></Suspense>,
     },
     {
         path: "/parent/setup/:token",
@@ -138,7 +138,7 @@ const appRouter = createBrowserRouter([
             },
             {
                 path: "login",
-                element: <Suspense fallback={<PageLoader />}><Login /></Suspense>,
+                element: <Suspense fallback={<PageLoader />}><UnifiedLogin /></Suspense>,
             },
             {
                 path: "main",
