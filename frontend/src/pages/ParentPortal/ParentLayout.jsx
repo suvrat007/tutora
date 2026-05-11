@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { LayoutDashboard, CalendarCheck, Wallet, BookOpen, Clock, LogOut } from "lucide-react";
+import { LayoutDashboard, CalendarCheck, Wallet, BookOpen, Clock, LogOut, Download, Upload } from "lucide-react";
 import axiosInstance from "@/utilities/axiosInstance.jsx";
 import { clearParentUser } from "@/utilities/redux/parentUserSlice.js";
+import { useInstallPWA } from "@/hooks/useInstallPWA.js";
 
 const navItems = [
     { to: "/parent",            label: "Dashboard",  icon: LayoutDashboard, end: true },
@@ -16,6 +18,8 @@ const ParentLayout = () => {
     const parentUser = useSelector((state) => state.parentUser);
     const dispatch   = useDispatch();
     const navigate   = useNavigate();
+    const { canInstall, install, showIOSHint } = useInstallPWA();
+    const [iosHintOpen, setIosHintOpen] = useState(false);
 
     const handleLogout = async () => {
         try { await axiosInstance.post("parent/logout"); } catch (_) {}
@@ -78,6 +82,23 @@ const ParentLayout = () => {
                             </div>
                         </div>
                     )}
+                    {canInstall && (
+                        <button
+                            onClick={install}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-[#7b5c4b] hover:bg-[#f5ede3] hover:text-[#2c1a0e] transition-colors cursor-pointer mb-1"
+                        >
+                            <Download className="w-4 h-4 shrink-0 stroke-[#8b5e3c]" />
+                            Install App
+                        </button>
+                    )}
+                    {showIOSHint && (
+                        <div className="mb-1 mx-1 flex items-start gap-2 rounded-xl border border-[#e8d5c0] bg-[#faf6f1] px-3 py-2.5">
+                            <Download className="w-3.5 h-3.5 mt-0.5 shrink-0 text-[#8b5e3c]" />
+                            <p className="text-[10px] text-[#7b5c4b] leading-snug">
+                                Tap <span className="inline-flex items-center gap-0.5 font-semibold">Share <Upload className="w-2.5 h-2.5" /></span> in Safari, then <span className="font-semibold">"Add to Home Screen"</span>
+                            </p>
+                        </div>
+                    )}
                     <button
                         onClick={handleLogout}
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-[#7b5c4b] hover:bg-[#f5ede3] hover:text-[#2c1a0e] transition-colors cursor-pointer"
@@ -92,14 +113,44 @@ const ParentLayout = () => {
             <div className="flex-1 flex flex-col md:ml-56">
 
                 {/* Mobile top bar */}
-                <header className="sticky top-0 z-30 bg-white border-b border-[#e8d5c0] px-4 py-3 flex items-center justify-between md:hidden">
-                    <span className="text-lg font-extrabold text-[#2c1a0e] tracking-tight">Tutora</span>
-                    <button
-                        onClick={handleLogout}
-                        className="flex items-center gap-1.5 text-xs text-[#7b5c4b] hover:text-[#2c1a0e] transition-colors px-2 py-1.5 rounded-lg hover:bg-[#f5ede3] cursor-pointer"
-                    >
-                        <LogOut className="w-3.5 h-3.5" />
-                    </button>
+                <header className="sticky top-0 z-30 bg-white border-b border-[#e8d5c0] md:hidden">
+                    <div className="px-4 py-3 flex items-center justify-between">
+                        <span className="text-lg font-extrabold text-[#2c1a0e] tracking-tight">Tutora</span>
+                        <div className="flex items-center gap-1">
+                            {canInstall && (
+                                <button
+                                    onClick={install}
+                                    className="flex items-center text-[#7b5c4b] hover:text-[#2c1a0e] transition-colors px-2 py-1.5 rounded-lg hover:bg-[#f5ede3] cursor-pointer"
+                                    title="Add to Home Screen"
+                                >
+                                    <Download className="w-3.5 h-3.5" />
+                                </button>
+                            )}
+                            {showIOSHint && (
+                                <button
+                                    onClick={() => setIosHintOpen(v => !v)}
+                                    className="flex items-center text-[#7b5c4b] hover:text-[#2c1a0e] transition-colors px-2 py-1.5 rounded-lg hover:bg-[#f5ede3] cursor-pointer"
+                                    title="How to install"
+                                >
+                                    <Download className="w-3.5 h-3.5" />
+                                </button>
+                            )}
+                            <button
+                                onClick={handleLogout}
+                                className="flex items-center gap-1.5 text-xs text-[#7b5c4b] hover:text-[#2c1a0e] transition-colors px-2 py-1.5 rounded-lg hover:bg-[#f5ede3] cursor-pointer"
+                            >
+                                <LogOut className="w-3.5 h-3.5" />
+                            </button>
+                        </div>
+                    </div>
+                    {showIOSHint && iosHintOpen && (
+                        <div className="border-t border-[#e8d5c0] bg-[#faf6f1] px-4 py-2.5 flex items-start gap-2.5">
+                            <Upload className="w-4 h-4 mt-0.5 shrink-0 text-[#8b5e3c]" />
+                            <p className="text-xs text-[#7b5c4b] leading-relaxed">
+                                Tap <span className="font-semibold text-[#5a4a3c]">Share <Upload className="inline w-3 h-3" /></span> at the bottom of Safari, then <span className="font-semibold text-[#5a4a3c]">"Add to Home Screen"</span>.
+                            </p>
+                        </div>
+                    )}
                 </header>
 
                 {/* Desktop top bar */}
