@@ -30,6 +30,7 @@ router.post('/pending/:id/approve', userAuth, async (req, res) => {
             grade: pending.grade,
             school_name: pending.school_name,
             contact_info: pending.contact_info,
+            admission_date: pending.admission_date,
             fee_status: {
                 amount: pending.fee_amount || 0,
                 feeStatus: [{ date: new Date(), paid: false }]
@@ -87,8 +88,8 @@ router.post('/:adminId', async (req, res) => {
         const institute = await Institute.findOne({ adminId: req.params.adminId });
         if (!institute) return res.status(404).json({ message: 'Institute not found' });
 
-        const { name, address, grade, school_name, contact_info, fee_amount } = req.body;
-        if (!name || !address || !grade || !school_name) {
+        const { name, address, grade, school_name, contact_info, fee_amount, admission_date } = req.body;
+        if (!name || !address || !grade || !school_name || !admission_date) {
             return res.status(400).json({ message: 'Missing required fields' });
         }
 
@@ -97,7 +98,8 @@ router.post('/:adminId', async (req, res) => {
             name, address,
             grade: Number(grade),
             school_name, contact_info,
-            fee_amount: Number(fee_amount) || 0
+            fee_amount: Number(fee_amount) || 0,
+            admission_date: new Date(admission_date)
         });
         await pending.save();
         res.status(201).json({ message: 'Registration submitted successfully' });

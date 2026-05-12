@@ -19,6 +19,7 @@ const PendingStudent = new mongoose.Schema({
         }
     },
     fee_amount: { type: Number, default: 0 },
+    admission_date: { type: Date, required: true },
     submittedAt: { type: Date, default: Date.now }
 });
 
