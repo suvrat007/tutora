@@ -8,7 +8,7 @@ const API_BASE = (import.meta.env.VITE_API_URL ?? '') + '/api/v1';
 const pub = axios.create({ baseURL: API_BASE });
 
 const EMPTY_FORM = {
-    name: '', address: '', grade: '', school_name: '',
+    name: '', address: '', grade: '', school_name: '', admission_date: '',
     contact_info: {
         emailIds: { student: '', mom: '', dad: '' },
         phoneNumbers: { student: '', mom: '', dad: '' },
@@ -29,6 +29,7 @@ const SECTIONS = (form) => [
             { label: 'Grade / Class', key: 'grade', type: 'number', value: form.grade, required: true },
             { label: 'School Name', key: 'school_name', type: 'text', value: form.school_name, required: true },
             { label: 'Home Address', key: 'address', type: 'text', value: form.address, required: true },
+            { label: 'Date of Admission', key: 'admission_date', type: 'date', value: form.admission_date, required: true },
         ],
     },
     {
@@ -97,6 +98,7 @@ const StudentOnboardingPage = () => {
         if (!String(form.grade).trim()) e.grade = 'Required';
         if (!form.address.trim()) e.address = 'Required';
         if (!form.school_name.trim()) e.school_name = 'Required';
+        if (!form.admission_date) e.admission_date = 'Required';
         if (!form.contact_info.emailIds.student.trim()) e.email_student = 'Required';
         if (!form.contact_info.phoneNumbers.student.trim()) e.phone_student = 'Required';
         if (!form.contact_info.emailIds.dad.trim()) e.email_dad = 'Required';
