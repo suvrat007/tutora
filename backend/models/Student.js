@@ -15,12 +15,12 @@ const Student = new Schema({
         emailIds: {
             mom: { type: String },
             dad: { type: String },
-            student: { type: String, required: true , unique:true}
+            student: { type: String, required: true }
         },
         phoneNumbers: {
             mom: { type: String },
             dad: { type: String },
-            student: { type: String, required: true , unique:true}
+            student: { type: String, required: true }
         }
     },
     fee_status: {

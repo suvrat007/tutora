@@ -6,27 +6,31 @@ const Batch = require("../models/Batch.js");
 const userAuth = require("../middleware/userAuth.js");
 
 router.post("/add-new-student", userAuth, async (req, res) => {
-    const { contact_info, batchId, fee_status } = req.body;
-    const adminId = req.adminId;
+        const { contact_info, batchId, fee_status, forceAddAsTwin } = req.body;
+        const adminId = req.adminId;
 
-    try {
-        const duplicateQuery = {
-            adminId: adminId,
-            $or: [
-                { "contact_info.emailIds.student": contact_info.emailIds.student },
-                { "contact_info.phoneNumbers.student": contact_info.phoneNumbers.student }
-            ]
-        };
+        try {
+            const duplicateQuery = {
+                adminId: adminId,
+                $or: [
+                    { "contact_info.emailIds.student": contact_info.emailIds.student },
+                    { "contact_info.phoneNumbers.student": contact_info.phoneNumbers.student }
+                ]
+            };
 
-        if (batchId) {
-            duplicateQuery.batchId = batchId;
-        }
+            // Removed batchId filter to ensure duplicate check applies across the entire institute
 
-        const existingStudent = await Student.findOne(duplicateQuery);
+            if (!forceAddAsTwin) {
+                const existingStudent = await Student.findOne(duplicateQuery);
 
-        if (existingStudent) {
-            return res.status(409).json({ message: "Student with same email or phone already exists" });
-        }
+                if (existingStudent) {
+                    return res.status(409).json({ 
+                        message: "Student with same email or phone already exists",
+                        isPotentialTwin: true,
+                        existingStudentName: existingStudent.name
+                    });
+                }
+            }
 
         const studentData = {
             adminId,

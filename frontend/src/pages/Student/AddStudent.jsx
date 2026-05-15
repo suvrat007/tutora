@@ -48,6 +48,7 @@ const AddStudent = ({
         },
     });
     const [formErrors, setFormErrors] = useState({});
+    const [twinPrompt, setTwinPrompt] = useState({ show: false, existingName: "" });
     const fetchStudents = useFetchStudents();
 
     useEffect(() => {
@@ -95,7 +96,9 @@ const AddStudent = ({
         return Object.keys(errors).length === 0;
     };
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (forceAddAsTwin = false) => {
+        // If it's an event object, we don't want it to be passed as forceAddAsTwin
+        const isForceAdd = forceAddAsTwin === true;
         if (!validateForm() || isSubmitting) return;
 
         setIsSubmitting(true);
@@ -104,6 +107,7 @@ const AddStudent = ({
             const studentData = {
                 ...newStudent,
                 batchId: selectedBatchId || null,
+                forceAddAsTwin: isForceAdd
             };
 
             let response;
@@ -149,6 +153,15 @@ const AddStudent = ({
 
         } catch (error) {
             console.error("Submit error:", error);
+
+            if (error.response?.status === 409 && error.response.data?.isPotentialTwin) {
+                setTwinPrompt({
+                    show: true,
+                    existingName: error.response.data.existingStudentName
+                });
+                setIsSubmitting(false);
+                return;
+            }
 
             if (error.response) {
                 const errorMessage = error.response.data?.message || error.response.data?.error || "Server error occurred";
@@ -206,6 +219,43 @@ const AddStudent = ({
             exit="exit"
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-2 sm:p-4"
         >
+            {twinPrompt.show && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                    <div className="bg-[#f8ede3] rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+                        <div className="p-5 sm:p-6 text-center">
+                            <div className="w-16 h-16 bg-[#e6c8a8] rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg className="w-8 h-8 text-[#5a4a3c]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <h3 className="text-lg font-semibold text-[#5a4a3c] mb-2">Potential Duplicate Found</h3>
+                            <p className="text-sm text-[#7b5c4b] mb-6">
+                                A student named <span className="font-bold">"{twinPrompt.existingName}"</span> already exists with these contact details.
+                                <br/><br/>
+                                Are you adding a twin / sibling of this student?
+                            </p>
+                            <div className="flex gap-3 justify-center">
+                                <button
+                                    onClick={() => setTwinPrompt({ show: false, existingName: "" })}
+                                    className="px-4 py-2 bg-[#e6c8a8] text-[#5a4a3c] rounded-lg hover:bg-[#d7b48f] transition text-sm font-medium flex-1"
+                                >
+                                    No, Cancel
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setTwinPrompt({ show: false, existingName: "" });
+                                        handleSubmit(true);
+                                    }}
+                                    className="px-4 py-2 bg-[#5a4a3c] text-[#f8ede3] rounded-lg hover:bg-[#3e332a] transition text-sm font-medium flex-1"
+                                >
+                                    Yes, Add Anyway
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            
             <div className="relative w-[90vw] sm:w-[80vw] md:w-[70vw] lg:w-[50em] bg-[#f8ede3] rounded-3xl shadow-[0_8px_24px_rgba(0,0,0,0.15)] overflow-hidden">
                 <div className="flex items-center justify-between p-3 sm:p-4 border-b border-[#e6c8a8]">
                     <h2 className="text-base sm:text-lg md:text-xl font-semibold text-[#5a4a3c]">

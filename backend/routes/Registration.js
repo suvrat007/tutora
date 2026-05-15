@@ -88,9 +88,37 @@ router.post('/:adminId', async (req, res) => {
         const institute = await Institute.findOne({ adminId: req.params.adminId });
         if (!institute) return res.status(404).json({ message: 'Institute not found' });
 
-        const { name, address, grade, school_name, contact_info, fee_amount, admission_date } = req.body;
-        if (!name || !address || !grade || !school_name || !admission_date) {
+        const { name, address, grade, school_name, contact_info, fee_amount, admission_date, forceAddAsTwin } = req.body;
+        if (!name || !address || !grade || !school_name || !admission_date || !contact_info) {
             return res.status(400).json({ message: 'Missing required fields' });
+        }
+
+        if (!forceAddAsTwin) {
+            const duplicateQuery = {
+                adminId: req.params.adminId,
+                $or: [
+                    { "contact_info.emailIds.student": contact_info.emailIds.student },
+                    { "contact_info.phoneNumbers.student": contact_info.phoneNumbers.student }
+                ]
+            };
+
+            const existingStudent = await Student.findOne(duplicateQuery);
+            if (existingStudent) {
+                return res.status(409).json({ 
+                    message: "Student with same email or phone already exists",
+                    isPotentialTwin: true,
+                    existingStudentName: existingStudent.name
+                });
+            }
+
+            const pendingDuplicate = await PendingStudent.findOne(duplicateQuery);
+            if (pendingDuplicate) {
+                return res.status(409).json({ 
+                    message: "A pending registration with same email or phone already exists",
+                    isPotentialTwin: true,
+                    existingStudentName: pendingDuplicate.name
+                });
+            }
         }
 
         const pending = new PendingStudent({

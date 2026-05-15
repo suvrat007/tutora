@@ -1,6 +1,7 @@
 import { Navigate, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 const ProtectedRoute = ({ children }) => {
     const navigate = useNavigate();
@@ -13,12 +14,15 @@ const ProtectedRoute = ({ children }) => {
                 navigate('/login');
             }, 500);
             return () => clearTimeout(timeout);
+        } else if (user && (!user.institute_info || !user.institute_info.name)) {
+            toast.error("Please complete your institute profile to access the dashboard", { id: "institute-onboarding-toast" });
+            navigate('/login');
         } else {
             setCheckedAuth(true);
         }
     }, [user, navigate]);
 
-    if (!user && !checkedAuth) {
+    if (!checkedAuth) {
         return (
             <div className="min-h-screen bg-[#f8ede3] flex items-center justify-center relative overflow-hidden">
                 <div className="absolute inset-0 overflow-hidden">

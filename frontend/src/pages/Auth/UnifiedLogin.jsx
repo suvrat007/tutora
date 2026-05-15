@@ -32,7 +32,14 @@ const UnifiedLogin = ({ defaultRole = "tutor" }) => {
 
     // Auto-redirect if already logged in
     useEffect(() => {
-        if (loggedInUser && !isLoading) navigate("/main");
+        if (loggedInUser && !isLoading) {
+            if (!loggedInUser?.institute_info?.name) {
+                toast("Please set up your institute to continue", { id: "welcome-onboarding" });
+                setSignupCreds({ isGoogleUser: true });
+            } else {
+                navigate("/main");
+            }
+        }
     }, [loggedInUser, isLoading, navigate]);
 
     useEffect(() => {

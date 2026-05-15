@@ -65,6 +65,7 @@ const StudentOnboardingPage = () => {
     const [errors, setErrors] = useState({});
     const [submitting, setSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+    const [twinPrompt, setTwinPrompt] = useState({ show: false, existingName: "" });
 
     useEffect(() => {
         pub.get(`/register/${adminId}/info`)
@@ -109,8 +110,9 @@ const StudentOnboardingPage = () => {
         return Object.keys(e).length === 0;
     };
 
-    const handleSubmit = async (ev) => {
-        ev.preventDefault();
+    const handleSubmit = async (ev, forceAddAsTwin = false) => {
+        if (ev && ev.preventDefault) ev.preventDefault();
+        const isForceAdd = forceAddAsTwin === true;
         if (!validate() || submitting) return;
         setSubmitting(true);
         try {
@@ -118,9 +120,18 @@ const StudentOnboardingPage = () => {
                 ...form,
                 grade: Number(form.grade),
                 fee_amount: Number(form.fee_amount) || 0,
+                forceAddAsTwin: isForceAdd
             });
             setSubmitted(true);
         } catch (err) {
+            if (err.response?.status === 409 && err.response.data?.isPotentialTwin) {
+                setTwinPrompt({
+                    show: true,
+                    existingName: err.response.data.existingStudentName
+                });
+                setSubmitting(false);
+                return;
+            }
             setErrors(e => ({ ...e, submit: err.response?.data?.message || 'Submission failed. Please try again.' }));
         } finally {
             setSubmitting(false);
@@ -172,7 +183,43 @@ const StudentOnboardingPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[#faf6f1] py-10 px-4">
+        <div className="min-h-screen bg-[#faf6f1] py-10 px-4 relative">
+            {/* Twin Prompt Modal */}
+            {twinPrompt.show && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                    <div className="bg-[#f8ede3] rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+                        <div className="p-5 sm:p-6 text-center">
+                            <div className="w-16 h-16 bg-[#e6c8a8] rounded-full flex items-center justify-center mx-auto mb-4">
+                                <AlertCircle className="w-8 h-8 text-[#5a4a3c]" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-[#5a4a3c] mb-2">Potential Duplicate Found</h3>
+                            <p className="text-sm text-[#7b5c4b] mb-6">
+                                A student named <span className="font-bold">"{twinPrompt.existingName}"</span> is already registered with these contact details.
+                                <br/><br/>
+                                Are you registering a twin / sibling of this student?
+                            </p>
+                            <div className="flex gap-3 justify-center">
+                                <button
+                                    onClick={() => setTwinPrompt({ show: false, existingName: "" })}
+                                    className="px-4 py-2 bg-[#e6c8a8] text-[#5a4a3c] rounded-lg hover:bg-[#d7b48f] transition text-sm font-medium flex-1"
+                                >
+                                    No, Cancel
+                                </button>
+                                <button
+                                    onClick={(e) => {
+                                        setTwinPrompt({ show: false, existingName: "" });
+                                        handleSubmit(e, true);
+                                    }}
+                                    className="px-4 py-2 bg-[#5a4a3c] text-[#f8ede3] rounded-lg hover:bg-[#3e332a] transition text-sm font-medium flex-1"
+                                >
+                                    Yes, Register Anyway
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Background decoration */}
             <div className="pointer-events-none fixed inset-0 -z-10">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-[#e7c6a5]/20 rounded-full blur-[100px]" />
