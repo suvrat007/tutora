@@ -3,15 +3,27 @@ import {useEffect, useRef} from "react";
 import { useSelector } from "react-redux";
 import axiosInstance from "@/utilities/axiosInstance.jsx";
 import useFetchUser from "@/hooks/useFetchUser.js";
+import { useBackendStatus } from "@/utilities/BackendStatusContext.jsx";
 
 const Body = () => {
     const fetchUser=useFetchUser()
     const batches = useSelector((state) => state.batches);
+    const authStatus = useSelector((state) => state.authStatus);
+    const { status: backendStatus } = useBackendStatus();
     const hasEnsuredTodayRef = useRef(false);
 
     useEffect(() => {
         fetchUser();
     }, []);
+
+    // The first check can land while the backend is still cold-starting. Once
+    // it answers the health ping, ask again rather than leaving the admin
+    // stuck on the login screen with a perfectly good session cookie.
+    useEffect(() => {
+        if (backendStatus === "ready" && authStatus === "unreachable") {
+            fetchUser();
+        }
+    }, [backendStatus, authStatus]);
 
     useEffect(() => {
         const getTodayInfo = () => {

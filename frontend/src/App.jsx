@@ -9,6 +9,8 @@ import ProtectedRoute from "@/ProtectedRoute.jsx";
 import { ThemeProvider } from "./components/ui/ThemeProvider.jsx";
 import MainLayout from "./pages/MainLayout.jsx";
 import { Analytics } from "@vercel/analytics/react";
+import BackendWakeOverlay from "./components/ui/BackendWakeOverlay.jsx";
+import { BackendStatusProvider } from "./utilities/BackendStatusContext.jsx";
 
 // On chunk-load failure (stale cache after a new deploy), force a full reload
 // so the browser fetches fresh HTML and the correct hashed chunk filenames.
@@ -199,8 +201,11 @@ function App() {
             disableTransitionOnChange
         >
             <Provider store={store}>
-                <Analytics/>
-                <RouterProvider router={appRouter} />
+                <BackendStatusProvider>
+                    <Analytics/>
+                    <BackendWakeOverlay />
+                    <RouterProvider router={appRouter} />
+                </BackendStatusProvider>
             </Provider>
         </ThemeProvider>
     );

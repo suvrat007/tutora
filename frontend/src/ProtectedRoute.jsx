@@ -1,28 +1,36 @@
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import toast from "react-hot-toast";
+import { useBackendStatus } from "@/utilities/BackendStatusContext.jsx";
 
 const ProtectedRoute = ({ children }) => {
     const navigate = useNavigate();
     const user = useSelector((store) => store.user);
-    const [checkedAuth, setCheckedAuth] = useState(false);
+    const authStatus = useSelector((store) => store.authStatus);
+    const { status: backendStatus } = useBackendStatus();
+
+    const hasInstitute = Boolean(user?.institute_info?.name);
 
     useEffect(() => {
-        if (user === null) {
-            const timeout = setTimeout(() => {
+        if (user) {
+            if (!hasInstitute) {
+                toast.error("Please complete your institute profile to access the dashboard", { id: "institute-onboarding-toast" });
                 navigate('/login');
-            }, 500);
-            return () => clearTimeout(timeout);
-        } else if (user && (!user.institute_info || !user.institute_info.name)) {
-            toast.error("Please complete your institute profile to access the dashboard", { id: "institute-onboarding-toast" });
-            navigate('/login');
-        } else {
-            setCheckedAuth(true);
+            }
+            return;
         }
-    }, [user, navigate]);
+        // No session in hand. Only bounce to /login once we know the server
+        // actually rejected us — while it's cold-starting the check simply
+        // hasn't been answered yet, and signing the admin out for that is wrong.
+        const rejected = authStatus === 'unauthenticated';
+        const gaveUp = authStatus !== 'authenticated' && backendStatus === 'failed';
+        if (rejected || gaveUp) {
+            navigate('/login');
+        }
+    }, [user, hasInstitute, authStatus, backendStatus, navigate]);
 
-    if (!checkedAuth) {
+    if (!user || !hasInstitute) {
         return (
             <div className="min-h-screen bg-[#f8ede3] flex items-center justify-center relative overflow-hidden">
                 <div className="absolute inset-0 overflow-hidden">

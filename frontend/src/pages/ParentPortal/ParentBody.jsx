@@ -1,18 +1,36 @@
 import { Outlet, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useEffect, useRef } from "react";
 import useFetchParentUser from "@/hooks/useFetchParentUser.js";
+import { useBackendStatus } from "@/utilities/BackendStatusContext.jsx";
 
 const ParentBody = () => {
     const fetchParentUser = useFetchParentUser();
-    const parentUser = useSelector((state) => state.parentUser);
     const navigate = useNavigate();
+    const { status: backendStatus } = useBackendStatus();
+    const unreachableRef = useRef(false);
+
+    const checkSession = () =>
+        fetchParentUser()
+            .then((user) => {
+                unreachableRef.current = false;
+                if (!user) navigate("/parent/login");
+            })
+            .catch(() => {
+                // Server/network error — the session may well be fine, so hold
+                // the page instead of redirecting, and try again once it's up.
+                unreachableRef.current = true;
+            });
 
     useEffect(() => {
-        fetchParentUser()
-            .then((user) => { if (!user) navigate("/parent/login"); })
-            .catch(() => { /* server/network error — user is authenticated, let page handle it */ });
+        checkSession();
     }, []);
+
+    useEffect(() => {
+        if (backendStatus === "ready" && unreachableRef.current) {
+            unreachableRef.current = false;
+            checkSession();
+        }
+    }, [backendStatus]);
 
     return <Outlet />;
 };

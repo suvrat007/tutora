@@ -31,6 +31,14 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser())
 
+// Registered before the rate limiters so the frontend's cold-start ping is
+// never throttled. Renders on a free tier that sleeps: a successful response
+// here means the process is up AND the DB connected (we only listen after).
+app.get('/api/v1/health', (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    res.json({ status: 'ok', uptime: Math.round(process.uptime()) });
+});
+
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 20,

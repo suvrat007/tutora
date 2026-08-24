@@ -9,10 +9,12 @@ import teacherSlice from './teacherSlice';
 import attendanceSlice from './attendanceSlice';
 import feeSummarySlice from './feeSummarySlice';
 import parentUserSlice from './parentUserSlice';
+import authStatusSlice from './authStatusSlice';
 
 const store =  configureStore({
     reducer: {
         user: userSlice,
+        authStatus: authStatusSlice,
         parentUser: parentUserSlice,
         batches : batchSlice,
         students : studentSlice,
