@@ -156,7 +156,7 @@ const Sidebar = () => {
                 transition={{ duration: 0.25, ease: "easeInOut" }}
                 className="bg-[#e7c6a5] shadow-2xl rounded-3xl ml-4 my-4 px-4 py-6 flex-col hidden md:flex overflow-hidden flex-shrink-0"
             >
-                {/* Header — never scrolls */}
+                {/* Header - never scrolls */}
                 <div className={`flex items-center gap-3 h-9 shrink-0 ${isOpen ? "px-1" : "justify-center"}`}>
                     <button
                         onClick={() => setIsOpen((p) => !p)}
@@ -216,7 +216,7 @@ const Sidebar = () => {
                     />
                 </div>
 
-                {/* Install / iOS hint + Logout — always pinned at bottom */}
+                {/* Install / iOS hint + Logout - always pinned at bottom */}
                 <div className="pt-4 border-t border-[#d4a97f] shrink-0 flex flex-col gap-1">
                     {canInstall && (
                         <button

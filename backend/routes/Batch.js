@@ -54,9 +54,17 @@ router.delete("/delete-batch/:id", userAuth, async (req, res) => {
 
         const batchDeleteResult = await Batch.deleteOne({ adminId, _id: batchId });
 
+        // The cascades below used to run even when the batch delete matched
+        // nothing, and were themselves unscoped - so any logged-in admin could
+        // wipe another tenant's students by naming their batch id. Bail out
+        // unless this admin really did own the batch.
+        if (batchDeleteResult.deletedCount !== 1) {
+            return res.status(404).json({ message: "Batch not found" });
+        }
+
         if (shouldDeleteStudents) {
-            const studentDeleteResult = await Student.deleteMany({ batchId });
-            const classLogDeleteResult = await ClassLog.deleteMany({ batch_id:batchId });
+            const studentDeleteResult = await Student.deleteMany({ batchId, adminId });
+            const classLogDeleteResult = await ClassLog.deleteMany({ batch_id:batchId, adminId });
             return res.status(200).json({
                 message: "Batch and associated students deleted successfully",
                 batchDeleteResult,
@@ -65,10 +73,10 @@ router.delete("/delete-batch/:id", userAuth, async (req, res) => {
             });
         } else {
             const studentUpdateResult = await Student.updateMany(
-                { batchId },
+                { batchId, adminId },
                 { $set: { batchId: null } }
             );
-            const classLogUpdateResult = await ClassLog.deleteMany({ batch_id:batchId });
+            const classLogUpdateResult = await ClassLog.deleteMany({ batch_id:batchId, adminId });
             return res.status(200).json({
                 message: "Batch deleted and students disassociated",
                 batchDeleteResult,
@@ -88,13 +96,25 @@ router.patch("/update-batch/:id", userAuth,async (req, res) => {
     const { name } = req.body;
 
     try {
-        const updateData = { ...req.body };
+        // Allowlist rather than spreading req.body: the old code let a caller
+        // pass adminId and move somebody else's batch into their own account.
+        const ALLOWED = ['name', 'forStandard', 'teacherInCharge', 'subject'];
+        const updateData = {};
+        ALLOWED.forEach((key) => {
+            if (req.body[key] !== undefined) updateData[key] = req.body[key];
+        });
 
         if (name) {
             updateData.normalized_name = name.replace(/\s+/g, "").toLowerCase();
         }
 
-        const updated = await Batch.findByIdAndUpdate(id, updateData, { new: true });
+        // Scoped: previously findByIdAndUpdate with no adminId, so any admin
+        // could edit any batch whose id they knew.
+        const updated = await Batch.findOneAndUpdate(
+            { _id: id, adminId: req.adminId },
+            updateData,
+            { new: true }
+        );
 
         if (!updated) {
             return res.status(404).json({ message: `${name || "Batch"} not found` });

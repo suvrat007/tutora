@@ -251,7 +251,7 @@ const DashboardCalendar = ({ onReminderAdded, refreshKey = 0 }) => {
                     <h2 className="text-lg font-semibold text-[#5a4a3c] flex items-center gap-2">
                         <CalendarIcon className="w-5 h-5 text-[#c47d3e]" />
                         Reminders Calendar
-                        <span className="text-xs font-normal text-[#b0998a] hidden sm:inline">— click a date to view or add</span>
+                        <span className="text-xs font-normal text-[#b0998a] hidden sm:inline"> - click a date to view or add</span>
                     </h2>
                     <div className="flex items-center gap-2">
                         <CalendarDatePicker>

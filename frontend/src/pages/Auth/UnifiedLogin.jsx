@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Eye, EyeOff, Loader2, Download, Upload, GraduationCap, Users } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Loader2, Download, Upload, GraduationCap, Users, Compass } from "lucide-react";
 import { useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -11,6 +11,10 @@ import { setParentUser } from "@/utilities/redux/parentUserSlice.js";
 import useFetchUser from "@/hooks/useFetchUser.js";
 import OnboardingForm from "@/pages/Auth/OnboardingForm.jsx";
 import { useInstallPWA } from "@/hooks/useInstallPWA.js";
+import { setUser } from "@/utilities/redux/userSlice.js";
+import { startGuest } from "@/utilities/redux/guestSlice.js";
+import { normaliseSession, beginSession } from "@/utilities/guest/guestSession.js";
+import { useBackendStatus } from "@/utilities/BackendStatusContext.jsx";
 
 const inputClass =
     "w-full px-4 py-3 rounded-xl border border-[#e8d5c0] bg-white text-[#2c1a0e] placeholder-[#b0998a] text-sm focus:outline-none focus:ring-2 focus:ring-[#c47d3e]/40 focus:border-[#c47d3e] transition-all disabled:opacity-50";
@@ -29,6 +33,8 @@ const UnifiedLogin = ({ defaultRole = "tutor" }) => {
     const loggedInUser = useSelector((state) => state.user);
     const parentUser = useSelector((state) => state.parentUser);
     const { canInstall, install, showIOSHint } = useInstallPWA();
+    const { status: backendStatus } = useBackendStatus();
+    const demoEnded = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("demo") === "ended";
 
     // Auto-redirect if already logged in
     useEffect(() => {
@@ -68,6 +74,31 @@ const UnifiedLogin = ({ defaultRole = "tutor" }) => {
             navigate("/main");
         } catch (err) {
             toast.error(err.response?.data?.message || "Login failed. Please check your credentials.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleGuestLogin = async () => {
+        setIsLoading(true);
+        try {
+            const { data } = await axiosInstance.post("auth/guest", {});
+            const session = normaliseSession(data.guest);
+
+            // Register the session before setting the user: setUser flips
+            // authStatus, which trips the redirect effect above and starts the
+            // dashboard's data fetches - those need guest mode already live.
+            beginSession(session);
+            dispatch(startGuest(session));
+            dispatch(setUser(data.user));
+
+            // The walkthrough is a guided product tour, which is exactly what a
+            // first-time visitor wants. Session-scoped so it doesn't suppress
+            // the tour for whoever signs up for real on this device later.
+            sessionStorage.setItem("tutora_new_signup", "1");
+            navigate("/main");
+        } catch (err) {
+            toast.error(err.response?.data?.message || "The demo isn't available right now.");
         } finally {
             setIsLoading(false);
         }
@@ -169,6 +200,15 @@ const UnifiedLogin = ({ defaultRole = "tutor" }) => {
                     </AnimatePresence>
 
                     <div className="p-5 sm:p-7">
+                        {demoEnded && (
+                            <div className="mb-5 rounded-2xl border border-[#e8d5c0] bg-[#faf1e8] px-4 py-3 text-center">
+                                <p className="text-sm font-semibold text-[#2c1a0e]">That's the end of the demo</p>
+                                <p className="mt-1 text-xs text-[#7b5c4b]">
+                                    Create a free account to set up your own institute - it takes a minute.
+                                </p>
+                            </div>
+                        )}
+
                         {/* ── Role selector ── */}
                         <div className="grid grid-cols-2 gap-3 mb-5 sm:mb-6">
                             {[
@@ -318,6 +358,23 @@ const UnifiedLogin = ({ defaultRole = "tutor" }) => {
                                         </svg>
                                         Continue with Google
                                     </button>
+
+                                    {/* Deliberately tertiary: a loud guest button
+                                        would cannibalise real signups. */}
+                                    <div className="mt-5 pt-4 border-t border-[#e8d5c0]">
+                                        <button
+                                            type="button"
+                                            onClick={handleGuestLogin}
+                                            disabled={isLoading || backendStatus === "waking"}
+                                            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-[#d4b896] bg-transparent text-[#7b5c4b] text-sm font-medium hover:bg-white/70 hover:border-[#c47d3e] transition-all disabled:opacity-50 cursor-pointer"
+                                        >
+                                            <Compass className="w-4 h-4" />
+                                            Check out the app as a guest
+                                        </button>
+                                        <p className="text-center text-[11px] text-[#b0998a] mt-2">
+                                            10-minute tour of a sample institute. No signup, nothing saved.
+                                        </p>
+                                    </div>
                                 </motion.div>
                             ) : (
                                 <motion.form

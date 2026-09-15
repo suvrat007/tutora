@@ -160,7 +160,7 @@ const TestSubmitPage = () => {
                                 <option value="">Select your name...</option>
                                 {availableStudents.map(s => (
                                     <option key={s._id} value={s._id}>
-                                        {s.name}{isGroup && s.batchName ? ` — ${s.batchName}` : ''}
+                                        {s.name}{isGroup && s.batchName ? ` - ${s.batchName}` : ''}
                                     </option>
                                 ))}
                             </select>

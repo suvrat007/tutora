@@ -1,11 +1,8 @@
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "@/utilities/axiosInstance.jsx";
-import { deleteUser } from "@/utilities/redux/userSlice.js";
-import {clearBatches} from "@/utilities/redux/batchSlice.js";
-import {clearClassLogs} from "@/utilities/redux/classLogsSlice.js";
-import {clearGroupedStudents} from "@/utilities/redux/studentSlice.js";
-import {clearFeeData} from "@/utilities/redux/feeSlice.js";
+import { RESET_APP } from "@/utilities/redux/store.js";
+import { clearApiCaches } from "@/utilities/guest/guestTeardown.js";
 import toast from 'react-hot-toast';
 
 const useLogoutAdmin = () => {
@@ -18,11 +15,11 @@ const useLogoutAdmin = () => {
                 withCredentials: true,
             });
 
-            dispatch(deleteUser());
-            dispatch(clearBatches()) ;
-            dispatch(clearClassLogs());
-            dispatch(clearGroupedStudents());
-            dispatch(clearFeeData());
+            // One reset clears all eleven slices. The previous per-slice list had
+            // drifted and was leaving tests, teachers, attendance and feeSummary
+            // behind for the next account logged in on this device.
+            dispatch({ type: RESET_APP });
+            await clearApiCaches();
 
             navigate("/", { replace: true });
         } catch (error) {

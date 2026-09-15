@@ -16,6 +16,7 @@ import WrapperCard from "@/components/ui/WrapperCard.jsx";
 import useFetchStudents from "@/hooks/useFetchStudents.js";
 import useFetchClassLogs from "@/hooks/useFetchClassLogs.js";
 import Dropdown from "@/components/ui/Dropdown";
+import useIsGuest from "@/hooks/useIsGuest.js";
 
 const selectClass = "w-40";
 
@@ -33,6 +34,7 @@ export const AttendancePage = () => {
         resetStudentData,
     } = state;
 
+    const isGuest = useIsGuest();
     const batches = useSelector((s) => s.batches);
     const groupedStudents = useSelector((s) => s.students.groupedStudents);
     const fetchGroupedStudents = useFetchStudents();
@@ -179,7 +181,9 @@ export const AttendancePage = () => {
                                 Clear
                             </button>
 
-                            {isFilterActive && canMark && (
+                            {/* No webcam prompts for a stranger evaluating the
+                                app, and no biometric capture in a demo. */}
+                            {isFilterActive && canMark && !isGuest && (
                                 <button
                                     onClick={() => setFaceScanMode(prev => !prev)}
                                     className={`px-4 py-2.5 text-sm font-medium rounded-full shadow-sm transition-colors flex items-center gap-1.5 ${
@@ -256,7 +260,7 @@ export const AttendancePage = () => {
                     </WrapperCard>
                 </div>
 
-                {/* Right: Summary — full height */}
+                {/* Right: Summary - full height */}
                 <div className="flex-1 min-w-0 min-h-[24rem] lg:min-h-0">
                     <WrapperCard>
                         <AttendancePercentages

@@ -2,7 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 
-// Capture install prompt before React mounts — the event can fire before any useEffect runs
+// Capture install prompt before React mounts - the event can fire before any useEffect runs
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault()
   window.__pwaInstallPrompt = e

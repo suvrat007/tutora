@@ -29,7 +29,7 @@ export const useStudentFetcher = (batches, setStudents, setMarkedPresentStudents
             setPresentIds(new Set(presentIds));
 
             if (markedPresentStudents.length > 0) {
-                toast(`${markedPresentStudents.length} students already marked present`, { icon: '📋' });
+                toast(`${markedPresentStudents.length} students already marked present`);
             }
         } catch (err) {
             console.error(err);

@@ -98,7 +98,7 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
     const [testSubjectFilter, setTestSubjectFilter] = useState('');
     const [testResultFilter, setTestResultFilter] = useState('');
 
-    // All hooks must be called unconditionally — before any early return
+    // All hooks must be called unconditionally - before any early return
     const classlogs = useSelector((state) => state.classlogs) || [];
     const batches = useSelector((state) => state.batches) || [];
     const allTests = useSelector((state) => state.tests.tests) || [];
@@ -238,8 +238,8 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
                 return [{
                     testName: test.testName,
                     date: test.testDate,
-                    batchName: batch?.name || '—',
-                    subjectName: subject?.name || '—',
+                    batchName: batch?.name || ' - ',
+                    subjectName: subject?.name || ' - ',
                     maxMarks: test.maxMarks,
                     passMarks: test.passMarks,
                     marks: result.marks,
@@ -260,7 +260,7 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
         return { appeared: appeared.length, total: testResults.length, passed, avgPct };
     }, [testResults]);
 
-    const testSubjects = useMemo(() => [...new Set(testResults.map(t => t.subjectName).filter(s => s !== '—'))], [testResults]);
+    const testSubjects = useMemo(() => [...new Set(testResults.map(t => t.subjectName).filter(s => s !== ' - '))], [testResults]);
 
     const filteredTestResults = useMemo(() => {
         return testResults.filter(t => {
@@ -668,7 +668,7 @@ const StudentProfile = ({ student: std, setShowStudentProfile }) => {
                                                     <td className="p-3 border-b border-[#ddb892] text-[#6b4c3b]">{t.subjectName}</td>
                                                     <td className="p-3 border-b border-[#ddb892]">
                                                         {!t.appeared ? (
-                                                            <span className="text-[#6b4c3b]">—</span>
+                                                            <span className="text-[#6b4c3b]"> - </span>
                                                         ) : (
                                                             <span className="font-semibold text-[#4a3a2c]">
                                                                 {t.marks}<span className="text-xs font-normal text-[#6b4c3b]"> / {t.maxMarks}</span>

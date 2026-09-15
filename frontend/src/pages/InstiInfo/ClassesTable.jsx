@@ -75,7 +75,7 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
     };
 
     const truncateNote = (note) => {
-        if (!note || note === 'No Data') return { text: note || '—', needsReadMore: false };
+        if (!note || note === 'No Data') return { text: note || ' - ', needsReadMore: false };
         const words = note.trim().split(/\s+/);
         if (words.length <= 6) return { text: note, needsReadMore: false };
         return { text: words.slice(0, 6).join(' ') + '...', needsReadMore: true };
@@ -204,7 +204,7 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
                 <p className="text-xs sm:text-sm text-[#7b5c4b] hidden sm:block mt-0.5">Overview of all scheduled classes</p>
             </div>
 
-            {/* Filters — always visible on desktop, collapsible on mobile */}
+            {/* Filters - always visible on desktop, collapsible on mobile */}
             <div className={`flex-shrink-0 flex flex-wrap items-end gap-3 sm:gap-4 p-3 sm:p-4 bg-[#f0d9c0] border-b border-[#e6c8a8] ${filtersOpen ? 'flex' : 'hidden md:flex'}`}>
                 {[{
                     label: 'Batch', value: batchFilter, onChange: changeFilter(setBatchFilter), options: filterOptions.batches
@@ -246,7 +246,7 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
                 </div>
             </div>
 
-            {/* Content — only this scrolls */}
+            {/* Content - only this scrolls */}
             <div className="flex-1 overflow-y-auto min-h-0 no-scrollbar">
 
                 {/* Mobile card list */}
@@ -315,7 +315,7 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
                                     >
                                         <Users className="w-3.5 h-3.5 text-[#e6c8a8]" />
                                         <span className={`font-semibold ${isZeroAttendance ? 'text-red-700' : 'text-[#5a4a3c]'}`}>{cls.attendance.length}</span>
-                                        <span className="text-[#7b5c4b]">present{isZeroAttendance ? ' — tap to mark' : ''}</span>
+                                        <span className="text-[#7b5c4b]">present{isZeroAttendance ? ' - tap to mark' : ''}</span>
                                     </div>
                                     <div className="flex items-center gap-2 shrink-0">
                                         {cls.note && cls.note !== 'No Data' && (
@@ -410,7 +410,7 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
                                         <td className="px-4 sm:px-6 py-4">
                                             <div className="flex items-start gap-2 w-44 xl:w-56">
                                                 <p className={`text-sm flex-1 min-w-0 ${isExpanded ? 'whitespace-normal break-words' : 'truncate'}`} title={cls.note}>
-                                                    {isExpanded ? cls.note || '—' : text}
+                                                    {isExpanded ? cls.note || ' - ' : text}
                                                 </p>
                                                 {needsReadMore && (
                                                     <button onClick={() => toggleNote(cls._id)} className="text-xs text-[#5a4a3c] hover:text-[#e0c4a8] font-medium whitespace-nowrap shrink-0">
@@ -465,7 +465,7 @@ const ClassesTable = ({ newClassLogs, onUpdate }) => {
                 </div>
             </div>
 
-            {/* Pagination — always visible */}
+            {/* Pagination - always visible */}
             {totalPages > 1 && (
                 <div className="flex-shrink-0 bg-[#f0d9c0] px-3 sm:px-6 py-2.5 border-t border-[#e6c8a8] flex items-center justify-between gap-2">
                     <span className="text-xs sm:text-sm font-medium text-[#7b5c4b] whitespace-nowrap">

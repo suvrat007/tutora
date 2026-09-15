@@ -82,7 +82,7 @@ const OnboardingForm = ({ adminCreds }) => {
 
         try {
             if (adminCreds?.isGoogleUser) {
-                // Google user already has an account — just create the institute
+                // Google user already has an account - just create the institute
                 await axiosInstance.post('auth/complete-onboarding', { ...formData }, { withCredentials: true });
             } else {
                 if (!adminCreds?.name || !adminCreds?.emailId || !adminCreds?.password) {

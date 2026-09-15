@@ -6,6 +6,8 @@ import { X } from "lucide-react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 
+import useIsGuest from "@/hooks/useIsGuest.js";
+
 const CLOUDINARY_UPLOAD_URL = "https://api.cloudinary.com/v1_1";
 
 const uploadToCloudinary = async (file, cloudName, uploadPreset) => {
@@ -26,6 +28,7 @@ const uploadToCloudinary = async (file, cloudName, uploadPreset) => {
 };
 
 const EditInfoModal = ({ isOpen, onClose, initialData }) => {
+    const isGuest = useIsGuest();
     const [formData, setFormData] = useState({
         name: initialData?.name || "",
         emailId: initialData?.emailId || "",
@@ -90,6 +93,15 @@ const EditInfoModal = ({ isOpen, onClose, initialData }) => {
     const handleFileUpload = async (e, type) => {
         const file = e.target.files[0];
         if (!file) return;
+
+        // This upload goes straight from the browser to Cloudinary, so it is the
+        // one write the guest adapter cannot intercept. Stop it here, or a demo
+        // visitor could spend the account's upload quota.
+        if (isGuest) {
+            toast("Uploads are disabled in the demo.", { id: "guest-upload" });
+            e.target.value = "";
+            return;
+        }
 
         // Validate file type
         if (!file.type.startsWith('image/')) {
@@ -287,6 +299,11 @@ const EditInfoModal = ({ isOpen, onClose, initialData }) => {
                                 <label htmlFor="adminPicUpload" className="block text-sm font-medium text-[#7b5c4b]">
                                     Upload Admin Picture (Optional)
                                 </label>
+                                {isGuest ? (
+                                    <p className="text-sm text-[#a08871] italic">
+                                        Image uploads are turned off in the demo.
+                                    </p>
+                                ) : (
                                 <input
                                     id="adminPicUpload"
                                     type="file"
@@ -295,6 +312,7 @@ const EditInfoModal = ({ isOpen, onClose, initialData }) => {
                                     disabled={isSubmitting || uploadingAdminPic}
                                     className="w-full text-[#5a4a3c] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#e0c4a8] file:text-[#5a4a3c] hover:file:bg-[#d7b48f] transition duration-150 ease-in-out disabled:opacity-50"
                                 />
+                                )}
                                 {uploadingAdminPic && (
                                     <p className="text-sm text-[#5a4a3c] mt-2">Uploading admin picture, please wait...</p>
                                 )}
@@ -335,6 +353,11 @@ const EditInfoModal = ({ isOpen, onClose, initialData }) => {
                                 <label htmlFor="logoUpload" className="block text-sm font-medium text-[#7b5c4b]">
                                     Upload Institute Logo (Optional)
                                 </label>
+                                {isGuest ? (
+                                    <p className="text-sm text-[#a08871] italic">
+                                        Image uploads are turned off in the demo.
+                                    </p>
+                                ) : (
                                 <input
                                     id="logoUpload"
                                     type="file"
@@ -343,6 +366,7 @@ const EditInfoModal = ({ isOpen, onClose, initialData }) => {
                                     disabled={isSubmitting || uploadingLogo}
                                     className="w-full text-[#5a4a3c] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#e0c4a8] file:text-[#5a4a3c] hover:file:bg-[#d7b48f] transition duration-150 ease-in-out disabled:opacity-50"
                                 />
+                                )}
                                 {uploadingLogo && (
                                     <p className="text-sm text-[#5a4a3c] mt-2">Uploading logo, please wait...</p>
                                 )}

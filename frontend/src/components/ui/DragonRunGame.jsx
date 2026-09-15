@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 
 /**
- * Dragon Run — a Chrome-dino style endless runner for the cold-start wait.
+ * Dragon Run - a Chrome-dino style endless runner for the cold-start wait.
  *
  * Everything is vector-drawn on a canvas: no sprite assets, no game library,
  * and no React re-renders while playing (all state lives in refs and the loop
@@ -63,7 +63,7 @@ const writeHighScore = (value) => {
     try {
         localStorage.setItem(HIGH_SCORE_KEY, String(value));
     } catch {
-        /* private mode / storage disabled — the run just isn't remembered */
+        /* private mode / storage disabled - the run just isn't remembered */
     }
 };
 
@@ -90,7 +90,7 @@ const drawDragon = (ctx, d, t) => {
     const bob = onGround && !ducking ? Math.sin(t * 16) * 1.2 : 0;
     ctx.translate(0, bob);
 
-    // Tail — sways while running, streams out behind while airborne.
+    // Tail - sways while running, streams out behind while airborne.
     const tailWave = Math.sin(t * (onGround ? 12 : 20)) * (ducking ? 2 : 4);
     ctx.fillStyle = C.body;
     ctx.beginPath();
@@ -100,7 +100,7 @@ const drawDragon = (ctx, d, t) => {
     ctx.closePath();
     ctx.fill();
 
-    // Legs (behind the body) — alternating stride on the ground, tucked in the air.
+    // Legs (behind the body) - alternating stride on the ground, tucked in the air.
     ctx.fillStyle = C.body;
     if (ducking) {
         roundRect(ctx, w * 0.3, h * 0.72, 9, h * 0.28, 3);
@@ -143,7 +143,7 @@ const drawDragon = (ctx, d, t) => {
         ctx.fill();
     }
 
-    // Wing — slow flap on the ground, hard beats mid-jump.
+    // Wing - slow flap on the ground, hard beats mid-jump.
     const flap = onGround ? Math.sin(t * 13) * 0.22 : Math.sin(t * 26) * 0.55 - 0.35;
     ctx.save();
     ctx.translate(w * 0.44, h * 0.42);
@@ -227,7 +227,7 @@ const drawObstacle = (ctx, o) => {
         return;
     }
 
-    // Ground spire — a jagged rock the dragon has to hop.
+    // Ground spire - a jagged rock the dragon has to hop.
     ctx.fillStyle = C.obstacle;
     ctx.beginPath();
     ctx.moveTo(o.x, o.y + o.h);
@@ -330,7 +330,7 @@ const DragonRunGame = ({ onPlayStateChange }) => {
         const wrap = wrapRef.current;
         if (!canvas || !wrap) return undefined;
         const ctx = canvas.getContext("2d");
-        // jsdom (and any canvas-less environment) hands back null — bail out
+        // jsdom (and any canvas-less environment) hands back null - bail out
         // rather than throwing inside the render loop.
         if (!ctx) return undefined;
 
@@ -432,7 +432,7 @@ const DragonRunGame = ({ onPlayStateChange }) => {
             reportPlayState("gameover");
         };
 
-        // Generous insets — a visual near-miss should not read as a hit.
+        // Generous insets - a visual near-miss should not read as a hit.
         const hits = (d, o) =>
             d.x + 8 < o.x + o.w - 3 &&
             d.x + d.w - 6 > o.x + 3 &&
@@ -608,7 +608,14 @@ const DragonRunGame = ({ onPlayStateChange }) => {
         };
 
         let last = performance.now();
+        // cancelAnimationFrame alone isn't enough: if cleanup runs while a frame
+        // callback is mid-flight, it cancels an id that has already fired and the
+        // callback then schedules a fresh frame nobody owns - leaving an
+        // invisible game running for the life of the page.
+        let stopped = false;
+
         const loop = (now) => {
+            if (stopped) return;
             // Clamp dt so a backgrounded tab doesn't teleport the dragon into a rock.
             const dt = Math.min((now - last) / 1000, 0.05);
             last = now;
@@ -624,6 +631,7 @@ const DragonRunGame = ({ onPlayStateChange }) => {
         document.addEventListener("visibilitychange", onVisibility);
 
         return () => {
+            stopped = true;
             cancelAnimationFrame(rafRef.current);
             ro.disconnect();
             document.removeEventListener("visibilitychange", onVisibility);
@@ -672,7 +680,7 @@ const DragonRunGame = ({ onPlayStateChange }) => {
                 className="block w-full cursor-pointer touch-none rounded-xl border border-[#e0c4a8] bg-[#faf1e8]"
             />
 
-            {/* Touch controls — a tap on the canvas can't express "duck". */}
+            {/* Touch controls - a tap on the canvas can't express "duck". */}
             <div className="mt-3 flex gap-3 sm:hidden">
                 <button
                     type="button"

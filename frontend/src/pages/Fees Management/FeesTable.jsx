@@ -90,7 +90,6 @@ const FeesTable = ({ monthFilter, setMonthFilter, onSaveComplete }) => {
                 if (checkNoStudentsRef.current) {
                     if (res.data.data.length === 0) {
                         toast("There were no students enrolled on this month", { 
-                            icon: "ℹ️", 
                             style: { background: '#f8ede3', color: '#5a4a3c', border: '1px solid #e6c8a8' } 
                         });
                     }
@@ -149,7 +148,7 @@ const FeesTable = ({ monthFilter, setMonthFilter, onSaveComplete }) => {
                 if (!entries.length) { console.warn("[FeeToggle] no changes to save"); return; }
                 const paidIds = entries.filter(([, v]) => v).map(([id]) => id);
                 const unpaidIds = entries.filter(([, v]) => !v).map(([id]) => id);
-                console.log("[FeeToggle] POSTing — paid:", paidIds, "unpaid:", unpaidIds, "date:", dateStr);
+                console.log("[FeeToggle] POSTing - paid:", paidIds, "unpaid:", unpaidIds, "date:", dateStr);
 
                 await Promise.all([
                     ...(paidIds.length ? [axiosInstance.post("student/bulk-update-fee-status", { studentIds: paidIds, paid: true, date: dateStr })] : []),
@@ -423,7 +422,7 @@ const FeesTable = ({ monthFilter, setMonthFilter, onSaveComplete }) => {
                                         {/* Row 2: batch · subjects */}
                                         <div className="flex items-center gap-3 text-xs text-[#7b5c4b] mb-1">
                                             <span className="flex items-center gap-1"><Building2 className="w-3 h-3" />{student.batchName}</span>
-                                            <span className="flex items-center gap-1 truncate"><BookOpen className="w-3 h-3 shrink-0" />{student.subjects?.join(", ") || "—"}</span>
+                                            <span className="flex items-center gap-1 truncate"><BookOpen className="w-3 h-3 shrink-0" />{student.subjects?.join(", ") || " - "}</span>
                                         </div>
                                         {/* Row 3: amount + (whole year: due months) */}
                                         <div className="flex items-center justify-between gap-2">

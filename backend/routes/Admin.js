@@ -13,7 +13,19 @@ router.get('/get',userAuth,async (req,res)=>{
             return res.status(404).json('No user found');
         }
 
-        res.status(200).json({ message: "fetched", data: admin });
+        // The auth cookie is httpOnly, so the browser can't read the token to
+        // find out it's a guest. Every boot calls this endpoint, so it's where
+        // guest mode is rehydrated after a refresh.
+        const guest = req.isGuest
+            ? {
+                  isGuest: true,
+                  expiresAt: new Date(req.tokenExp * 1000).toISOString(),
+                  serverNow: new Date().toISOString(),
+                  hasParentPreview: req.guestHasParentPreview,
+              }
+            : null;
+
+        res.status(200).json({ message: "fetched", data: admin, guest });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "error" });

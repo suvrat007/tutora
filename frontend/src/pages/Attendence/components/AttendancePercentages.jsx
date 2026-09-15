@@ -10,7 +10,7 @@ const AttendancePercentages = ({ batchName, subjectName, refreshTrigger, present
     const batches = useSelector(state => state.batches);
     const { summary, loading, error } = useAttendanceSummary(batchName, subjectName, batches, refreshTrigger);
 
-    // Apply optimistic delta immediately on every toggle — no backend round-trip needed
+    // Apply optimistic delta immediately on every toggle - no backend round-trip needed
     const optimisticSummary = useMemo(() => {
         if (!isFilterActive || !summary.length || !presentIds) return summary;
         const savedIds = new Set((savedPresentStudents || []).map((s) => s._id.toString()));

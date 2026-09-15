@@ -29,7 +29,7 @@ const FaceScanPanel = ({ students, batchId, presentIds, onStudentRecognized, onC
         const alreadyPresent = presentIds.has(studentId);
         if (!alreadyPresent) {
             onStudentRecognized(studentId);
-            toast.success(`${studentName} — Present`, {
+            toast.success(`${studentName} - Present`, {
                 position: 'bottom-right',
                 autoClose: 2000,
                 hideProgressBar: true,

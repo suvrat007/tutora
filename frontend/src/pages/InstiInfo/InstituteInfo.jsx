@@ -136,7 +136,7 @@ const InstituteInfo = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15, duration: 0.4 }}
-                className="flex-1 min-h-[520px] flex flex-col rounded-2xl border border-[#e6c8a8] shadow-[0_8px_24px_rgba(0,0,0,0.12)] overflow-hidden"
+                className="flex-1 min-h-[680px] flex flex-col rounded-2xl border border-[#e6c8a8] shadow-[0_8px_24px_rgba(0,0,0,0.12)] overflow-hidden"
             >
                 <ClassesTable newClassLogs={newClassLogs} onUpdate={fetchClassLogs} />
             </motion.div>

@@ -5,6 +5,8 @@ import { LayoutDashboard, CalendarCheck, Wallet, BookOpen, Clock, LogOut, Downlo
 import axiosInstance from "@/utilities/axiosInstance.jsx";
 import { clearParentUser } from "@/utilities/redux/parentUserSlice.js";
 import { useInstallPWA } from "@/hooks/useInstallPWA.js";
+import useIsGuest from "@/hooks/useIsGuest.js";
+import { endGuestSession } from "@/utilities/guest/guestTeardown.js";
 
 const navItems = [
     { to: "/parent",            label: "Dashboard",  icon: LayoutDashboard, end: true },
@@ -19,10 +21,20 @@ const ParentLayout = () => {
     const dispatch   = useDispatch();
     const navigate   = useNavigate();
     const { canInstall, install, showIOSHint } = useInstallPWA();
+    const isGuest = useIsGuest();
     const [iosHintOpen, setIosHintOpen] = useState(false);
 
     const handleLogout = async () => {
-        try { await axiosInstance.post("parent/logout"); } catch (_) {}
+        // A guest holds both cookies, so leaving from the parent side has to end
+        // the whole demo - otherwise they keep a live admin session and land on
+        // a parent login they could never satisfy.
+        if (isGuest) {
+            await endGuestSession();
+            navigate("/login?demo=ended", { replace: true });
+            return;
+        }
+
+        try { await axiosInstance.post("parent/logout"); } catch { /* clearing local state is what matters */ }
         dispatch(clearParentUser());
         navigate("/parent/login");
     };

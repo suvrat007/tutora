@@ -131,7 +131,7 @@ const ParentSchedulePage = () => {
                                             {subj.time}
                                         </span>
                                     ) : (
-                                        <span className="text-[#e8d5c0]">—</span>
+                                        <span className="text-[#e8d5c0]"> - </span>
                                     )}
                                 </div>
                             );
@@ -140,7 +140,7 @@ const ParentSchedulePage = () => {
                 ))}
             </div>
 
-            {/* Subject summary cards — desktop only */}
+            {/* Subject summary cards - desktop only */}
             <div className="hidden sm:block space-y-2">
                 {subjects.map(subj => (
                     <div key={subj.subjectId} className="bg-white border border-[#e8d5c0] rounded-xl p-4 flex items-center justify-between">

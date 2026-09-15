@@ -1,4 +1,5 @@
 const express = require('express');
+const { isDemoAdminId } = require('../config/demo');
 const router = express.Router();
 const mongoose = require('mongoose');
 const PendingStudent = require('../models/PendingStudent');
@@ -87,6 +88,13 @@ router.post('/:adminId', async (req, res) => {
         }
         const institute = await Institute.findOne({ adminId: req.params.adminId });
         if (!institute) return res.status(404).json({ message: 'Institute not found' });
+
+        // This endpoint is unauthenticated and the demo adminId is visible to
+        // every guest, so without this anyone could spam the pending-approvals
+        // queue that the next visitor sees.
+        if (await isDemoAdminId(req.params.adminId)) {
+            return res.status(403).json({ message: 'Registrations are disabled for the demo institute.' });
+        }
 
         const { name, address, grade, school_name, contact_info, fee_amount, admission_date, forceAddAsTwin } = req.body;
         if (!name || !address || !grade || !school_name || !admission_date || !contact_info) {

@@ -2,6 +2,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { useEffect, useRef } from "react";
 import useFetchParentUser from "@/hooks/useFetchParentUser.js";
 import { useBackendStatus } from "@/utilities/BackendStatusContext.jsx";
+import GuestChrome from "@/components/guest/GuestChrome.jsx";
 
 const ParentBody = () => {
     const fetchParentUser = useFetchParentUser();
@@ -16,7 +17,7 @@ const ParentBody = () => {
                 if (!user) navigate("/parent/login");
             })
             .catch(() => {
-                // Server/network error — the session may well be fine, so hold
+                // Server/network error - the session may well be fine, so hold
                 // the page instead of redirecting, and try again once it's up.
                 unreachableRef.current = true;
             });
@@ -32,7 +33,12 @@ const ParentBody = () => {
         }
     }, [backendStatus]);
 
-    return <Outlet />;
+    return (
+        <>
+            <Outlet />
+            <GuestChrome />
+        </>
+    );
 };
 
 export default ParentBody;

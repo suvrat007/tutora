@@ -107,7 +107,7 @@ const ParentAttendancePage = () => {
                 <div className="flex items-center justify-between mb-3">
                     <p className="text-sm font-semibold text-[#2c1a0e]">{subj.subjectName}</p>
                     <span className={`text-2xl font-bold ${subj.percentage >= 75 ? "text-green-600" : subj.percentage >= 50 ? "text-amber-500" : "text-red-500"}`}>
-                        {subj.percentage}%
+                        {Math.round(Number(subj.percentage) || 0)}%
                     </span>
                 </div>
                 <div className="h-2 bg-[#f0e4d5] rounded-full overflow-hidden mb-2">
