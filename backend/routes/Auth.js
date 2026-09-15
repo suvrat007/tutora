@@ -8,7 +8,7 @@ const Institute = require("../models/Institutes");
 const userAuth = require("../middleware/userAuth");
 const crypto = require('crypto');
 const rateLimit = require('express-rate-limit');
-const { SESSION_MINUTES, SESSION_MS, isEnabled, getDemoAdminId } = require('../config/demo');
+const { SESSION_MINUTES, SESSION_MS, isEnabled, getDemoAdminId, ensureFreshDemo } = require('../config/demo');
 
 const isProd = process.env.NODE_ENV === 'production';
 const cookieOptions = {
@@ -46,6 +46,11 @@ router.post('/guest', guestLimiter, async (req, res) => {
         if (!demoAdminId) {
             return res.status(503).json({ message: 'The demo is being set up. Please try again shortly.' });
         }
+
+        // The dataset is anchored to the day it was built, so the first visitor
+        // of the day rebuilds it. Failures here are non-fatal: slightly stale
+        // data beats no demo at all.
+        await ensureFreshDemo();
 
         const admin = await Admin.findById(demoAdminId).select('-password').populate('institute_info');
         if (!admin || !admin.institute_info) {
