@@ -31,3 +31,12 @@ Thumbs.db
 
 # ── Documentation ────────────────────────────────────────────────────────────
 TUTORA_DOCUMENTATION.html
+
+# ── Tests ────────────────────────────────────────────────────────────────────
+# Test files are kept local and out of the repo.
+*.test.js
+*.test.jsx
+*.test.ts
+*.test.tsx
+*.spec.js
+*.spec.jsx
