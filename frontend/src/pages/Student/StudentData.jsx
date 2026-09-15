@@ -15,6 +15,7 @@ import ConfirmationModal from "@/components/ui/ConfirmationModal.jsx";
 import TransferBatchModal from "@/pages/Student/TransferBatchModal.jsx";
 import toast from "react-hot-toast";
 import Dropdown from "@/components/ui/Dropdown";
+import useIsGuest from "@/hooks/useIsGuest.js";
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -48,6 +49,7 @@ const StudentData = () => {
   const [transferStudent, setTransferStudent] = useState(null);
 
   const user = useSelector((state) => state.user);
+  const isGuest = useIsGuest();
 
   const copyRegistrationLink = () => {
     const link = `${window.location.origin}/register/${user?._id}`;
@@ -148,10 +150,12 @@ const StudentData = () => {
       <>
         <div className="w-full flex flex-col gap-4 h-full p-4 mx-auto overflow-y-auto">
           {/* Pending student registrations */}
-          <PendingApprovals />
+          <div className="shrink-0">
+            <PendingApprovals />
+          </div>
 
           {/* Main content: student grid + filters */}
-          <div className="flex flex-col-reverse lg:flex-row gap-4 lg:flex-1 lg:min-h-0">
+          <div className="flex flex-col-reverse lg:flex-row gap-4 shrink-0 lg:items-start">
           {/* Students List */}
           <div className="w-full lg:w-2/3">
             <WrapperCard>
@@ -160,6 +164,9 @@ const StudentData = () => {
                   <h2 className="text-xl sm:text-2xl font-bold text-[#5a4a3c] min-w-0">
                     All Students in <span className="break-words">{user?.institute_info?.name || "Org Name"}</span>
                   </h2>
+                  {/* Hidden for guests: the link embeds the institute's adminId,
+                      and the demo one is the key to a public write endpoint. */}
+                  {!isGuest && (
                   <button
                     onClick={copyRegistrationLink}
                     title="Copy student registration link"
@@ -171,6 +178,7 @@ const StudentData = () => {
                       <><Link2 className="w-3.5 h-3.5" /> Share Registration Link</>
                     )}
                   </button>
+                  )}
                 </div>
                 {displayStudents.length === 0 ? (
                     <motion.div
@@ -184,7 +192,7 @@ const StudentData = () => {
                       <p className="text-sm sm:text-base text-center font-medium">Click here to add a new student</p>
                     </motion.div>
                 ) : (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 p-3 sm:p-4 lg:overflow-y-auto lg:flex-1 lg:min-h-0">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 p-3 sm:p-4">
                       <motion.div
                           variants={cardVariants}
                           initial="hidden"

@@ -8,6 +8,8 @@ import InviteParentModal from "@/pages/Student/InviteParentModal.jsx";
 import EnrollmentHistory from "@/pages/Student/EnrollmentHistory.jsx";
 import axiosInstance from "@/utilities/axiosInstance.jsx";
 import toast from "react-hot-toast";
+import useIsGuest from "@/hooks/useIsGuest.js";
+import { formatDate } from "@/utilities/dateUtils.js";
 
 const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
@@ -19,6 +21,8 @@ const StdDataDisplay = ({ seeStdDetails, setSeeStdDetails, onStudentEdited }) =>
     const [showFaceModal, setShowFaceModal] = useState(false);
     const [inviteModal, setInviteModal] = useState(null);
     const [inviting, setInviting] = useState(null);
+
+    const isGuest = useIsGuest();
 
     const handleInviteParent = async (relation) => {
         const studentId = seeStdDetails.stdDetails?._id;
@@ -76,6 +80,7 @@ const StdDataDisplay = ({ seeStdDetails, setSeeStdDetails, onStudentEdited }) =>
                     >
                         <AiOutlineEdit className="w-5 h-5 sm:w-6 sm:h-6" />
                     </motion.button>
+                    {!isGuest && (
                     <motion.button
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
@@ -88,6 +93,7 @@ const StdDataDisplay = ({ seeStdDetails, setSeeStdDetails, onStudentEdited }) =>
                             <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[#34C759] rounded-full" />
                         )}
                     </motion.button>
+                    )}
                 </div>
                 <motion.button
                     whileHover={{ scale: 1.1, color: "#FF3B30" }}
@@ -116,7 +122,11 @@ const StdDataDisplay = ({ seeStdDetails, setSeeStdDetails, onStudentEdited }) =>
                     <span className="font-medium text-[#5a4a3c]">Grade:</span>
                     <span>{seeStdDetails.stdDetails?.grade || "N/A"}</span>
                     <span className="font-medium text-[#5a4a3c]">Admission Date:</span>
-                    <span className="truncate">{seeStdDetails.stdDetails?.admission_date || "N/A"}</span>
+                    <span className="truncate">
+                        {seeStdDetails.stdDetails?.admission_date
+                            ? formatDate(seeStdDetails.stdDetails.admission_date)
+                            : "N/A"}
+                    </span>
                     <span className="font-medium text-[#5a4a3c]">Email:</span>
                     <span className="truncate">{seeStdDetails.stdDetails?.contact_info.emailIds.student || "N/A"}</span>
                     <span className="font-medium text-[#5a4a3c]">Phone No.:</span>
@@ -143,9 +153,13 @@ const StdDataDisplay = ({ seeStdDetails, setSeeStdDetails, onStudentEdited }) =>
             {(seeStdDetails.stdDetails?.contact_info.emailIds.mom || seeStdDetails.stdDetails?.contact_info.emailIds.dad) && (
                 <div className="p-3 sm:p-4 border-t border-[#e6c8a8]">
                     <h3 className="text-base sm:text-lg font-semibold text-[#5a4a3c] mb-2">Parent Portal Access</h3>
-                    <p className="text-xs text-[#9b8778] mb-3">Send an invite link for the parent to access this student's progress.</p>
+                    <p className="text-xs text-[#9b8778] mb-3">
+                        {isGuest
+                            ? "On a real account this sends the parent a private link to their child's attendance, fees and test results."
+                            : "Send an invite link for the parent to access this student's progress."}
+                    </p>
                     <div className="flex flex-wrap gap-2">
-                        {seeStdDetails.stdDetails?.contact_info.emailIds.mom && (
+                        {!isGuest && seeStdDetails.stdDetails?.contact_info.emailIds.mom && (
                             <button
                                 onClick={() => handleInviteParent('mom')}
                                 disabled={inviting !== null}
@@ -155,7 +169,7 @@ const StdDataDisplay = ({ seeStdDetails, setSeeStdDetails, onStudentEdited }) =>
                                 Invite Mom
                             </button>
                         )}
-                        {seeStdDetails.stdDetails?.contact_info.emailIds.dad && (
+                        {!isGuest && seeStdDetails.stdDetails?.contact_info.emailIds.dad && (
                             <button
                                 onClick={() => handleInviteParent('dad')}
                                 disabled={inviting !== null}

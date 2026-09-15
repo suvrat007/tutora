@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import axiosInstance from "@/utilities/axiosInstance.jsx";
 import useFetchUser from "@/hooks/useFetchUser.js";
 import { useBackendStatus } from "@/utilities/BackendStatusContext.jsx";
+import GuestChrome from "@/components/guest/GuestChrome.jsx";
 
 const Body = () => {
     const fetchUser=useFetchUser()
@@ -78,6 +79,7 @@ const Body = () => {
     return (
         <>
             <Outlet/>
+            <GuestChrome />
         </>
     )
 }
