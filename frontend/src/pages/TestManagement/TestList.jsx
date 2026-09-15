@@ -130,7 +130,7 @@ const TestList = ({ batches, tests, setEditingTest, setSelectedTest, fetchTests,
     return (
         <>
             <div>
-                <div className="sticky top-0 z-[100] bg-[#f8ede3] pt-3 pb-3 border-b border-[#e6c8a8] mb-3">
+                <div className="sticky top-0 z-[100] bg-[#f8ede3] -mx-4 sm:-mx-6 px-4 sm:px-6 pt-3 pb-3 border-b border-[#e6c8a8] mb-3">
                     {/* Header row: title on its own line, controls below */}
                     <div className="flex flex-col gap-2">
                         <h2 className="text-xl font-bold text-[#5a4a3c]">Scheduled Tests</h2>

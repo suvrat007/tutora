@@ -86,7 +86,7 @@ const TestManagementPage = () => {
 
                     {/* Body */}
                     <div className="flex flex-col lg:flex-row flex-1 min-h-0 divide-y lg:divide-y-0 lg:divide-x divide-[#e6c8a8]">
-                        {/* LEFT: Schedule new test form — desktop only */}
+                        {/* LEFT: Schedule new test form - desktop only */}
                         <div className="hidden lg:block lg:w-[320px] shrink-0 p-4 sm:p-6 lg:overflow-y-auto">
                             <h2 className="text-base font-bold text-[#5a4a3c] mb-4">Schedule a New Test</h2>
                             <div className="bg-white border border-[#e6c8a8] rounded-2xl p-4 shadow-sm">
@@ -102,7 +102,7 @@ const TestManagementPage = () => {
                         </div>
 
                         {/* RIGHT: Test list + detail, scrolls together */}
-                        <div className="flex-1 min-w-0 px-4 sm:px-6 pt-3 pb-3 lg:overflow-y-auto flex flex-col gap-3 lg:min-h-0">
+                        <div className="flex-1 min-w-0 px-4 sm:px-6 pb-3 lg:overflow-y-auto flex flex-col gap-3 lg:min-h-0">
                             <TestList
                                 batches={batches}
                                 tests={tests}

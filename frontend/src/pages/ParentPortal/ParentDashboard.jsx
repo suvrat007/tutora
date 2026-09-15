@@ -8,6 +8,10 @@ import { Loader2, Clock, BookOpen, TrendingUp, ArrowRight, CalendarCheck, Wallet
 // ── Ring chart ────────────────────────────────────────────────────────────────
 const ringColor = (p) => p >= 75 ? "#22c55e" : p >= 50 ? "#f59e0b" : "#ef4444";
 
+// The API sends attendance to two decimals. "89.38%" is wider than the inside of
+// the ring and spills over it, so everything compact shows a whole number.
+const pctLabel = (p) => `${Math.round(Number(p) || 0)}%`;
+
 const AttRing = ({ pct, size = 120, trackColor = "#f0e4d5" }) => {
     const c   = size / 2;
     const r   = size * 0.38;
@@ -28,7 +32,7 @@ const AttRing = ({ pct, size = 120, trackColor = "#f0e4d5" }) => {
                 />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="font-extrabold leading-none" style={{ fontSize: size * 0.22, color }}>{pct}%</span>
+                <span className="font-extrabold leading-none" style={{ fontSize: size * 0.22, color }}>{pctLabel(pct)}</span>
                 <span className="text-[#9b8778] leading-none mt-0.5" style={{ fontSize: size * 0.095 }}>attendance</span>
             </div>
         </div>
@@ -173,11 +177,11 @@ const ParentDashboard = () => {
                         </div>
                     </div>
 
-                    {/* Stat chips — desktop */}
+                    {/* Stat chips - desktop */}
                     <div className="hidden md:flex items-center gap-3 shrink-0">
                         <BannerStat
                             label="Attendance"
-                            value={`${overallAttendancePct}%`}
+                            value={pctLabel(overallAttendancePct)}
                             icon={CalendarCheck}
                             color={ringColor(overallAttendancePct)}
                         />
@@ -190,7 +194,7 @@ const ParentDashboard = () => {
                         {avgScore !== null && (
                             <BannerStat
                                 label="Avg Score"
-                                value={`${avgScore}%`}
+                                value={pctLabel(avgScore)}
                                 icon={TrendingUp}
                                 color="#f59e0b"
                             />
@@ -208,7 +212,7 @@ const ParentDashboard = () => {
                                 style={{ background: ringColor(overallAttendancePct) }}
                             />
                         </div>
-                        <span className="text-sm font-bold text-white shrink-0">{overallAttendancePct}%</span>
+                        <span className="text-sm font-bold text-white shrink-0">{pctLabel(overallAttendancePct)}</span>
                     </div>
                 </div>
             </motion.div>

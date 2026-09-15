@@ -35,23 +35,27 @@ export const StudentList = ({
         >
             {/* Header */}
             <div className="flex items-center justify-between pb-3 border-b border-[#e6c8a8] mb-3 gap-3 flex-wrap">
-                <div>
+                <div className="min-w-0">
                     <h2 className="font-bold text-lg text-[#5a4a3c]">Mark Attendance</h2>
-                    {!readOnly && students.length > 0 && (
-                        <p className="text-xs text-[#7b5c4b] mt-0.5">
-                            {presentIds.size} of {students.length} present
-                        </p>
-                    )}
-                    {readOnly && students.length > 0 && (
-                        <p className="text-xs text-[#7b5c4b] mt-0.5">{students.length} students</p>
-                    )}
+                    {/* Status line, kept a fixed height: the save indicator used to
+                        live in the button row, so the buttons jumped every time it
+                        appeared and wrapped awkwardly in this narrow column. */}
+                    <div className="flex items-center gap-2 mt-0.5 min-h-[1.05rem]">
+                        {students.length > 0 && (
+                            <p className="text-xs text-[#7b5c4b]">
+                                {readOnly
+                                    ? `${students.length} students`
+                                    : `${presentIds.size} of ${students.length} present`}
+                            </p>
+                        )}
+                        {saving && (
+                            <span className="text-xs text-[#8b5e3c] flex items-center gap-1 animate-pulse">
+                                <Loader2 className="w-3 h-3 animate-spin" /> Saving
+                            </span>
+                        )}
+                    </div>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
-                    {saving && (
-                        <span className="text-xs text-[#8b5e3c] flex items-center gap-1 animate-pulse">
-                            <Loader2 className="w-3 h-3 animate-spin" /> Saving
-                        </span>
-                    )}
                     {!readOnly && (
                         <>
                             <motion.button

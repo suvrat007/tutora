@@ -22,7 +22,7 @@ const PendingApprovals = () => {
             const res = await axiosInstance.get(API.PENDING_STUDENTS);
             setPending(res.data.data || []);
         } catch {
-            // silently fail — not critical
+            // silently fail - not critical
         }
     };
 
@@ -79,7 +79,7 @@ const PendingApprovals = () => {
             <div className="bg-[#f8ede3] rounded-3xl border border-amber-200 shadow-xl overflow-hidden">
                 {/* Header */}
                 <div className="flex items-center justify-between px-5 py-3.5 bg-amber-50 border-b border-amber-200">
-                    {/* Left: pulse + title + count — clicking this toggles expand */}
+                    {/* Left: pulse + title + count - clicking this toggles expand */}
                     <button
                         onClick={() => setExpanded(v => !v)}
                         className="flex items-center gap-2.5 flex-1 min-w-0"
@@ -125,6 +125,9 @@ const PendingApprovals = () => {
                             transition={{ duration: 0.25, ease: 'easeInOut' }}
                             style={{ overflow: 'hidden' }}
                         >
+                            {/* Caps the queue at roughly three rows and scrolls
+                                beyond that, so a long backlog can't push the rest
+                                of the page down. */}
                             <div className="divide-y divide-[#e6c8a8] max-h-80 overflow-y-auto">
                                 {pending.map((p) => (
                                     <motion.div
