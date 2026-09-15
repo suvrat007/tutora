@@ -18,6 +18,7 @@ const TestRouter = require("./routes/Test.js");
 const TeacherRouter = require("./routes/Teacher.js");
 const RegistrationRouter = require("./routes/Registration.js");
 const ParentRouter = require("./routes/Parent.js");
+const guestGuard = require("./middleware/guestGuard.js");
 
 // Trust Vercel's proxy so rate limiting uses the real client IP
 // instead of Vercel's shared egress IP (which would bucket all users together)
@@ -30,6 +31,10 @@ app.use(cors({
 
 app.use(express.json());
 app.use(cookieParser())
+
+// Mounted before the routers (and before the rate limiters) so it covers every
+// route, including ones added later and the public unauthenticated writes.
+app.use(guestGuard);
 
 // Registered before the rate limiters so the frontend's cold-start ping is
 // never throttled. Renders on a free tier that sleeps: a successful response
@@ -49,13 +54,13 @@ const authLimiter = rateLimit({
 
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 200,
+    max: 350,
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: 'Too many requests, please try again later.' },
 });
 
-// Auth routes only get authLimiter — skip apiLimiter so auth attempts
+// Auth routes only get authLimiter - skip apiLimiter so auth attempts
 // don't eat into the general API quota
 app.use('/api/v1/auth', authLimiter);
 app.use('/api/v1/parent/login', authLimiter);
