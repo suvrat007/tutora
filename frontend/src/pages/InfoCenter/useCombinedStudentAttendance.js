@@ -5,7 +5,7 @@ import useAttendanceSummary from '@/pages/Attendence/hooks/useAttendanceSummary'
 export const useCombinedStudentAttendance = (batchName, subjectName, batches) => {
     const students = useSelector((state) => state.students.groupedStudents) || [];
 
-    // Fetch all attendance from API — filtering is done client-side below
+    // Fetch all attendance from API - filtering is done client-side below
     const { summary: attendance, loading, error: attendanceError } = useAttendanceSummary('', '', batches, null);
 
     const combinedData = useMemo(() => {

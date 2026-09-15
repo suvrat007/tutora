@@ -61,7 +61,7 @@ const Fees = () => {
                 animate="show"
                 variants={{ show: { transition: { staggerChildren: 0.08 } } }}
             >
-                {/* Fee Summary — wider feel */}
+                {/* Fee Summary - wider feel */}
                 <motion.div variants={fadeUp} custom={0} className="md:col-span-2">
                     <div className="relative bg-white border border-[#e6c8a8] rounded-2xl p-5 h-full overflow-hidden">
                         {loading && (

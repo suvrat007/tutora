@@ -39,7 +39,7 @@ const SLIDES = [
         points: [
             "Create batches with subjects, schedules and class timings",
             "Assign a standard/grade and track enrolled students per batch",
-            "All features — attendance, tests, fees — are tied to your batches",
+            "All features - attendance, tests, fees - are tied to your batches",
         ],
     },
     {
@@ -61,7 +61,7 @@ const SLIDES = [
         title: "Attendance",
         subtitle: "Mark and monitor class attendance",
         points: [
-            "Select batch, subject and date — only valid class days are allowed",
+            "Select batch, subject and date - only valid class days are allowed",
             "See the attendance summary update in real time as you mark",
             "Institute Info flags missed attendance days with a shortcut button",
         ],
@@ -86,7 +86,7 @@ const SLIDES = [
         subtitle: "Schedule, enter and analyse test results",
         points: [
             "Schedule tests for any batch with max marks and pass criteria",
-            "Results auto-save as you type — overdue tests complete themselves",
+            "Results auto-save as you type - overdue tests complete themselves",
             "Pass / fail stats and class average shown instantly in the detail view",
         ],
     },
@@ -97,7 +97,7 @@ const SLIDES = [
         title: "Institute Info",
         subtitle: "Full visibility into your institute's history",
         points: [
-            "Browse every class — conducted, cancelled or unrecorded — by date",
+            "Browse every class - conducted, cancelled or unrecorded - by date",
             "Filter by batch, subject or date range to find what you need",
             "One-click jump to the attendance page for any unrecorded day",
         ],

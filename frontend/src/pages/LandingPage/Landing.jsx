@@ -63,7 +63,7 @@ const allFeatures = [
     {
         icon: DollarSign,
         title: "Fee Tracking",
-        description: "Set per-student monthly fee amounts, mark payments, track who's paid and who hasn't — with the exact date fees were cleared.",
+        description: "Set per-student monthly fee amounts, mark payments, track who's paid and who hasn't - with the exact date fees were cleared.",
         span: "md:col-span-2",
         accent: "#fef3e8",
         iconColor: "#c0764b",
@@ -71,7 +71,7 @@ const allFeatures = [
     {
         icon: Download,
         title: "Fee CSV Export",
-        description: "Export the current month's fee status to a spreadsheet in one click — name, batch, amount, status, and paid date included.",
+        description: "Export the current month's fee status to a spreadsheet in one click - name, batch, amount, status, and paid date included.",
         span: "md:col-span-1",
         accent: "#fdf8f0",
         iconColor: "#8b5e3c",
@@ -141,14 +141,14 @@ const steps = [
 
 const benefits = [
     { icon: Clock, stat: "2h+", label: "Saved per week vs manual registers" },
-    { icon: Zap, stat: "0", label: "Learning curve — works like your phone" },
-    { icon: Shield, stat: "100%", label: "Data stays yours — never shared" },
+    { icon: Zap, stat: "0", label: "Learning curve - works like your phone" },
+    { icon: Shield, stat: "100%", label: "Data stays yours - never shared" },
     { icon: Heart, stat: "Free", label: "Always free for solo educators" },
 ];
 
 const testimonials = [
     {
-        quote: "Finally a tool that doesn't feel like enterprise software. Set up 3 batches in one evening — now fee tracking is actually something I look forward to.",
+        quote: "Finally a tool that doesn't feel like enterprise software. Set up 3 batches in one evening - now fee tracking is actually something I look forward to.",
         name: "Priya Sharma",
         role: "Math Tutor",
         location: "Delhi",
@@ -171,9 +171,9 @@ const testimonials = [
 ];
 
 const faqs = [
-    { question: "Is Tutora free?", answer: "Yes — all core features are free. No hidden charges, no paywalls for things you actually use daily." },
+    { question: "Is Tutora free?", answer: "Yes - all core features are free. No hidden charges, no paywalls for things you actually use daily." },
     { question: "Do I need any tech skills?", answer: "Not at all. If you can use WhatsApp you can use Tutora. The interface is designed to be minimal and self-explanatory." },
-    { question: "Is it only for math tutors?", answer: "Tutora works for any subject — math, science, music, language, or anything else. Batches and subjects are fully customizable." },
+    { question: "Is it only for math tutors?", answer: "Tutora works for any subject - math, science, music, language, or anything else. Batches and subjects are fully customizable." },
     { question: "Is student data safe?", answer: "Yes. Data is stored securely and is tied to your account only. No third party ever sees your students' information." },
     { question: "Can I suggest a feature?", answer: "Absolutely. Drop a mail to suvratmittal007@gmail.com and I'll look into it." },
 ];
@@ -332,7 +332,7 @@ const Landing = () => {
                             Managing students shouldn't feel like a second job
                         </h2>
                         <p className="mt-3 text-[#7b5c4b] text-base max-w-lg mx-auto">
-                            Most private tutors are still doing this — and wasting hours every week on it.
+                            Most private tutors are still doing this - and wasting hours every week on it.
                         </p>
                     </motion.div>
 
@@ -348,7 +348,7 @@ const Landing = () => {
                             },
                             {
                                 before: "Keeping test scores in a spreadsheet no one else can read",
-                                after:  "Log results once — trends and pass/fail tracked automatically.",
+                                after:  "Log results once - trends and pass/fail tracked automatically.",
                             },
                             {
                                 before: "Forgetting a student's school, grade, or parent number mid-call",
@@ -525,7 +525,7 @@ const Landing = () => {
                             The simple way to run your tuition
                         </h2>
                         <p className="mt-3 text-[#c4a882] text-base max-w-lg mx-auto">
-                            Built for how a solo tutor actually works — not how a school software company thinks you do.
+                            Built for how a solo tutor actually works - not how a school software company thinks you do.
                         </p>
                     </motion.div>
 

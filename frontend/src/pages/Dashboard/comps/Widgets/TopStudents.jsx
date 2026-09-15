@@ -170,7 +170,7 @@ const TopStudents = () => {
                                 <div className="flex gap-2 mt-1 text-[10px] text-[#b0998a]">
                                     <span title="Attendance">A: {s.attendancePct.toFixed(0)}%</span>
                                     <span className="opacity-40">·</span>
-                                    <span title="Test marks">{s.marksPct !== null ? `M: ${s.marksPct.toFixed(0)}%` : "M: —"}</span>
+                                    <span title="Test marks">{s.marksPct !== null ? `M: ${s.marksPct.toFixed(0)}%` : "M: - "}</span>
                                     <span className="opacity-40">·</span>
                                     <span title="Fee status" className={s.feePaid ? "text-green-600" : "text-red-500"}>
                                         F: {s.feePaid ? "✓" : "✗"}

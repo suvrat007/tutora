@@ -13,7 +13,7 @@ const ParentAuthSchema = new Schema({
     createdAt:   { type: Date, default: Date.now }
 });
 
-// One ParentAuth doc per student+relation — re-invite updates the same doc
+// One ParentAuth doc per student+relation - re-invite updates the same doc
 ParentAuthSchema.index({ studentId: 1, relation: 1 }, { unique: true });
 ParentAuthSchema.index({ inviteToken: 1 });
 

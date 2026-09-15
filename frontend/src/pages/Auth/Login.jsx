@@ -76,7 +76,7 @@ const Login = () => {
 
     return (
         <div className="relative min-h-screen bg-[#faf6f1] flex items-center justify-center px-4 overflow-hidden">
-            {/* Background decoration — matches hero */}
+            {/* Background decoration - matches hero */}
             <div className="pointer-events-none absolute inset-0 -z-10">
                 <div className="absolute top-[-8%] left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-[#e7c6a5]/25 rounded-full blur-[110px]" />
                 <div className="absolute bottom-0 right-1/4 w-[360px] h-[260px] bg-[#f5d9bc]/15 rounded-full blur-[90px]" />

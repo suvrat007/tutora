@@ -62,7 +62,7 @@ const ParentFeesPage = () => {
                         }
                         <div>
                             <p className={`text-sm font-semibold ${currentEntry.paid ? "text-green-700" : "text-red-600"}`}>
-                                This month — {currentEntry.paid ? "Paid" : "Pending"}
+                                This month - {currentEntry.paid ? "Paid" : "Pending"}
                             </p>
                             {currentEntry.paid && currentEntry.paid_at && (
                                 <p className="text-xs text-green-600 mt-0.5">
@@ -107,7 +107,7 @@ const ParentFeesPage = () => {
                                 <span className="text-xs text-right text-[#9b8778]">
                                     {entry.paid && entry.paid_at
                                         ? new Date(entry.paid_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
-                                        : "—"
+                                        : " - "
                                     }
                                 </span>
                             </div>

@@ -1,6 +1,6 @@
 # Tutora
 
-> A CRM-based SaaS platform empowering solo tutors and small coaching institutes to run their teaching business with professionalism — without the paperwork.
+> A CRM-based SaaS platform empowering solo tutors and small coaching institutes to run their teaching business with professionalism - without the paperwork.
 
 [![Frontend](https://img.shields.io/badge/Frontend-React%2019%20%2B%20Vite-61dafb?style=flat-square&logo=react)](https://react.dev)
 [![Backend](https://img.shields.io/badge/Backend-Node.js%20%2B%20Express%20v5-339933?style=flat-square&logo=node.js)](https://expressjs.com)
@@ -13,41 +13,41 @@
 
 ## The Problem
 
-Solo educators juggle scattered tools — WhatsApp for communication, Google Sheets for attendance, mental notes for fees, and manual reminders for follow-ups. This fragmented workflow wastes hours every week and leaves critical student data siloed across apps.
+Solo educators juggle scattered tools - WhatsApp for communication, Google Sheets for attendance, mental notes for fees, and manual reminders for follow-ups. This fragmented workflow wastes hours every week and leaves critical student data siloed across apps.
 
 ## The Solution
 
-Tutora brings everything into one dashboard: attendance with **face recognition**, a **parent-facing portal**, **offline PWA** support, student self-registration, batch management, and fee tracking — so tutors can focus on teaching, not paperwork.
+Tutora brings everything into one dashboard: attendance with **face recognition**, a **parent-facing portal**, **offline PWA** support, student self-registration, batch management, and fee tracking - so tutors can focus on teaching, not paperwork.
 
 ---
 
 ## Flagship Features
 
 ### Face Recognition Attendance
-> Mark attendance by recognising faces — no roll calls, no manual lookup.
+> Mark attendance by recognising faces - no roll calls, no manual lookup.
 
-Tutora runs a full face recognition pipeline entirely in the browser using [`face-api.js`](https://github.com/justadudewhohacks/face-api.js) — no images ever leave the device.
+Tutora runs a full face recognition pipeline entirely in the browser using [`face-api.js`](https://github.com/justadudewhohacks/face-api.js) - no images ever leave the device.
 
-- **Face enrollment** — each student's face is captured once and encoded into a 128-dimensional descriptor vector, stored in MongoDB against their profile
-- **Live detection** — SSD MobileNet detects faces in the webcam feed in real time
-- **Matching** — FaceNet computes descriptor distance; a cosine threshold of `0.6` identifies the student with the closest match
-- **Client-side only** — all model inference runs in the browser; model weights (~6 MB) are precached by the service worker so recognition works offline after first load
-- **Fallback** — manual one-click marking still available alongside face recognition
+- **Face enrollment** - each student's face is captured once and encoded into a 128-dimensional descriptor vector, stored in MongoDB against their profile
+- **Live detection** - SSD MobileNet detects faces in the webcam feed in real time
+- **Matching** - FaceNet computes descriptor distance; a cosine threshold of `0.6` identifies the student with the closest match
+- **Client-side only** - all model inference runs in the browser; model weights (~6 MB) are precached by the service worker so recognition works offline after first load
+- **Fallback** - manual one-click marking still available alongside face recognition
 
 ---
 
 ### Parent Portal
 > Parents stay informed without the tutor having to send a single WhatsApp message.
 
-A completely separate, mobile-friendly portal for parents — distinct auth, distinct routes, distinct UI.
+A completely separate, mobile-friendly portal for parents - distinct auth, distinct routes, distinct UI.
 
-- **Separate login system** — parents authenticate via their own `parentToken` httpOnly cookie, completely isolated from the admin session
-- **Attendance view** — parents see their child's attendance history with percentage, calculated correctly from the student's admission date
-- **Fee transparency** — full payment history, current month's status, and overdue indicators visible to parents at any time
-- **Schedule page** — responsive layout built for how each screen is used:
+- **Separate login system** - parents authenticate via their own `parentToken` httpOnly cookie, completely isolated from the admin session
+- **Attendance view** - parents see their child's attendance history with percentage, calculated correctly from the student's admission date
+- **Fee transparency** - full payment history, current month's status, and overdue indicators visible to parents at any time
+- **Schedule page** - responsive layout built for how each screen is used:
   - **Mobile**: horizontal day-pill picker (Mon–Sun) with dots on class days, today auto-selected; tapping a day shows the classes for that day below
   - **Desktop**: full grid table (subjects × days) with time chips in each cell, today's column highlighted
-- **Smart error handling** — 401/403 responses redirect to parent login; network/server errors stay on the page so a flaky connection doesn't log parents out
+- **Smart error handling** - 401/403 responses redirect to parent login; network/server errors stay on the page so a flaky connection doesn't log parents out
 
 ---
 
@@ -56,11 +56,11 @@ A completely separate, mobile-friendly portal for parents — distinct auth, dis
 
 Tutora is a fully offline-capable PWA powered by [Workbox](https://developer.chrome.com/docs/workbox), built with `vite-plugin-pwa`.
 
-- **Installable** — tutors can install Tutora on their phone or desktop from the browser; it opens in its own window with no address bar
-- **Offline reads** — all GET requests (students, attendance, fees, batches) use a **NetworkFirst** strategy with a 24-hour cache and 200-entry cap; stale data is shown instantly while a fresh fetch happens in the background
-- **Background Sync** — attendance marks, fee updates, and any write operation made while offline are queued via the Background Sync API and automatically replayed when connectivity returns (24-hour retention window)
-- **Precaching** — all JS/CSS/HTML bundles, images, fonts, and the full `face-api.js` model files (~6 MB) are precached at install time by Workbox, so the app loads at full speed even with no network
-- **Stale-cache recovery** — after a new deployment, the old service worker may have cached outdated JS chunks. A `lazyWithReload` wrapper catches dynamic import failures and forces a full page reload, so users never see a blank screen after an update
+- **Installable** - tutors can install Tutora on their phone or desktop from the browser; it opens in its own window with no address bar
+- **Offline reads** - all GET requests (students, attendance, fees, batches) use a **NetworkFirst** strategy with a 24-hour cache and 200-entry cap; stale data is shown instantly while a fresh fetch happens in the background
+- **Background Sync** - attendance marks, fee updates, and any write operation made while offline are queued via the Background Sync API and automatically replayed when connectivity returns (24-hour retention window)
+- **Precaching** - all JS/CSS/HTML bundles, images, fonts, and the full `face-api.js` model files (~6 MB) are precached at install time by Workbox, so the app loads at full speed even with no network
+- **Stale-cache recovery** - after a new deployment, the old service worker may have cached outdated JS chunks. A `lazyWithReload` wrapper catches dynamic import failures and forces a full page reload, so users never see a blank screen after an update
 
 ---
 
@@ -68,7 +68,7 @@ Tutora is a fully offline-capable PWA powered by [Workbox](https://developer.chr
 
 ### Attendance
 - One-click Present / Absent / Late marking per student per class
-- **Auto-save with debounce** — changes sync 800ms after the last interaction; no save button, no data loss
+- **Auto-save with debounce** - changes sync 800ms after the last interaction; no save button, no data loss
 - Calendar-based class log history with per-session attendance breakdown
 - Attendance percentage calculated from the student's **admission date** (not the date they were added to the system)
 - Smart constraints block marking future dates, wrong weekday for the batch, or classes before the batch start date
@@ -86,10 +86,10 @@ Tutora is a fully offline-capable PWA powered by [Workbox](https://developer.chr
 
 ### Student Self-Registration
 - Each institute gets a unique public onboarding link: `/register/:adminId`
-- Students fill their own details (name, grade, school, contacts, fee amount, admission date) — no tutor involvement needed
+- Students fill their own details (name, grade, school, contacts, fee amount, admission date) - no tutor involvement needed
 - Submissions appear in the tutor's **Pending Approvals** queue with an animated collapsible panel and live count badge
 - **Approve** individually (moves to student roster) or **Accept All** in one click
-- Accept All uses `Promise.allSettled` — partial failures are reported without blocking successful approvals
+- Accept All uses `Promise.allSettled` - partial failures are reported without blocking successful approvals
 - **Deny** opens a confirmation modal and permanently removes the submission
 
 ### Batch Management
@@ -114,13 +114,13 @@ Tutora is a fully offline-capable PWA powered by [Workbox](https://developer.chr
 | Animation | Framer Motion |
 | State management | Redux Toolkit (10 slices, write-through cache invalidation) |
 | HTTP client | Axios with auth + error interceptors |
-| Face recognition | face-api.js — SSD MobileNet detection + FaceNet 128-dim descriptors |
+| Face recognition | face-api.js - SSD MobileNet detection + FaceNet 128-dim descriptors |
 | PWA | Workbox via `vite-plugin-pwa` (NetworkFirst + BackgroundSync) |
 | Backend runtime | Node.js |
 | Backend framework | Express v5 |
 | Database | MongoDB Atlas |
 | ODM | Mongoose |
-| Auth | JWT in httpOnly cookies — separate admin (`token`) and parent (`parentToken`) tokens |
+| Auth | JWT in httpOnly cookies - separate admin (`token`) and parent (`parentToken`) tokens |
 | Password hashing | bcrypt |
 | Rate limiting | express-rate-limit |
 | Frontend hosting | Vercel (with API proxy rewrite) |
@@ -134,7 +134,7 @@ Tutora is a fully offline-capable PWA powered by [Workbox](https://developer.chr
 Browser
   │
   ├─ /api/*  ──proxy──▶  Render (Express v5 backend)
-  │              (vercel.json rewrites — same-origin, zero CORS config)
+  │              (vercel.json rewrites - same-origin, zero CORS config)
   │
   └─ /* ──────────────▶  Vite SPA (React 19)
                               │
@@ -215,7 +215,7 @@ FRONTEND_URL=http://localhost:5173
 VITE_API_URL=http://localhost:8000
 ```
 
-In production, Vercel's proxy rewrites `/api/*` to the Render backend — `VITE_API_URL` is left empty and all calls are same-origin automatically.
+In production, Vercel's proxy rewrites `/api/*` to the Render backend - `VITE_API_URL` is left empty and all calls are same-origin automatically.
 
 ---
 
@@ -240,7 +240,7 @@ npm install --include=optional   # --include=optional required for face-api.js b
 npm run dev               # http://localhost:5173
 ```
 
-> The face recognition model weights are committed under `frontend/public/models/` and served statically — no separate download or CDN needed.
+> The face recognition model weights are committed under `frontend/public/models/` and served statically - no separate download or CDN needed.
 
 ---
 
@@ -248,8 +248,8 @@ npm run dev               # http://localhost:5173
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| POST | `/api/v1/admin/signup` | — | Create admin account |
-| POST | `/api/v1/admin/login` | — | Login, sets `token` cookie |
+| POST | `/api/v1/admin/signup` | - | Create admin account |
+| POST | `/api/v1/admin/login` | - | Login, sets `token` cookie |
 | GET | `/api/v1/admin/logout` | Admin | Clear auth cookie |
 | GET | `/api/v1/student` | Admin | List all students |
 | POST | `/api/v1/student` | Admin | Add student manually |
@@ -264,9 +264,9 @@ npm run dev               # http://localhost:5173
 | GET | `/api/v1/register/pending` | Admin | List pending registrations |
 | POST | `/api/v1/register/pending/:id/approve` | Admin | Approve a pending student |
 | DELETE | `/api/v1/register/pending/:id` | Admin | Deny a pending registration |
-| GET | `/api/v1/register/:adminId/info` | — | Public: fetch institute info |
-| POST | `/api/v1/register/:adminId` | — | Public: submit student registration |
-| POST | `/api/v1/parent/login` | — | Parent login, sets `parentToken` cookie |
+| GET | `/api/v1/register/:adminId/info` | - | Public: fetch institute info |
+| POST | `/api/v1/register/:adminId` | - | Public: submit student registration |
+| POST | `/api/v1/parent/login` | - | Parent login, sets `parentToken` cookie |
 | GET | `/api/v1/parent/me` | Parent | Authenticated parent + child data |
 | GET | `/api/v1/parent/attendance` | Parent | Child's attendance history |
 | GET | `/api/v1/parent/fee` | Parent | Child's fee history |
@@ -281,8 +281,8 @@ npm run dev               # http://localhost:5173
 - [x] Batch scheduling
 - [x] **Face recognition attendance** (client-side, offline-capable)
 - [x] Student self-registration + pending approvals queue
-- [x] **Parent portal** (attendance, fees, schedule — separate auth)
-- [x] **PWA** — installable, offline reads, background sync for writes
+- [x] **Parent portal** (attendance, fees, schedule - separate auth)
+- [x] **PWA** - installable, offline reads, background sync for writes
 - [ ] Content library (notes & video uploads)
 - [ ] Automated announcements and homework reminders
 - [ ] Test creation, grading, and performance analytics

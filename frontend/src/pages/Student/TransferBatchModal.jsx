@@ -97,7 +97,7 @@ const TransferBatchModal = ({ student, batches, onClose, onTransferred }) => {
                             <option value="">Select a batch…</option>
                             {availableBatches.map(b => (
                                 <option key={b._id} value={b._id}>
-                                    {b.name} — Class {b.forStandard}
+                                    {b.name} - Class {b.forStandard}
                                 </option>
                             ))}
                         </select>

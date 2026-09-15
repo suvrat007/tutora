@@ -159,7 +159,7 @@ const TestScheduleForm = ({ batches, editingTest, setEditingTest, fetchTests, sh
             />
             {isAllBatches ? (
                 <p className="text-xs text-[#b0998a] px-1">
-                    Subject selection is per-batch — not available when scheduling for all batches.
+                    Subject selection is per-batch - not available when scheduling for all batches.
                 </p>
             ) : (
                 <Dropdown 

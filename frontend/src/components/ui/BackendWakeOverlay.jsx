@@ -4,7 +4,7 @@ import DragonRunGame from "./DragonRunGame.jsx";
 
 /**
  * Shown while the free-tier Render backend cold-starts (~30-60s on the first
- * request after it sleeps). The app keeps loading underneath — this only
+ * request after it sleeps). The app keeps loading underneath - this only
  * covers the wait so it doesn't feel like a broken page.
  *
  * Dismissal is deliberate about not yanking the game away mid-jump: once the
@@ -70,7 +70,7 @@ const BackendWakeOverlay = () => {
                                 {!isReady && !isFailed && "Waking up the server…"}
                             </h1>
                             <p className="mt-1 max-w-md text-sm text-[#7b5c4b]">
-                                {isReady && "Tutora is ready whenever you are — finish your run first if you like."}
+                                {isReady && "Tutora is ready whenever you are - finish your run first if you like."}
                                 {isFailed &&
                                     "It's taking unusually long. Check your connection, or give it another try."}
                                 {!isReady &&

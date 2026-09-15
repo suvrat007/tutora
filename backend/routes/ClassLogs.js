@@ -58,7 +58,7 @@ router.post("/add-class-updates", userAuth, async (req, res) => {
                 if (existingClass) {
                     // If the record was already explicitly recorded by the user (updated=true)
                     // and this request carries no `updated` flag, it's the app-startup
-                    // "ensure-exists" call from Body.jsx — skip to avoid overwriting real data.
+                    // "ensure-exists" call from Body.jsx - skip to avoid overwriting real data.
                     if (!(existingClass.updated && updated === undefined)) {
                         existingClass.hasHeld = hasHeld !== undefined ? hasHeld : existingClass.hasHeld;
                         existingClass.note = note || existingClass.note;

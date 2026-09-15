@@ -367,13 +367,13 @@ const TeacherPage = () => {
                                                     disabled={!pickerBatch || pickerSubjects.length === 0}
                                                     placeholder={
                                                         !pickerBatch
-                                                            ? "— select batch first —"
+                                                            ? " - select batch first - "
                                                             : pickerSubjects.length === 0
                                                                 ? "No subjects in batch"
                                                                 : "Select Subject"
                                                     }
                                                     options={[
-                                                        { label: !pickerBatch ? "— select batch first —" : pickerSubjects.length === 0 ? "No subjects in batch" : "Select Subject", value: "" },
+                                                        { label: !pickerBatch ? " - select batch first - " : pickerSubjects.length === 0 ? "No subjects in batch" : "Select Subject", value: "" },
                                                         ...pickerSubjects.map(s => ({ label: s.name, value: s._id }))
                                                     ]}
                                                 />

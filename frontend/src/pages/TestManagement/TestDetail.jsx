@@ -129,7 +129,7 @@ const TestDetail = ({ test, fetchTests, setEditingTest }) => {
                         )}
                     </div>
                 </div>
-                {/* Tags — full width so they never wrap inside the pill */}
+                {/* Tags - full width so they never wrap inside the pill */}
                 <div className="flex flex-wrap gap-2 text-xs sm:text-sm font-medium">
                     <span className="bg-[#f0d9c0] text-[#5a4a3c] px-3 py-1 rounded-full whitespace-nowrap">{getBatchName(test.batchId)}</span>
                     <span className="bg-[#f0d9c0] text-[#5a4a3c] px-3 py-1 rounded-full whitespace-nowrap">{getSubjectName(test.batchId, test.subjectId)}</span>
@@ -148,7 +148,7 @@ const TestDetail = ({ test, fetchTests, setEditingTest }) => {
                     <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-xl backdrop-blur-sm bg-white/40 gap-2">
                         <Ban className="w-8 h-8 text-[#8b5e3c]" />
                         <p className="text-[#5a4a3c] font-semibold text-sm text-center px-4">
-                            This test was cancelled — results cannot be entered.
+                            This test was cancelled - results cannot be entered.
                         </p>
                     </div>
                 )}
@@ -209,7 +209,7 @@ const TestDetail = ({ test, fetchTests, setEditingTest }) => {
                     const pagedResults = filtered.slice((safeDetailPage - 1) * DETAIL_PAGE_SIZE, safeDetailPage * DETAIL_PAGE_SIZE);
                     return (
                     <>
-                    {/* Mobile list layout — one row per student */}
+                    {/* Mobile list layout - one row per student */}
                     <div className="md:hidden rounded-xl border border-[#e6c8a8] overflow-hidden bg-[#f8ede3] divide-y divide-[#e6c8a8]">
                         {pagedResults.map(r => {
                             const stId = r.studentId._id || r.studentId;
@@ -304,7 +304,7 @@ const TestDetail = ({ test, fetchTests, setEditingTest }) => {
                                             {test.passMarks > 0 && (
                                                 <td className="px-6 py-4">
                                                     {!r.appeared ? (
-                                                        <span className="text-[#7b5c4b] text-xs">—</span>
+                                                        <span className="text-[#7b5c4b] text-xs"> - </span>
                                                     ) : r.marks >= test.passMarks ? (
                                                         <span className="px-2 py-1 bg-green-100 text-green-700 rounded-md text-xs font-bold">PASS</span>
                                                     ) : (

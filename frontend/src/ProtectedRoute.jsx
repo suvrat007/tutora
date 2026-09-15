@@ -21,7 +21,7 @@ const ProtectedRoute = ({ children }) => {
             return;
         }
         // No session in hand. Only bounce to /login once we know the server
-        // actually rejected us — while it's cold-starting the check simply
+        // actually rejected us - while it's cold-starting the check simply
         // hasn't been answered yet, and signing the admin out for that is wrong.
         const rejected = authStatus === 'unauthenticated';
         const gaveUp = authStatus !== 'authenticated' && backendStatus === 'failed';

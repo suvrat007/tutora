@@ -61,7 +61,7 @@ const Hero = ({ user, setIsModalOpen }) => {
                     transition={{ duration: 0.6, delay: 0.2 }}
                     className="text-lg sm:text-xl text-[#6b5c4a] max-w-xl leading-relaxed mb-10"
                 >
-                    Replace the notebook, the WhatsApp reminders, and the Excel sheet. Tutora tracks attendance, fees, and test results for every student — in one place, from your phone.
+                    Replace the notebook, the WhatsApp reminders, and the Excel sheet. Tutora tracks attendance, fees, and test results for every student - in one place, from your phone.
                 </motion.p>
 
                 {/* CTA buttons */}

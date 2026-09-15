@@ -40,7 +40,7 @@ const PeriodCard = ({ period }) => {
                     <div className="min-w-0">
                         <p className="text-sm font-semibold text-[#2c1a0e] truncate">{period.batchName}</p>
                         <p className="text-[10px] text-[#9b8778]">
-                            {fmtDate(period.joinedAt)} — {fmtDate(period.leftAt)}
+                            {fmtDate(period.joinedAt)} - {fmtDate(period.leftAt)}
                             {period.isCurrent && (
                                 <span className="ml-2 text-[10px] font-semibold text-green-700 bg-green-100 px-1.5 py-0.5 rounded-full">
                                     Current
@@ -121,7 +121,7 @@ const PeriodCard = ({ period }) => {
                                                 </td>
                                                 <td className="px-3 py-2.5 text-center">
                                                     {!t.appeared
-                                                        ? <span className="text-[10px] font-semibold text-[#9b8778] bg-[#f5ede3] px-2 py-0.5 rounded-full">—</span>
+                                                        ? <span className="text-[10px] font-semibold text-[#9b8778] bg-[#f5ede3] px-2 py-0.5 rounded-full"> - </span>
                                                         : t.passMarks > 0
                                                             ? t.passed
                                                                 ? <span className="text-[10px] font-semibold text-green-700 bg-green-100 px-2 py-0.5 rounded-full">Pass</span>

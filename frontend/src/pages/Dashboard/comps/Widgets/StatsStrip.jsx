@@ -74,7 +74,7 @@ const StatsStrip = () => {
             <StatCard
                 icon={TrendingUp}
                 label="Avg Attendance"
-                value={avgAtt !== null ? `${avgAtt.toFixed(1)}%` : "—"}
+                value={avgAtt !== null ? `${avgAtt.toFixed(1)}%` : " - "}
                 sub={avgAtt !== null ? "across all students" : "loading…"}
                 color="#3a6db5"
                 delay={0.21}

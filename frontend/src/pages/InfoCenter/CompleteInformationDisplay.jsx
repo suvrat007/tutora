@@ -362,7 +362,7 @@ const CompleteInformationDisplay = () => {
                                     score >= 50 ? 'bg-yellow-100 text-yellow-700' :
                                     'bg-red-100 text-red-700'
                                   }`}>{score}%</span>
-                                ) : <span className="text-[#b0998a]">—</span>}
+                                ) : <span className="text-[#b0998a]"> - </span>}
                               </div>
                               <span className="text-xs text-[#7b5c4b]">{student.contact_info?.phoneNumbers?.student || ''}</span>
                             </div>
@@ -420,7 +420,7 @@ const CompleteInformationDisplay = () => {
                                       {testScoreByStudent[student.studentId?.toString()]}%
                                     </span>
                                   ) : (
-                                    <span className="text-xs text-[#b0998a]">—</span>
+                                    <span className="text-xs text-[#b0998a]"> - </span>
                                   )}
                                 </td>
                                 <td className="px-4 py-3 text-sm text-[#5a4a3c]">{student.school_name}</td>

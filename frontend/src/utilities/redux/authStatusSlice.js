@@ -4,13 +4,13 @@ import { deleteUser, setUser } from "./userSlice.js";
 /**
  * How far the admin session check has got. `user` alone can't answer this:
  * null means both "logged out" and "we haven't heard back yet", and telling
- * them apart matters while the backend cold-starts — otherwise a sleeping
+ * them apart matters while the backend cold-starts - otherwise a sleeping
  * server looks exactly like a signed-out visitor and we bounce them to /login.
  *
- * "pending"        — the session check hasn't resolved yet
- * "authenticated"  — a session came back
- * "unauthenticated"— the server said no (401/403), or the admin logged out
- * "unreachable"    — the request never got an answer (cold start / offline)
+ * "pending"        - the session check hasn't resolved yet
+ * "authenticated"  - a session came back
+ * "unauthenticated" - the server said no (401/403), or the admin logged out
+ * "unreachable"    - the request never got an answer (cold start / offline)
  */
 const authStatusSlice = createSlice({
     name: "authStatus",

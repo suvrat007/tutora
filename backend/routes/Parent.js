@@ -26,7 +26,7 @@ const parentCookieOptions = {
 
 // ─── Admin-triggered routes ───────────────────────────────────────────────────
 
-// POST /invite — admin generates invite link for a parent
+// POST /invite - admin generates invite link for a parent
 router.post('/invite', userAuth, async (req, res) => {
     try {
         const { studentId, relation } = req.body;
@@ -62,7 +62,7 @@ router.post('/invite', userAuth, async (req, res) => {
     }
 });
 
-// GET /invite-status/:studentId — admin checks invite state for both parents
+// GET /invite-status/:studentId - admin checks invite state for both parents
 router.get('/invite-status/:studentId', userAuth, async (req, res) => {
     try {
         const { studentId } = req.params;
@@ -78,7 +78,7 @@ router.get('/invite-status/:studentId', userAuth, async (req, res) => {
 
 // ─── Public routes ────────────────────────────────────────────────────────────
 
-// GET /setup/:token — validate token and return display info for setup page
+// GET /setup/:token - validate token and return display info for setup page
 router.get('/setup/:token', async (req, res) => {
     try {
         const { token } = req.params;
@@ -102,7 +102,7 @@ router.get('/setup/:token', async (req, res) => {
     }
 });
 
-// POST /setup/:token — parent sets password, activates account
+// POST /setup/:token - parent sets password, activates account
 router.post('/setup/:token', async (req, res) => {
     try {
         const { token } = req.params;
@@ -174,7 +174,7 @@ router.post('/logout', (req, res) => {
 
 // ─── Parent-authed data routes ────────────────────────────────────────────────
 
-// GET /me — identity info
+// GET /me - identity info
 router.get('/me', parentAuth, async (req, res) => {
     try {
         const [parentDoc, student, institute] = await Promise.all([
@@ -201,7 +201,7 @@ router.get('/me', parentAuth, async (req, res) => {
     }
 });
 
-// GET /schedule — batch timetable
+// GET /schedule - batch timetable
 router.get('/schedule', parentAuth, async (req, res) => {
     try {
         const student = await Student.findById(req.studentId).select('batchId subjectId');
@@ -228,7 +228,7 @@ router.get('/schedule', parentAuth, async (req, res) => {
     }
 });
 
-// GET /fees — monthly fee history
+// GET /fees - monthly fee history
 router.get('/fees', parentAuth, async (req, res) => {
     try {
         const student = await Student.findById(req.studentId).select('fee_status');
@@ -251,7 +251,7 @@ router.get('/fees', parentAuth, async (req, res) => {
     }
 });
 
-// GET /tests — all completed tests for this student
+// GET /tests - all completed tests for this student
 router.get('/tests', parentAuth, async (req, res) => {
     try {
         const studentObjId = new mongoose.Types.ObjectId(req.studentId);
@@ -303,7 +303,7 @@ router.get('/tests', parentAuth, async (req, res) => {
     }
 });
 
-// GET /attendance — per-subject attendance with classDates for heatmap
+// GET /attendance - per-subject attendance with classDates for heatmap
 router.get('/attendance', parentAuth, async (req, res) => {
     try {
         const adminId = new mongoose.Types.ObjectId(req.adminId);
@@ -360,7 +360,7 @@ router.get('/attendance', parentAuth, async (req, res) => {
     }
 });
 
-// GET /dashboard — aggregated overview for the dashboard page
+// GET /dashboard - aggregated overview for the dashboard page
 router.get('/dashboard', parentAuth, async (req, res) => {
     try {
         const adminId = new mongoose.Types.ObjectId(req.adminId);

@@ -13,7 +13,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 const HEALTH_URL = (import.meta.env.VITE_API_URL ?? "") + "/api/v1/health";
 
-const SHOW_AFTER_MS = 2000;      // warm servers answer well inside this — no flash
+const SHOW_AFTER_MS = 2000;      // warm servers answer well inside this - no flash
 const ATTEMPT_TIMEOUT_MS = 12000; // a boot in progress just never answers; retry instead
 const RETRY_DELAY_MS = 2500;
 const MAX_WAIT_MS = 150000;      // Render cold starts are slow, but not this slow
