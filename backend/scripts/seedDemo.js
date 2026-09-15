@@ -555,6 +555,11 @@ async function seedDemo() {
     ]);
     await seedDemoParent(admin._id, students[0]);
 
+    // Stamp the build time last, so a run that dies half way is not mistaken
+    // for a fresh tenant and gets retried instead.
+    admin.demoSeededAt = new Date();
+    await admin.save();
+
     const sessions = classLogs.reduce((n, log) => n + log.classes.length, 0);
 
     console.log('');

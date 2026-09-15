@@ -11,6 +11,9 @@ const AdminSchema = new Schema({
     // scripts/seedDemo.js (which may only ever delete data belonging to an
     // isDemo admin) and the flag that blocks password/Google login for it.
     isDemo: { type: Boolean, default: false },
+    // When the demo tenant was last rebuilt. Its data is anchored to the day it
+    // was seeded, so it goes stale overnight - see config/demo.js.
+    demoSeededAt: { type: Date, default: null },
     institute_info: {
         type:Schema.Types.ObjectId,
         ref: 'Institute',
