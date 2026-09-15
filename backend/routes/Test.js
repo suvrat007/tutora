@@ -1,5 +1,6 @@
 // Modified backend routes
 const express = require('express');
+const { isDemoAdminId } = require('../config/demo');
 const router = express.Router();
 const Test = require('../models/Test');
 const Student = require('../models/Student');
@@ -109,7 +110,7 @@ router.get('/getAllTests', userAuth, async (req, res) => {
 // Get a single test by ID
 router.get('/getTestById/:testId', userAuth, async (req, res) => {
     try {
-        const test = await Test.findById(req.params.testId).populate('batchId', 'name').populate('studentResults.studentId', 'name grade');
+        const test = await Test.findOne({ _id: req.params.testId, adminId: req.adminId }).populate('batchId', 'name').populate('studentResults.studentId', 'name grade');
         if (!test) {
             return res.status(404).json({ message: 'Test not found' });
         }
@@ -143,7 +144,13 @@ router.put('/updateTest/:testId', userAuth, async (req, res) => {
             updateData.studentResults = studentResults;
         }
 
-        const updatedTest = await Test.findByIdAndUpdate(req.params.testId, updateData, { new: true });
+        // Scoped: was findByIdAndUpdate, so any admin could rewrite any test
+        // (including its marks) given only the id.
+        const updatedTest = await Test.findOneAndUpdate(
+            { _id: req.params.testId, adminId: req.adminId },
+            updateData,
+            { new: true }
+        );
         res.json(updatedTest);
     } catch (error) {
         res.status(400).json({ message: error.message });
@@ -172,7 +179,7 @@ router.put('/updateGroupTest/:groupId', userAuth, async (req, res) => {
 // Delete a test
 router.delete('/:testId', userAuth, async (req, res) => {
     try {
-        const test = await Test.findByIdAndDelete(req.params.testId);
+        const test = await Test.findOneAndDelete({ _id: req.params.testId, adminId: req.adminId });
         if (!test) {
             return res.status(404).json({ message: 'Test not found' });
         }
@@ -264,6 +271,10 @@ router.post('/public/submit/group/:groupId', async (req, res) => {
         const test = await Test.findOne({ groupId: req.params.groupId, batchId: student.batchId });
         if (!test) return res.status(404).json({ message: 'Test not found for your batch' });
         if (test.status === 'cancelled') return res.status(400).json({ message: 'This test has been cancelled' });
+        // Unauthenticated write - keep it away from the demo tenant's marks.
+        if (await isDemoAdminId(test.adminId)) {
+            return res.status(403).json({ message: 'Submissions are disabled for the demo institute.' });
+        }
 
         const marksNum = Number(marks);
         if (isNaN(marksNum) || marksNum < 0 || marksNum > test.maxMarks) {
@@ -299,6 +310,10 @@ router.post('/public/submit/:testId', async (req, res) => {
         const test = await Test.findById(req.params.testId);
         if (!test) return res.status(404).json({ message: 'Test not found' });
         if (test.status === 'cancelled') return res.status(400).json({ message: 'This test has been cancelled' });
+        // Unauthenticated write - keep it away from the demo tenant's marks.
+        if (await isDemoAdminId(test.adminId)) {
+            return res.status(403).json({ message: 'Submissions are disabled for the demo institute.' });
+        }
 
         const marksNum = Number(marks);
         if (isNaN(marksNum) || marksNum < 0 || marksNum > test.maxMarks) {

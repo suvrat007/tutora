@@ -28,7 +28,7 @@ router.post('/add-reminder', userAuth, async (req, res) => {
 
 router.delete('/delete-reminder/:id', userAuth, async (req, res) => {
     try {
-        const deleted = await Reminder.findByIdAndDelete(req.params.id);
+        const deleted = await Reminder.findOneAndDelete({ _id: req.params.id, adminId: req.adminId });
         return res.status(200).json({ message: "Reminder deleted", reminder: deleted });
     } catch (err) {
         console.error(err.message);

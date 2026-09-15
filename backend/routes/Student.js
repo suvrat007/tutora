@@ -501,7 +501,9 @@ router.post("/bulk-update-fee-status", userAuth, async (req, res) => {
     const { studentIds, paid, date } = req.body;
 
     try {
-        const students = await Student.find({ _id: { $in: studentIds } });
+        // Scoped: this used to match on _id alone, so a caller could flip the
+        // fee records of students belonging to any other institute.
+        const students = await Student.find({ _id: { $in: studentIds }, adminId: req.adminId });
 
         if (students.length !== studentIds.length) {
             return res.status(400).json({ error: "Some student IDs are invalid" });
