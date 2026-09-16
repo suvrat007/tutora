@@ -28,6 +28,13 @@ Thumbs.db
 *.log
 *.suo
 *.sw?
+.idea/
+.vscode/
+*.swp
+
+# ── Local tool settings ──────────────────────────────────────────────────────
+# settings.json is shared; settings.local.json is personal to one machine.
+.claude/settings.local.json
 
 # ── Documentation ────────────────────────────────────────────────────────────
 TUTORA_DOCUMENTATION.html
