@@ -154,7 +154,7 @@ const UnifiedLogin = ({ defaultRole = "tutor" }) => {
     const isTutor = role === "tutor";
 
     return (
-        <div className="relative min-h-screen bg-[#faf6f1] flex items-center justify-center px-4 py-8 overflow-x-hidden">
+        <div className="relative min-h-screen bg-[#faf6f1] flex items-center justify-center px-4 py-5 overflow-x-hidden">
             {/* Background */}
             <div className="pointer-events-none absolute inset-0 -z-10">
                 <div className="absolute top-[-8%] left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-[#e7c6a5]/25 rounded-full blur-[110px]" />
@@ -176,7 +176,7 @@ const UnifiedLogin = ({ defaultRole = "tutor" }) => {
                 className="w-full max-w-sm mx-auto"
             >
                 {/* Wordmark */}
-                <div className="text-center mb-5 sm:mb-8">
+                <div className="text-center mb-4 sm:mb-5">
                     <span className="text-3xl font-extrabold tracking-tight text-[#2c1a0e]">Tutora</span>
                     <p className="mt-1.5 text-sm text-[#9b8778]">
                         {isTutor ? (isSignup ? "Create your free account" : "Welcome back") : "Parent Portal"}
@@ -199,7 +199,7 @@ const UnifiedLogin = ({ defaultRole = "tutor" }) => {
                         )}
                     </AnimatePresence>
 
-                    <div className="p-5 sm:p-7">
+                    <div className="p-5 sm:p-6">
                         {demoEnded && (
                             <div className="mb-5 rounded-2xl border border-[#e8d5c0] bg-[#faf1e8] px-4 py-3 text-center">
                                 <p className="text-sm font-semibold text-[#2c1a0e]">That's the end of the demo</p>
@@ -210,7 +210,7 @@ const UnifiedLogin = ({ defaultRole = "tutor" }) => {
                         )}
 
                         {/* ── Role selector ── */}
-                        <div className="grid grid-cols-2 gap-3 mb-5 sm:mb-6">
+                        <div className="grid grid-cols-2 gap-3 mb-4 sm:mb-5">
                             {[
                                 { key: "tutor",  label: "Tutor",  sub: "Manage your institute", Icon: GraduationCap },
                                 { key: "parent", label: "Parent", sub: "Track your child",       Icon: Users },
@@ -220,7 +220,7 @@ const UnifiedLogin = ({ defaultRole = "tutor" }) => {
                                     onClick={() => switchRole(key)}
                                     disabled={isLoading}
                                     whileTap={{ scale: 0.97 }}
-                                    className={`flex flex-col items-center gap-1.5 py-4 px-3 rounded-2xl border-2 transition-all cursor-pointer ${
+                                    className={`flex flex-col items-center gap-1 py-3 px-3 rounded-2xl border-2 transition-all cursor-pointer ${
                                         role === key
                                             ? "border-[#2c1a0e] bg-[#2c1a0e] text-white shadow-md"
                                             : "border-[#e8d5c0] bg-white text-[#9b8778] hover:border-[#c8a882] hover:text-[#5a4a3c]"
@@ -339,7 +339,7 @@ const UnifiedLogin = ({ defaultRole = "tutor" }) => {
                                     </AnimatePresence>
 
                                     {/* Google OAuth */}
-                                    <div className="flex items-center gap-3 my-4 sm:my-5">
+                                    <div className="flex items-center gap-3 my-3 sm:my-4">
                                         <div className="flex-1 h-px bg-[#e8d5c0]" />
                                         <span className="text-xs text-[#b0998a] font-medium">or</span>
                                         <div className="flex-1 h-px bg-[#e8d5c0]" />
@@ -361,7 +361,7 @@ const UnifiedLogin = ({ defaultRole = "tutor" }) => {
 
                                     {/* Deliberately tertiary: a loud guest button
                                         would cannibalise real signups. */}
-                                    <div className="mt-5 pt-4 border-t border-[#e8d5c0]">
+                                    <div className="mt-4 pt-3 border-t border-[#e8d5c0]">
                                         <button
                                             type="button"
                                             onClick={handleGuestLogin}
@@ -371,8 +371,8 @@ const UnifiedLogin = ({ defaultRole = "tutor" }) => {
                                             <Compass className="w-4 h-4" />
                                             Check out the app as a guest
                                         </button>
-                                        <p className="text-center text-[11px] text-[#b0998a] mt-2">
-                                            10-minute tour of a sample institute. No signup, nothing saved.
+                                        <p className="text-center text-[11px] text-[#b0998a] mt-1.5">
+                                            10-minute tour. No signup, nothing saved.
                                         </p>
                                     </div>
                                 </motion.div>
@@ -477,7 +477,7 @@ const UnifiedLogin = ({ defaultRole = "tutor" }) => {
                 )}
 
                 {!canInstall && !showIOSHint && (
-                    <p className="text-center text-xs text-[#b0998a] mt-6">
+                    <p className="text-center text-xs text-[#b0998a] mt-4">
                         By continuing you agree to Tutora's terms of use.
                     </p>
                 )}
